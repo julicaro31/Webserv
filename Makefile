@@ -2,7 +2,7 @@ NAME = webserv
 OBJ_DIR	= obj
 SRCS = main.cpp ConfigBlock.cpp
 OBJS = ${SRCS:%.cpp=$(OBJ_DIR)/%.o}
-HEADER = Servert.hpp Request.hpp Response.hpp ConfigBlock.hpp
+HEADER = Server.hpp Request.hpp Response.hpp ConfigBlock.hpp
 CC = c++
 FLAGS = -Wall -Wextra -Werror -std=c++11
 

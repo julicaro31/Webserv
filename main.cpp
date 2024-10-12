@@ -1,4 +1,5 @@
 #include <iostream>
+#include "ConfigBlock.hpp"
 
 int main(int ac, char *argv[])
 {
@@ -8,5 +9,8 @@ int main(int ac, char *argv[])
 		return -1;
 	}
 
+	std::string filePath(argv[1]);
+	ConfigBlock configFile = parseConfigFile(filePath);
+	configFile.print();
 	return 0;
 }

@@ -15,10 +15,7 @@ class ConfigBlock
 	private:
 		
 		std::map<std::string, std::string> _directives;
-		std::map<std::string, std::vector<std::string, ConfigBlock>> _subConfigBlocks;
-
-		ConfigBlock parseBlock(std::ifstream& file);
-		std::string trim(const std::string& str);
+		std::map<std::string, std::vector<ConfigBlock>> _subConfigBlocks;
 
 	public:
 
@@ -26,6 +23,14 @@ class ConfigBlock
 		~ConfigBlock();
 		ConfigBlock(const ConfigBlock& configBlock);
 		ConfigBlock& operator=(const ConfigBlock& configBlock);
+
+		void addDirective(const std::string& key, const std::string& value);
+		void addSubBlock(const std::string& blockName, const ConfigBlock& block);
+		void print(int indent = 0) const;
 };
+
+	ConfigBlock parseConfigFile(std::string& configFilePath);
+	ConfigBlock parseBlock(std::ifstream& file);
+	std::string trim(const std::string& str);
 
 #endif
