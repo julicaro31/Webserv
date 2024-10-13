@@ -1,69 +1,17 @@
 #include "ConfigBlock.hpp"
 
-ConfigBlock parseConfigFile(std::string& configFilePath)
+ConfigBlock::ConfigBlock(){}
+ConfigBlock::~ConfigBlock(){}
+ConfigBlock::ConfigBlock(const ConfigBlock& configBlock): _directives(configBlock._directives), _subConfigBlocks(configBlock._subConfigBlocks) {}
+
+ConfigBlock& ConfigBlock::operator=(const ConfigBlock& configBlock)
 {
-	std::ifstream configFile(configFilePath);
-
-	if (!configFile.is_open())
+	if (this != &configBlock)
 	{
-		std::cerr << "Error: Could not open file " << configFilePath << std::endl;
-		exit(1);
+		_directives = configBlock._directives;
+		_subConfigBlocks = configBlock._subConfigBlocks;
 	}
-
-	ConfigBlock rootBlock = parseBlock(configFile);
-	configFile.close();
-	return rootBlock;
-}
-
-ConfigBlock parseBlock(std::ifstream& file)
-{
-	std::string line;
-	ConfigBlock block;
-
-	while (std::getline(file, line))
-	{
-		line = trim(line);
-
-		if (line.empty() || line[0] == '#')
-		{
-			continue;
-		}
-		else if (line.back() == ';')
-		{
-			line.pop_back();
-
-			std::stringstream ss(line);
-			std::string key, value;
-			ss >> key;
-			getline(ss, value);
-			block.addDirective(key, trim(value));
-		}
-		else if (line.back() == '{')
-		{
-			std::string blockName = trim(line.substr(0, line.size() - 1));
-			ConfigBlock subBlock = parseBlock(file);
-			block.addSubBlock(blockName, subBlock);
-		}
-		else if (line.back() == '}')
-		{
-			return block;
-		}
-	}
-	return block;
-}
-
-std::string trim(const std::string& str)
-{
-	std::string::const_iterator start = std::find_if_not(str.begin(), str.end(), [](unsigned char ch) { return std::isspace(ch);});
-
-	std::string::const_iterator end = std::find_if_not(str.rbegin(), str.rend(), [](unsigned char ch) {return std::isspace(ch);}).base();
-
-	if (start >= end) 
-	{
-		return "";
-	}
-
-	return std::string(start, end);
+	return *this;
 }
 
 void ConfigBlock::addDirective(const std::string& key, const std::string& value) 
@@ -93,4 +41,81 @@ void ConfigBlock::print(int indent) const
 			std::cout << indentation << "}" << std::endl;
 		}
 	}
+}
+
+ConfigBlock parseConfigFile(std::string& configFilePath)
+{
+	std::ifstream configFile(configFilePath);
+
+	if (!configFile.is_open())
+	{
+		std::cerr << "Error: Could not open file " << configFilePath << std::endl;
+		exit(1);
+	}
+
+	ConfigBlock rootBlock = parseBlock(configFile);
+	configFile.close();
+	return rootBlock;
+}
+
+ConfigBlock parseBlock(std::ifstream& file, bool braceOpen)
+{
+	std::string line;
+	ConfigBlock block;
+
+	while (std::getline(file, line))
+	{
+		line = trim(line);
+
+		if (line.empty() || line[0] == '#')
+		{
+			continue;
+		}
+		else if (line.back() == ';')
+		{
+			line.pop_back();
+
+			std::stringstream ss(line);
+			std::string key, value;
+			ss >> key;
+			getline(ss, value);
+			block.addDirective(key, trim(value));
+		}
+		else if (line.back() == '{')
+		{
+			std::string blockName = trim(line.substr(0, line.size() - 1));
+			ConfigBlock subBlock = parseBlock(file, true);
+			block.addSubBlock(blockName, subBlock);
+		}
+		else if (line.back() == '}' && trim(line).size() == 1)
+		{
+			braceOpen = false;
+			return block;
+		}
+		else
+		{
+			std::cerr << "Error: Incorrect syntax in file." << std::endl;
+			exit(1);
+		}
+	}
+	if (braceOpen)
+	{
+		std::cerr << "Error: Incorrect braces in file." << std::endl;
+		exit(1);
+	}
+	return block;
+}
+
+std::string trim(const std::string& str)
+{
+	std::string::const_iterator start = std::find_if_not(str.begin(), str.end(), [](unsigned char ch) { return std::isspace(ch);});
+
+	std::string::const_iterator end = std::find_if_not(str.rbegin(), str.rend(), [](unsigned char ch) {return std::isspace(ch);}).base();
+
+	if (start >= end) 
+	{
+		return "";
+	}
+
+	return std::string(start, end);
 }

@@ -30,7 +30,7 @@ class ConfigBlock
 };
 
 	ConfigBlock parseConfigFile(std::string& configFilePath);
-	ConfigBlock parseBlock(std::ifstream& file);
+	ConfigBlock parseBlock(std::ifstream& file, bool braceOpen = false);
 	std::string trim(const std::string& str);
 
 #endif
