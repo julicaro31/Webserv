@@ -2,9 +2,9 @@ NAME = webserv
 OBJ_DIR	= obj
 SRCS = main.cpp ConfigBlock.cpp
 OBJS = ${SRCS:%.cpp=$(OBJ_DIR)/%.o}
-HEADER = Server.hpp Request.hpp Response.hpp ConfigBlock.hpp
+INCLUDE = includes
 CC = c++
-FLAGS = -Wall -Wextra -Werror -std=c++11
+FLAGS = -Wall -Wextra -Werror -std=c++11 -I$(INCLUDE)
 
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)
@@ -12,7 +12,7 @@ $(OBJ_DIR)/%.o: %.cpp
 
 all: $(NAME)
 
-$(NAME): $(OBJS) $(HEADER)
+$(NAME): $(OBJS)
 	$(CC) $(FLAGS) $(OBJS) -o $(NAME)
 
 clean:
