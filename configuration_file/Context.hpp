@@ -3,11 +3,11 @@
 
 enum class Context
 {
-	GLOBAL,
-	EVENTS,
-	HTTP,
-	SERVER,
-	LOCATION
+	global,
+	events,
+	http,
+	server,
+	location
 };
 
 #endif
