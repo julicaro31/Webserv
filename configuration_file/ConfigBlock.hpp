@@ -12,6 +12,7 @@
 
 #include "Directives.hpp"
 
+/// @brief Class that parses the configuration file.
 class ConfigBlock
 {
 	private:
@@ -29,10 +30,13 @@ class ConfigBlock
 		void addDirective(const std::string& key, const std::string& value, const std::string& context);
 		void addSubBlock(const std::string& blockName, const std::string& parentBlockName, const ConfigBlock& block);
 		void print(int indent = 0) const;
+
+		std::map<std::string, std::vector<ConfigBlock>>& getSubConfigBlocks();
+		std::map<std::string, std::vector<std::string>>& getDirectives();
 };
 
 	ConfigBlock parseConfigFile(std::string& configFilePath);
-	ConfigBlock parseBlock(std::ifstream& file, std::string blockName = "none", bool braceOpen = false);
+	ConfigBlock parseBlock(std::ifstream& file, std::string blockName, bool braceOpen = false);
 	std::string trim(const std::string& str);
 	std::string toString(Context context);
 

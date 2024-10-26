@@ -78,6 +78,16 @@ void ConfigBlock::print(int indent) const
 	}
 }
 
+std::map<std::string, std::vector<ConfigBlock>>& ConfigBlock::getSubConfigBlocks()
+{
+	return this->_subConfigBlocks;
+}
+
+std::map<std::string, std::vector<std::string>>& ConfigBlock::getDirectives()
+{
+	return this->_directives;
+}
+
 ConfigBlock parseConfigFile(std::string& configFilePath)
 {
 	std::ifstream configFile(configFilePath);
@@ -88,7 +98,7 @@ ConfigBlock parseConfigFile(std::string& configFilePath)
 		exit(1);
 	}
 
-	ConfigBlock rootBlock = parseBlock(configFile);
+	ConfigBlock rootBlock = parseBlock(configFile, toString(Context::NONE));
 	configFile.close();
 	return rootBlock;
 }

@@ -12,5 +12,6 @@ int main(int ac, char *argv[])
 	std::string filePath(argv[1]);
 	ConfigBlock configFile = parseConfigFile(filePath);
 	configFile.print();
+
 	return 0;
 }
