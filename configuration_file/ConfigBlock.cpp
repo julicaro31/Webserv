@@ -14,23 +14,58 @@ ConfigBlock& ConfigBlock::operator=(const ConfigBlock& configBlock)
 	return *this;
 }
 
-void ConfigBlock::addDirective(const std::string& key, const std::string& value) 
+void ConfigBlock::addDirective(const std::string& key, const std::string& value, const std::string& context) 
 {
-	_directives[key] = value;
+	if (Directives.find(key) == Directives.end())
+	{
+		std::cerr << "Error: Invalid directive: " << key << "." << std::endl;
+		exit(1);
+	}
+
+	std::vector<Context> possibleContexts = Directives[key];
+
+	for (std::vector<Context>::iterator it = possibleContexts.begin(); it != possibleContexts.end(); it++)
+	{
+		if (toString(*it) == context)
+		{
+			_directives[key].push_back(value);
+			return;
+		}
+	}
+
+	std::cerr << "Error: Directive " << key << " should not be in context " << context << "." << std::endl;
+	exit(1);
 }
 
-void ConfigBlock::addSubBlock(const std::string& blockName, const ConfigBlock& block)
+void ConfigBlock::addSubBlock(const std::string& blockName, const std::string& parentBlockName, const ConfigBlock& block)
 {
-	_subConfigBlocks[blockName].push_back(block);
+	if ((blockName == toString(Context::HTTP) && parentBlockName == toString(Context::NONE)) || 
+		(blockName == toString(Context::SERVER) && parentBlockName == toString(Context::HTTP)) || 
+		(blockName.substr(0, blockName.find(" ")) == toString(Context::LOCATION) && parentBlockName == toString(Context::SERVER)))
+	{
+		_subConfigBlocks[blockName].push_back(block);
+	}
+	else
+	{
+		std::cerr << "Error: Incorrect syntax in file related to block names." << std::endl;
+		exit(1);
+	}
+
 }
 
 void ConfigBlock::print(int indent) const 
 {
 	std::string indentation(indent, ' ');
 	
-	for (std::map<std::string, std::string>::const_iterator it = _directives.begin(); it != _directives.end(); it++)
+	for (std::map<std::string, std::vector<std::string>>::const_iterator it = _directives.begin(); it != _directives.end(); it++)
 	{
-		std::cout << indentation << it->first << " " << it->second << ";" << std::endl;
+		std::cout << indentation << it->first;
+
+		for (std::vector<std::string>::const_iterator it2 = it->second.begin(); it2 != it->second.end(); it2++)
+		{
+			std::cout << " " << *it2;
+		}
+		std::cout << ";" << std::endl;
 	}
 	for (std::map<std::string, std::vector<ConfigBlock>>::const_iterator it = _subConfigBlocks.begin(); it!= _subConfigBlocks.end(); it++)
 	{
@@ -58,7 +93,7 @@ ConfigBlock parseConfigFile(std::string& configFilePath)
 	return rootBlock;
 }
 
-ConfigBlock parseBlock(std::ifstream& file, bool braceOpen)
+ConfigBlock parseBlock(std::ifstream& file, std::string blockName, bool braceOpen)
 {
 	std::string line;
 	ConfigBlock block;
@@ -79,13 +114,13 @@ ConfigBlock parseBlock(std::ifstream& file, bool braceOpen)
 			std::string key, value;
 			ss >> key;
 			getline(ss, value);
-			block.addDirective(key, trim(value));
+			block.addDirective(key, trim(value), blockName.substr(0, blockName.find(" ")));
 		}
 		else if (line.back() == '{')
 		{
-			std::string blockName = trim(line.substr(0, line.size() - 1));
-			ConfigBlock subBlock = parseBlock(file, true);
-			block.addSubBlock(blockName, subBlock);
+			std::string subBlockName = trim(line.substr(0, line.size() - 1));
+			ConfigBlock subBlock = parseBlock(file, subBlockName, true);
+			block.addSubBlock(subBlockName, blockName, subBlock);
 		}
 		else if (line.back() == '}' && trim(line).size() == 1)
 		{
@@ -118,4 +153,16 @@ std::string trim(const std::string& str)
 	}
 
 	return std::string(start, end);
+}
+
+std::string toString(Context context) 
+{
+	switch (context)
+	{
+		case Context::HTTP: return "http";
+		case Context::SERVER: return "server";
+		case Context::LOCATION: return "location";
+		case Context::NONE: return "none";
+		default: return "unknown";
+	}
 }

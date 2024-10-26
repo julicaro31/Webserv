@@ -2,7 +2,8 @@ NAME = webserv
 OBJ_DIR	= obj
 
 SRCS = main.cpp \
-		configuration_file/ConfigBlock.cpp
+		configuration_file/ConfigBlock.cpp \
+		configuration_file/Directives.cpp
 
 OBJS = ${SRCS:%.cpp=$(OBJ_DIR)/%.o}
 INCLUDE = includes
