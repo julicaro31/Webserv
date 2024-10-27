@@ -62,7 +62,7 @@ void ConfigBlock::checkIfValidDirective(const std::string& key, const std::strin
 		exit(1);
 	}
 
-	std::vector<Context> possibleContexts = Directives[key];
+	std::vector<Context> possibleContexts = Directives.at(key);
 	for (std::vector<Context>::iterator it = possibleContexts.begin(); it != possibleContexts.end(); it++)
 	{
 		if (toString(*it) == context)

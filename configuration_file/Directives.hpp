@@ -6,8 +6,8 @@
 #include <iostream>
 #include "Context.hpp"
 
-extern std::map<std::string, std::vector<Context>> Directives;
-extern std::vector<std::string> SingleUseDirectives;
-extern std::vector<std::string> SingleValueDirectives;
+extern const std::map<std::string, std::vector<Context>> Directives;
+extern const std::vector<std::string> SingleUseDirectives;
+extern const std::vector<std::string> SingleValueDirectives;
 
 #endif
