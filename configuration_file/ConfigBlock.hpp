@@ -20,6 +20,8 @@ class ConfigBlock
 		std::map<std::string, std::vector<std::string>> _directives;
 		std::map<std::string, std::vector<ConfigBlock>> _subConfigBlocks;
 
+		void checkIfValidDirective(const std::string& key, const std::string& context, std::vector<std::string>& values);
+
 	public:
 
 		ConfigBlock();
@@ -39,5 +41,6 @@ class ConfigBlock
 	ConfigBlock parseBlock(std::ifstream& file, std::string blockName, bool braceOpen = false);
 	std::string trim(const std::string& str);
 	std::string toString(Context context);
+	std::vector<std::string> split(const std::string& str, char delimiter);
 
 #endif

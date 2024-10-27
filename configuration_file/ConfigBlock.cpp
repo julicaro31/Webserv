@@ -14,7 +14,29 @@ ConfigBlock& ConfigBlock::operator=(const ConfigBlock& configBlock)
 	return *this;
 }
 
+/// @brief Adds a directive to the block's map directives.
+/// @param key Name of the directive.
+/// @param value Info about the directive.
+/// @param context Context of the directive.
 void ConfigBlock::addDirective(const std::string& key, const std::string& value, const std::string& context) 
+{
+	std::vector<std::string> values = split(value, ' ');
+
+	checkIfValidDirective(key, context, values);
+
+	if (key == "server_name")
+	{
+		_directives[key].push_back(values.back());
+		return;
+	}
+
+	for (std::vector<std::string>::iterator it = values.begin(); it != values.end(); it++)
+	{
+		_directives[key].push_back(*it);
+	}
+}
+
+void ConfigBlock::checkIfValidDirective(const std::string& key, const std::string& context, std::vector<std::string>& values)
 {
 	if (Directives.find(key) == Directives.end())
 	{
@@ -22,13 +44,29 @@ void ConfigBlock::addDirective(const std::string& key, const std::string& value,
 		exit(1);
 	}
 
-	std::vector<Context> possibleContexts = Directives[key];
+	if (std::find(SingleUseDirectives.begin(), SingleUseDirectives.end(), key) != SingleUseDirectives.end() && !_directives[key].empty())
+	{
+		std::cerr << "Error: " << key << " cannot appear more than once in a block." << std::endl;
+		exit(1);
+	}
 
+	if (values.empty())
+	{
+		std::cerr << "Error: " << key << " is empty." << std::endl;
+		exit(1);
+	}
+
+	if (std::find(SingleValueDirectives.begin(), SingleValueDirectives.end(), key) != SingleValueDirectives.end() && values.size() != 1)
+	{
+		std::cerr << "Error: " << key << " should have only one value." << std::endl;
+		exit(1);
+	}
+
+	std::vector<Context> possibleContexts = Directives[key];
 	for (std::vector<Context>::iterator it = possibleContexts.begin(); it != possibleContexts.end(); it++)
 	{
 		if (toString(*it) == context)
 		{
-			_directives[key].push_back(value);
 			return;
 		}
 	}
@@ -151,6 +189,9 @@ ConfigBlock parseBlock(std::ifstream& file, std::string blockName, bool braceOpe
 	return block;
 }
 
+/// @brief Removes outer whitespaces.
+/// @param str String to trim.
+/// @return The trimmed string.
 std::string trim(const std::string& str)
 {
 	std::string::const_iterator start = std::find_if_not(str.begin(), str.end(), [](unsigned char ch) { return std::isspace(ch);});
@@ -175,4 +216,18 @@ std::string toString(Context context)
 		case Context::NONE: return "none";
 		default: return "unknown";
 	}
+}
+
+std::vector<std::string> split(const std::string& str, char delimiter)
+{
+	std::vector<std::string> words;
+	std::stringstream ss(str);
+	std::string word;
+
+	while (std::getline(ss, word, delimiter))
+	{
+		words.push_back(word);
+	}
+
+	return words;
 }
