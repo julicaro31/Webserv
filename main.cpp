@@ -1,5 +1,6 @@
 #include <iostream>
 #include "ConfigBlock.hpp"
+#include "Request.hpp"
 
 int main(int ac, char *argv[])
 {
@@ -12,6 +13,10 @@ int main(int ac, char *argv[])
 	std::string filePath(argv[1]);
 	ConfigBlock configFile = parseConfigFile(filePath);
 	configFile.print();
+
+	std::string line = "";
+
+	Request request = parseRequest(line);
 
 	return 0;
 }

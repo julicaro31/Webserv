@@ -3,12 +3,13 @@ OBJ_DIR	= obj
 
 SRCS = main.cpp \
 		configuration_file/ConfigBlock.cpp \
-		configuration_file/Directives.cpp
+		configuration_file/Directives.cpp \
+		request/Request.cpp
 
 OBJS = ${SRCS:%.cpp=$(OBJ_DIR)/%.o}
 INCLUDE = includes
 CC = c++
-FLAGS = -Wall -Wextra -Werror -std=c++11 -Iconfiguration_file
+FLAGS = -Wall -Wextra -Werror -std=c++11 -Iconfiguration_file -Irequest
 
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)

@@ -58,7 +58,7 @@ void ConfigBlock::checkIfValidDirective(const std::string& key, const std::strin
 
 	if (std::find(SingleValueDirectives.begin(), SingleValueDirectives.end(), key) != SingleValueDirectives.end() && values.size() != 1)
 	{
-		std::cerr << "Error: " << key << " should have only one value." << std::endl;
+		std::cerr << "Error: " << key << " should only have one value." << std::endl;
 		exit(1);
 	}
 
