@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <map>
+#include "ConfigBlock.hpp" // this is included to use trim. TODO: Maybe it is better to put the function in a helper class.
 
 class Request
 {

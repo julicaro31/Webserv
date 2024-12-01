@@ -7,17 +7,28 @@ Request::Request(Method method, std::string target, std::string version, std::ma
 /// @return Request object.
 Request parseRequest(std::string strRequest)
 {
-	std::stringstream ss(strRequest);
+	std::stringstream streamStrRequest(strRequest);
 	std::string method, target, version;
 
-	ss >> method >> target >> version;
+	streamStrRequest >> method >> target >> version;
 
 	std::map<std::string, std::string> headers;
-	std::string line;
-
-	while (getline(ss, line))
+	std::string header;
+	std::getline(streamStrRequest, header);
+	while (getline(streamStrRequest, header))
 	{
-		// TODO: create map of headers.
+		if (header == "\r" || header.empty())
+		{
+			break;
+		}
+		
+		size_t colonPos = header.find(':');
+		if (colonPos != std::string::npos) 
+		{
+			std::string headerName = header.substr(0, colonPos);
+			std::string headerValue = trim(header.substr(colonPos + 1));
+			headers[headerName] = headerValue;
+		}
 	}
 
 	Request request(parseMethod(method), target, version, headers);

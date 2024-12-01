@@ -14,8 +14,7 @@ int main(int ac, char *argv[])
 	ConfigBlock configFile = parseConfigFile(filePath);
 	configFile.print();
 
-	std::string line = "";
-
+	std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n";
 	Request request = parseRequest(line);
 
 	return 0;
