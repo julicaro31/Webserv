@@ -1,6 +1,6 @@
 #include <iostream>
+#include "ParsingHelper.hpp"
 #include "ConfigBlock.hpp"
-#include "Request.hpp"
 
 int main(int ac, char *argv[])
 {
@@ -10,12 +10,13 @@ int main(int ac, char *argv[])
 		return -1;
 	}
 
+	// Parse and print the configuration file.
 	std::string filePath(argv[1]);
-	ConfigBlock configFile = parseConfigFile(filePath);
+	ConfigBlock configFile = ParsingHelper::parseConfigFile(filePath);
 	configFile.print();
 
 	std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n";
-	Request request = parseRequest(line);
+	Request request = ParsingHelper::parseRequest(line);
 
 	return 0;
 }

@@ -2,6 +2,7 @@ NAME = webserv
 OBJ_DIR	= obj
 
 SRCS = main.cpp \
+		parsing_helper/ParsingHelper.cpp \
 		configuration_file/ConfigBlock.cpp \
 		configuration_file/Directives.cpp \
 		request/Request.cpp
@@ -9,7 +10,7 @@ SRCS = main.cpp \
 OBJS = ${SRCS:%.cpp=$(OBJ_DIR)/%.o}
 INCLUDE = includes
 CC = c++
-FLAGS = -Wall -Wextra -Werror -std=c++11 -Iconfiguration_file -Irequest
+FLAGS = -Wall -Wextra -Werror -std=c++11 -Iparsing_helper -Iconfiguration_file -Irequest
 
 $(OBJ_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@)

@@ -5,7 +5,6 @@
 #include <iostream>
 #include <sstream>
 #include <map>
-#include "ConfigBlock.hpp" // this is included to use trim. TODO: Maybe it is better to put the function in a helper class.
 
 class Request
 {
@@ -19,9 +18,7 @@ class Request
 	public:
 
 		Request(Method method, std::string target, std::string version, std::map<std::string, std::string> headers);
+		Method getMethod() const;
 };
-
-Request parseRequest(std::string strRequest);
-Method parseMethod(std::string method);
 
 #endif

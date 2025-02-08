@@ -1,4 +1,5 @@
 #include "ConfigBlock.hpp"
+#include "ParsingHelper.hpp"
 
 ConfigBlock::ConfigBlock(){}
 ConfigBlock::~ConfigBlock(){}
@@ -20,7 +21,7 @@ ConfigBlock& ConfigBlock::operator=(const ConfigBlock& configBlock)
 /// @param context Context of the directive.
 void ConfigBlock::addDirective(const std::string& key, const std::string& value, const std::string& context) 
 {
-	std::vector<std::string> values = split(value, ' ');
+	std::vector<std::string> values = ParsingHelper::split(value, ' ');
 
 	checkIfValidDirective(key, context, values);
 
@@ -65,7 +66,7 @@ void ConfigBlock::checkIfValidDirective(const std::string& key, const std::strin
 	std::vector<Context> possibleContexts = Directives.at(key);
 	for (std::vector<Context>::iterator it = possibleContexts.begin(); it != possibleContexts.end(); it++)
 	{
-		if (toString(*it) == context)
+		if (ParsingHelper::toString(*it) == context)
 		{
 			return;
 		}
@@ -77,9 +78,9 @@ void ConfigBlock::checkIfValidDirective(const std::string& key, const std::strin
 
 void ConfigBlock::addSubBlock(const std::string& blockName, const std::string& parentBlockName, const ConfigBlock& block)
 {
-	if ((blockName == toString(Context::HTTP) && parentBlockName == toString(Context::NONE)) || 
-		(blockName == toString(Context::SERVER) && parentBlockName == toString(Context::HTTP)) || 
-		(blockName.substr(0, blockName.find(" ")) == toString(Context::LOCATION) && parentBlockName == toString(Context::SERVER)))
+	if ((blockName == ParsingHelper::toString(Context::HTTP) && parentBlockName == ParsingHelper::toString(Context::NONE)) || 
+		(blockName == ParsingHelper::toString(Context::SERVER) && parentBlockName == ParsingHelper::toString(Context::HTTP)) || 
+		(blockName.substr(0, blockName.find(" ")) == ParsingHelper::toString(Context::LOCATION) && parentBlockName == ParsingHelper::toString(Context::SERVER)))
 	{
 		_subConfigBlocks[blockName].push_back(block);
 	}
@@ -124,110 +125,4 @@ std::map<std::string, std::vector<ConfigBlock>>& ConfigBlock::getSubConfigBlocks
 std::map<std::string, std::vector<std::string>>& ConfigBlock::getDirectives()
 {
 	return this->_directives;
-}
-
-ConfigBlock parseConfigFile(std::string& configFilePath)
-{
-	std::ifstream configFile(configFilePath);
-
-	if (!configFile.is_open())
-	{
-		std::cerr << "Error: Could not open file " << configFilePath << std::endl;
-		exit(1);
-	}
-
-	ConfigBlock rootBlock = parseBlock(configFile, toString(Context::NONE));
-	configFile.close();
-	return rootBlock;
-}
-
-ConfigBlock parseBlock(std::ifstream& file, std::string blockName, bool braceOpen)
-{
-	std::string line;
-	ConfigBlock block;
-
-	while (std::getline(file, line))
-	{
-		line = trim(line);
-
-		if (line.empty() || line[0] == '#')
-		{
-			continue;
-		}
-		else if (line.back() == ';')
-		{
-			line.pop_back();
-
-			std::stringstream ss(line);
-			std::string key, value;
-			ss >> key;
-			getline(ss, value);
-			block.addDirective(key, trim(value), blockName.substr(0, blockName.find(" ")));
-		}
-		else if (line.back() == '{')
-		{
-			std::string subBlockName = trim(line.substr(0, line.size() - 1));
-			ConfigBlock subBlock = parseBlock(file, subBlockName, true);
-			block.addSubBlock(subBlockName, blockName, subBlock);
-		}
-		else if (line.back() == '}' && trim(line).size() == 1)
-		{
-			braceOpen = false;
-			return block;
-		}
-		else
-		{
-			std::cerr << "Error: Incorrect syntax in file." << std::endl;
-			exit(1);
-		}
-	}
-	if (braceOpen)
-	{
-		std::cerr << "Error: Incorrect braces in file." << std::endl;
-		exit(1);
-	}
-	return block;
-}
-
-/// @brief Removes outer whitespaces.
-/// @param str String to trim.
-/// @return The trimmed string.
-std::string trim(const std::string& str)
-{
-	std::string::const_iterator start = std::find_if_not(str.begin(), str.end(), [](unsigned char ch) { return std::isspace(ch);});
-
-	std::string::const_iterator end = std::find_if_not(str.rbegin(), str.rend(), [](unsigned char ch) {return std::isspace(ch);}).base();
-
-	if (start >= end) 
-	{
-		return "";
-	}
-
-	return std::string(start, end);
-}
-
-std::string toString(Context context) 
-{
-	switch (context)
-	{
-		case Context::HTTP: return "http";
-		case Context::SERVER: return "server";
-		case Context::LOCATION: return "location";
-		case Context::NONE: return "none";
-		default: return "unknown";
-	}
-}
-
-std::vector<std::string> split(const std::string& str, char delimiter)
-{
-	std::vector<std::string> words;
-	std::stringstream ss(str);
-	std::string word;
-
-	while (std::getline(ss, word, delimiter))
-	{
-		words.push_back(word);
-	}
-
-	return words;
 }
