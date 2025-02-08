@@ -1,25 +1,38 @@
-NAME = webserv
-OBJ_DIR	= obj
+NAME	:= webserv
+CC		:= c++
+FLAGS	:= -Wall -Wextra -Werror -Iinclude -std=c++11 
 
-SRCS = main.cpp \
-		parsing_helper/ParsingHelper.cpp \
-		configuration_file/ConfigBlock.cpp \
-		configuration_file/Directives.cpp \
-		request/Request.cpp
 
-OBJS = ${SRCS:%.cpp=$(OBJ_DIR)/%.o}
-INCLUDE = includes
-CC = c++
-FLAGS = -Wall -Wextra -Werror -std=c++11 -Iparsing_helper -Iconfiguration_file -Irequest
+OBJ_DIR	:= obj
+SRC_DIR	:= src
 
-$(OBJ_DIR)/%.o: %.cpp
-	@mkdir -p $(dir $@)
-	$(CC) $(FLAGS) -c -o $@ $^
+HDRS	:= $(find include -name "*.hpp")
+
+#keep main at the end
+FILES	:=	parsing_helper/ParsingHelper \
+			configuration_file/ConfigBlock \
+			configuration_file/Directives \
+			request/Request \
+			main
+
+SRCS	:= $(addprefix ${SRC_DIR}/,$(FILES:=.cpp))
+
+OBJS	:= $(addprefix $(OBJ_DIR)/,$(FILES:=.o))
+
 
 all: $(NAME)
 
-$(NAME): $(OBJS)
-	$(CC) $(FLAGS) $(OBJS) -o $(NAME)
+$(NAME): $(OBJ_DIR) $(OBJS) $(HDRS)
+	$(CC) $(OBJS) $(FLAGS) -o $(NAME)
+
+
+$(OBJ_DIR):
+	@mkdir -p $(OBJ_DIR)
+
+
+$(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp $(HDRS)
+	@mkdir -p $(dir $@)
+	$(CC) $(FLAGS) -c $< -o $@
 
 clean:
 	rm -rf $(OBJ_DIR)
