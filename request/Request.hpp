@@ -3,7 +3,6 @@
 
 #include "Method.hpp"
 #include <iostream>
-#include <sstream>
 #include <map>
 
 class Request

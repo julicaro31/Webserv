@@ -24,7 +24,6 @@ class ParsingHelper
 		static std::vector<std::string> split(const std::string& str, char delimiter);
 
 		static Request parseRequest(std::string strRequest);
-		static Method parseMethod(std::string method);
 
 	private:
 
@@ -34,6 +33,8 @@ class ParsingHelper
 		static ConfigBlock parseBlock(std::ifstream& file, std::string blockName, int braceLevel = 0);
 		static void handleSubBlock(std::ifstream &file, ConfigBlock& block, std::string blockName, std::string line);
 		static void handleDirective(ConfigBlock& block, std::string blockName, std::string line);
+
+		static Method parseMethod(std::string method);
 
 };
 
