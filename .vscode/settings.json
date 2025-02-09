@@ -1,0 +1,13 @@
+{
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "C/C++"
+}
+/*
+in case formatter does not work
+
+    ctrl + shift + p
+    Format document with
+    Configure default formatter
+    Choose C/C++
+
+*/
