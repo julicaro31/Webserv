@@ -4,7 +4,7 @@
 /// @brief Parses a configuration file.
 /// @param configFilePath Path of the configuration file.
 /// @return The parsed configuration file stored in a ConfigBlock.
-ConfigBlock ParsingHelper::parseConfigFile(std::string& configFilePath)
+ConfigBlock ParsingHelper::parseConfigFile(std::string &configFilePath)
 {
 	std::ifstream configFile(configFilePath);
 
@@ -18,8 +18,15 @@ ConfigBlock ParsingHelper::parseConfigFile(std::string& configFilePath)
 	configFile.close();
 	return rootBlock;
 }
-
-ConfigBlock ParsingHelper::parseBlock(std::ifstream& file, std::string blockName, int braceLevel)
+/**
+ * @brief 
+ * 
+ * @param file 
+ * @param blockName 
+ * @param braceLevel 
+ * @return ConfigBlock 
+ */
+ConfigBlock ParsingHelper::parseBlock(std::ifstream &file, std::string blockName, int braceLevel)
 {
 	std::string line;
 	ConfigBlock block;
@@ -67,7 +74,7 @@ ConfigBlock ParsingHelper::parseBlock(std::ifstream& file, std::string blockName
 	return block;
 }
 
-void ParsingHelper::handleDirective(ConfigBlock& block, std::string blockName, std::string line)
+void ParsingHelper::handleDirective(ConfigBlock &block, std::string blockName, std::string line)
 {
 	line.pop_back();
 	std::stringstream ss(line);
@@ -77,7 +84,7 @@ void ParsingHelper::handleDirective(ConfigBlock& block, std::string blockName, s
 	block.addDirective(key, trim(value), blockName.substr(0, blockName.find(" ")));
 }
 
-void ParsingHelper::handleSubBlock(std::ifstream &file, ConfigBlock& block, std::string blockName, std::string line)
+void ParsingHelper::handleSubBlock(std::ifstream &file, ConfigBlock &block, std::string blockName, std::string line)
 {
 	std::string subBlockName = trim(line.substr(0, line.size() - 1));
 	ConfigBlock subBlock = parseBlock(file, subBlockName, 1);
@@ -87,13 +94,16 @@ void ParsingHelper::handleSubBlock(std::ifstream &file, ConfigBlock& block, std:
 /// @brief Removes outer whitespaces.
 /// @param str String to trim.
 /// @return The trimmed string.
-std::string ParsingHelper::trim(const std::string& str)
+std::string ParsingHelper::trim(const std::string &str)
 {
-	std::string::const_iterator start = std::find_if_not(str.begin(), str.end(), [](unsigned char ch) { return std::isspace(ch);});
+	std::string::const_iterator start = std::find_if_not(str.begin(), str.end(), [](unsigned char ch)
+														 { return std::isspace(ch); });
 
-	std::string::const_iterator end = std::find_if_not(str.rbegin(), str.rend(), [](unsigned char ch) {return std::isspace(ch);}).base();
+	std::string::const_iterator end = std::find_if_not(str.rbegin(), str.rend(), [](unsigned char ch)
+													   { return std::isspace(ch); })
+										  .base();
 
-	if (start >= end) 
+	if (start >= end)
 	{
 		return "";
 	}
@@ -101,15 +111,20 @@ std::string ParsingHelper::trim(const std::string& str)
 	return std::string(start, end);
 }
 
-std::string ParsingHelper::toString(Context context) 
+std::string ParsingHelper::toString(Context context)
 {
 	switch (context)
 	{
-		case Context::HTTP: return "http";
-		case Context::SERVER: return "server";
-		case Context::LOCATION: return "location";
-		case Context::NONE: return "none";
-		default: return "unknown";
+	case Context::HTTP:
+		return "http";
+	case Context::SERVER:
+		return "server";
+	case Context::LOCATION:
+		return "location";
+	case Context::NONE:
+		return "none";
+	default:
+		return "unknown";
 	}
 }
 
@@ -117,7 +132,7 @@ std::string ParsingHelper::toString(Context context)
 /// @param str The input string to be split.
 /// @param delimiter The character that separates the substrings in the input string.
 /// @return A vector of strings, where each element is a substring from the original string, split at each occurrence of the delimiter.
-std::vector<std::string> ParsingHelper::split(const std::string& str, char delimiter)
+std::vector<std::string> ParsingHelper::split(const std::string &str, char delimiter)
 {
 	std::vector<std::string> words;
 	std::stringstream ss(str);
@@ -150,9 +165,9 @@ Request ParsingHelper::parseRequest(std::string strRequest)
 		{
 			break;
 		}
-		
+
 		size_t colonPos = header.find(':');
-		if (colonPos != std::string::npos) 
+		if (colonPos != std::string::npos)
 		{
 			std::string headerName = header.substr(0, colonPos);
 			std::string headerValue = ParsingHelper::trim(header.substr(colonPos + 1));

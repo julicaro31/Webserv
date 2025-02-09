@@ -2,17 +2,16 @@
 
 /// @brief Directives required to handle.
 const std::map<std::string, std::vector<Context>> Directives =
-{
-	{"listen", {Context::SERVER}},
-	{"server_name", {Context::SERVER}},
-	{"error_page", {Context::HTTP, Context::SERVER, Context::LOCATION}},
-	{"client_max_body_size", {Context::HTTP, Context::SERVER, Context::LOCATION}},
-	{"limit_except", {Context::LOCATION}},
-	{"return", {Context::SERVER, Context::LOCATION}},
-	{"root", {Context::HTTP, Context::SERVER, Context::LOCATION}},
-	{"autoindex", {Context::HTTP, Context::SERVER, Context::LOCATION}},
-	{"index", {Context::HTTP, Context::SERVER, Context::LOCATION}}
-};
+	{
+		{"listen", {Context::SERVER}},
+		{"server_name", {Context::SERVER}},
+		{"error_page", {Context::HTTP, Context::SERVER, Context::LOCATION}},
+		{"client_max_body_size", {Context::HTTP, Context::SERVER, Context::LOCATION}},
+		{"limit_except", {Context::LOCATION}},
+		{"return", {Context::SERVER, Context::LOCATION}},
+		{"root", {Context::HTTP, Context::SERVER, Context::LOCATION}},
+		{"autoindex", {Context::HTTP, Context::SERVER, Context::LOCATION}},
+		{"index", {Context::HTTP, Context::SERVER, Context::LOCATION}}};
 
 /// @brief Directives that can only appear once per block not to cause ambiguities.
 const std::vector<std::string> SingleUseDirectives = {"server_name", "client_max_body_size", "root", "autoindex"};

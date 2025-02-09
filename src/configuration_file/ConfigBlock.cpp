@@ -1,11 +1,11 @@
 #include "ConfigBlock.hpp"
 #include "ParsingHelper.hpp"
 
-ConfigBlock::ConfigBlock(){}
-ConfigBlock::~ConfigBlock(){}
-ConfigBlock::ConfigBlock(const ConfigBlock& configBlock): _directives(configBlock._directives), _subConfigBlocks(configBlock._subConfigBlocks) {}
+ConfigBlock::ConfigBlock() {}
+ConfigBlock::~ConfigBlock() {}
+ConfigBlock::ConfigBlock(const ConfigBlock &configBlock) : _directives(configBlock._directives), _subConfigBlocks(configBlock._subConfigBlocks) {}
 
-ConfigBlock& ConfigBlock::operator=(const ConfigBlock& configBlock)
+ConfigBlock &ConfigBlock::operator=(const ConfigBlock &configBlock)
 {
 	if (this != &configBlock)
 	{
@@ -19,7 +19,7 @@ ConfigBlock& ConfigBlock::operator=(const ConfigBlock& configBlock)
 /// @param key Name of the directive.
 /// @param value Info about the directive.
 /// @param context Context of the directive.
-void ConfigBlock::addDirective(const std::string& key, const std::string& value, const std::string& context) 
+void ConfigBlock::addDirective(const std::string &key, const std::string &value, const std::string &context)
 {
 	std::vector<std::string> values = ParsingHelper::split(value, ' ');
 
@@ -37,7 +37,7 @@ void ConfigBlock::addDirective(const std::string& key, const std::string& value,
 	}
 }
 
-void ConfigBlock::checkIfValidDirective(const std::string& key, const std::string& context, std::vector<std::string>& values)
+void ConfigBlock::checkIfValidDirective(const std::string &key, const std::string &context, std::vector<std::string> &values)
 {
 	if (Directives.find(key) == Directives.end())
 	{
@@ -76,10 +76,10 @@ void ConfigBlock::checkIfValidDirective(const std::string& key, const std::strin
 	exit(1);
 }
 
-void ConfigBlock::addSubBlock(const std::string& blockName, const std::string& parentBlockName, const ConfigBlock& block)
+void ConfigBlock::addSubBlock(const std::string &blockName, const std::string &parentBlockName, const ConfigBlock &block)
 {
-	if ((blockName == ParsingHelper::toString(Context::HTTP) && parentBlockName == ParsingHelper::toString(Context::NONE)) || 
-		(blockName == ParsingHelper::toString(Context::SERVER) && parentBlockName == ParsingHelper::toString(Context::HTTP)) || 
+	if ((blockName == ParsingHelper::toString(Context::HTTP) && parentBlockName == ParsingHelper::toString(Context::NONE)) ||
+		(blockName == ParsingHelper::toString(Context::SERVER) && parentBlockName == ParsingHelper::toString(Context::HTTP)) ||
 		(blockName.substr(0, blockName.find(" ")) == ParsingHelper::toString(Context::LOCATION) && parentBlockName == ParsingHelper::toString(Context::SERVER)))
 	{
 		_subConfigBlocks[blockName].push_back(block);
@@ -89,13 +89,12 @@ void ConfigBlock::addSubBlock(const std::string& blockName, const std::string& p
 		std::cerr << "Error: Incorrect syntax in file related to block names." << std::endl;
 		exit(1);
 	}
-
 }
 
-void ConfigBlock::print(int indent) const 
+void ConfigBlock::print(int indent) const
 {
 	std::string indentation(indent, ' ');
-	
+
 	for (std::map<std::string, std::vector<std::string>>::const_iterator it = _directives.begin(); it != _directives.end(); it++)
 	{
 		std::cout << indentation << it->first;
@@ -106,7 +105,7 @@ void ConfigBlock::print(int indent) const
 		}
 		std::cout << ";" << std::endl;
 	}
-	for (std::map<std::string, std::vector<ConfigBlock>>::const_iterator it = _subConfigBlocks.begin(); it!= _subConfigBlocks.end(); it++)
+	for (std::map<std::string, std::vector<ConfigBlock>>::const_iterator it = _subConfigBlocks.begin(); it != _subConfigBlocks.end(); it++)
 	{
 		for (std::vector<ConfigBlock>::const_iterator it2 = (it->second).begin(); it2 != (it->second).end(); it2++)
 		{
@@ -117,12 +116,12 @@ void ConfigBlock::print(int indent) const
 	}
 }
 
-std::map<std::string, std::vector<ConfigBlock>>& ConfigBlock::getSubConfigBlocks()
+std::map<std::string, std::vector<ConfigBlock>> &ConfigBlock::getSubConfigBlocks()
 {
 	return this->_subConfigBlocks;
 }
 
-std::map<std::string, std::vector<std::string>>& ConfigBlock::getDirectives()
+std::map<std::string, std::vector<std::string>> &ConfigBlock::getDirectives()
 {
 	return this->_directives;
 }

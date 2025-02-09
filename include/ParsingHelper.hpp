@@ -15,27 +15,24 @@ class ConfigBlock;
 
 class ParsingHelper
 {
-	public:
-	
-		static ConfigBlock parseConfigFile(std::string& configFilePath);
-		
-		static std::string trim(const std::string& str);
-		static std::string toString(Context context);
-		static std::vector<std::string> split(const std::string& str, char delimiter);
+public:
+	static ConfigBlock parseConfigFile(std::string &configFilePath);
 
-		static Request parseRequest(std::string strRequest);
+	static std::string trim(const std::string &str);
+	static std::string toString(Context context);
+	static std::vector<std::string> split(const std::string &str, char delimiter);
 
-	private:
+	static Request parseRequest(std::string strRequest);
 
-		ParsingHelper();
-		ParsingHelper(const ParsingHelper& parsingHelper);
+private:
+	ParsingHelper();
+	ParsingHelper(const ParsingHelper &parsingHelper);
 
-		static ConfigBlock parseBlock(std::ifstream& file, std::string blockName, int braceLevel = 0);
-		static void handleSubBlock(std::ifstream &file, ConfigBlock& block, std::string blockName, std::string line);
-		static void handleDirective(ConfigBlock& block, std::string blockName, std::string line);
+	static ConfigBlock parseBlock(std::ifstream &file, std::string blockName, int braceLevel = 0);
+	static void handleSubBlock(std::ifstream &file, ConfigBlock &block, std::string blockName, std::string line);
+	static void handleDirective(ConfigBlock &block, std::string blockName, std::string line);
 
-		static Method parseMethod(std::string method);
-
+	static Method parseMethod(std::string method);
 };
 
 #endif
