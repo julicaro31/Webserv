@@ -13,6 +13,7 @@ FILES	:=	parsing_helper/ParsingHelper \
 			configuration_file/ConfigBlock \
 			configuration_file/Directives \
 			request/Request \
+			Server \
 			main
 
 SRCS	:= $(addprefix ${SRC_DIR}/,$(FILES:=.cpp))
