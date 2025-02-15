@@ -6,6 +6,13 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <string.h>
+
+#define MAX_CONNECTION 10
+// If MAX_CONNECTION	 is exceeded, new connections wait in a queue (until accept() is called).
 
 class Server
 {
@@ -29,6 +36,7 @@ public:
 
 	const std::string &getHost() const;
 	bool operator==(const Server &other) const;
+	bool setupSocket();
 
 	// Setters
 	void setHost(const std::string &host);
@@ -46,6 +54,7 @@ public:
 	bool isAutoIndexEnabled() const;
 	size_t getMaxBodySize() const;
 	std::string getErrorPage(int statusCode) const;
+	int getSocketFD() const;
 };
 
 #endif

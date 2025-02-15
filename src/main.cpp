@@ -26,23 +26,20 @@ int main(int ac, char *argv[])
 	else
 	{
 		std::cout << "<< DEV version >>" << std::endl;
-		Server server;
-		server.setHost("localhost");
-		server.setPort(8080);
-		server.setRoot("/html");
-		server.setIndex("index.html");
-		server.setAutoIndex(false);
-		server.setMaxBodySize(1000000);
-		std::map<int, std::string> errorPages;
-		errorPages[400] = "error400.html";
-		errorPages[403] = "error403.html";
-		errorPages[404] = "error404.html";
-		server.setErrorPages(errorPages);
+		ServerConfig config = {
+			"localhost",
+			8080,
+			"/html",
+			"index.html",
+			false,
+			1000000,
+			{{400, "error400.html"},
+			 {403, "error403.html"},
+			 {404, "error404.html"}}};
 
 		ServerManager serverManager;
-		serverManager.addServer(server);
+		serverManager.addServer(config);
 		serverManager.printServers();
-
 	}
 
 	return 0;
