@@ -18,14 +18,7 @@ ConfigBlock ParsingHelper::parseConfigFile(std::string &configFilePath)
 	configFile.close();
 	return rootBlock;
 }
-/**
- * @brief 
- * 
- * @param file 
- * @param blockName 
- * @param braceLevel 
- * @return ConfigBlock 
- */
+
 ConfigBlock ParsingHelper::parseBlock(std::ifstream &file, std::string blockName, int braceLevel)
 {
 	std::string line;
@@ -195,4 +188,89 @@ Method ParsingHelper::parseMethod(std::string method)
 		return Method::DELETE;
 	}
 	return Method::NONE;
+}
+
+std::vector<Server> ParsingHelper::createServers(ConfigBlock &configBlock)
+{
+	// Find the http block which has all the server blocks.
+	std::map<std::string, std::vector<ConfigBlock>> configBlocks = configBlock.getSubConfigBlocks();
+	std::map<std::string, std::vector<ConfigBlock>>::iterator httpConfigBlock = configBlocks.find(toString(Context::HTTP));
+	if (httpConfigBlock == configBlocks.end())
+	{
+		std::cerr << "\"http\" block not found!" << std::endl;
+		exit(1);
+	}
+
+	std::vector<Server> servers;
+
+	std::vector<ConfigBlock> &serverConfigBlocks = httpConfigBlock->second;
+
+	// Go through all servers.
+	bool firstServer = true;
+	for (std::vector<ConfigBlock>::iterator serverBlock = serverConfigBlocks.begin(); serverBlock != serverConfigBlocks.end(); serverBlock++)
+	{
+		bool defaultServer = firstServer;
+		firstServer = false;
+
+		std::string host;
+		int port;
+
+		std::map<std::string, std::vector<std::string>> directives = serverBlock->getDirectives();
+		for (std::map<std::string, std::vector<std::string>>::iterator directive = directives.begin(); directive != directives.end(); directive++)
+		{
+			if (directive->first == "listen")
+			{
+				std::pair<std::string, int> hostAndPort = parseHostAndPort(directive->second);
+				host = hostAndPort.first;
+				port = hostAndPort.second;
+			}
+		}
+	}
+}
+
+std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::vector<std::string> &info)
+{
+	std::vector<std::string> values = split(info[0], ':');
+
+	int valuesSize = values.size();
+
+	if (valuesSize == 1)
+	{
+		try
+		{
+			int port = std::stoi(values[0]);
+			return std::make_pair("0.0.0.0", port);
+		}
+		catch (const std::invalid_argument &e)
+		{
+			return std::make_pair(values[0], 80);
+		}
+		catch (const std::out_of_range &e)
+		{
+			std::cerr << "Invalid port." << std::endl;
+			exit(1);
+		}
+	}
+
+	if (valuesSize == 2)
+	{
+		try
+		{
+			int port = std::stoi(values[1]);
+			return std::make_pair(values[0], port);
+		}
+		catch (const std::invalid_argument &e)
+		{
+			std::cerr << "Invalid port." << std::endl;
+			exit(1);
+		}
+		catch (const std::out_of_range &e)
+		{
+			std::cerr << "Invalid port." << std::endl;
+			exit(1);
+		}
+	}
+
+	std::cerr << "Invalid host and port." << std::endl;
+	exit(1);
 }
