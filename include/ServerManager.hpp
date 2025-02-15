@@ -8,6 +8,9 @@
 #include <unistd.h>
 #include <map>
 
+# define MAX_CONNECTION 10
+//If MAX_CONNECTION	 is exceeded, new connections wait in a queue (until accept() is called).
+
 class ServerManager
 {
 private:
@@ -29,6 +32,7 @@ public:
 	const std::vector<Server> &getAllServers() const;
 	Server *getServerByFileDescriptor(int fd) const;
 	std::vector<pollfd> &getPollFDs();
+	void printServers() const;
 };
 
 #endif

@@ -13,12 +13,32 @@
 #define MAX_CLIENTS 10
 #define TIMEOUT 15000 // 5 seconds timeout in milliseconds
 
+/**
+ * @file test_server.cpp
+ * @brief A simple server implementation using poll() for handling multiple clients.
+ * 
+ * This server listens for incoming connections on a specified port, accepts new clients,
+ * and handles client communication using the poll() system call. It supports basic HTTP
+ * responses and includes timeout handling for inactive clients.
+ * 
+ * The server performs the following steps:
+ * 1. Creates a server socket.
+ * 2. Binds the socket to a specified port.
+ * 3. Listens for incoming connections.
+ * 4. Uses poll() to monitor multiple sockets for events.
+ * 5. Accepts new client connections and adds them to the poll list.
+ * 6. Reads data from client sockets and sends HTTP responses.
+ * 7. Handles client disconnections and errors.
+ * 8. Checks for inactive clients and closes their connections if they time out.
+ * 
+ * @return int Exit status of the program.
+ */
 int main()
 {
     int server_fd, new_socket;
     struct sockaddr_in address;
     socklen_t addrlen = sizeof(address);
-
+    
     // Create server socket
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (server_fd == -1)

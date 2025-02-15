@@ -1,7 +1,8 @@
 #include "Server.hpp"
 
-Server::Server() : _port(0), _autoIndex(false), _maxBodySize(0)
+Server::Server() : _port(0), _socketFD(-1), _autoIndex(false), _maxBodySize(0)
 {
+	(void)_socketFD;
 }
 
 Server::Server(const Server &other)
@@ -22,6 +23,11 @@ Server &Server::operator=(const Server &other)
 		_errorPages = other._errorPages; // Assuming there's no getter for _errorPages
 	}
 	return *this;
+}
+
+bool Server::operator==(const Server &other) const
+{
+	return this->getHost() == other.getHost() && this->getPort() == other.getPort();
 }
 
 // Destructor

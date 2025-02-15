@@ -18,15 +18,17 @@ private:
 	std::string _index;
 	size_t _maxBodySize;
 	std::map<int, std::string> _errorPages;
+	//std::map<std::string, Location> _locations; //need to identify Location class
 
 public:
 	// still not sure if this would be the right way to do it? or use another the setters to set the values
-	Server() : _socketFD(-1) {}
+	Server();
 	Server(const Server &other);
 	Server &operator=(const Server &other);
 	~Server();
 
 	const std::string &getHost() const;
+	bool operator==(const Server &other) const;
 
 	// Setters
 	void setHost(const std::string &host);
