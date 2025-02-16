@@ -10,8 +10,7 @@ ConfigBlock ParsingHelper::parseConfigFile(std::string &configFilePath)
 
 	if (!configFile.is_open())
 	{
-		std::cerr << "Error: Could not open file " << configFilePath << std::endl;
-		exit(1);
+		throw std::runtime_error("Error: Could not open file.");
 	}
 
 	ConfigBlock rootBlock = parseBlock(configFile, toString(Context::NONE));
@@ -49,20 +48,17 @@ ConfigBlock ParsingHelper::parseBlock(std::ifstream &file, std::string blockName
 			}
 			else
 			{
-				std::cerr << "Error: Unmatched closing brace." << braceLevel << std::endl;
-				exit(1);
+				throw std::runtime_error("Error: Unmatched closing brace.");
 			}
 		}
 		else
 		{
-			std::cerr << "Error: Incorrect syntax in file." << std::endl;
-			exit(1);
+			throw std::runtime_error("Error: Incorrect syntax in file.");
 		}
 	}
 	if (braceLevel > 0)
 	{
-		std::cerr << "Error: Missing closing brace." << std::endl;
-		exit(1);
+		throw std::runtime_error("Error: Missing closing brace.");
 	}
 	return block;
 }
@@ -190,48 +186,96 @@ Method ParsingHelper::parseMethod(std::string method)
 	return Method::NONE;
 }
 
-std::vector<Server> ParsingHelper::createServers(ConfigBlock &configBlock)
+std::vector<ServerConfig> ParsingHelper::createServersConfiguration(std::string &configFilePath)
 {
-	// Find the http block which has all the server blocks.
-	std::map<std::string, std::vector<ConfigBlock>> configBlocks = configBlock.getSubConfigBlocks();
-	std::map<std::string, std::vector<ConfigBlock>>::iterator httpConfigBlock = configBlocks.find(toString(Context::HTTP));
-	if (httpConfigBlock == configBlocks.end())
-	{
-		std::cerr << "\"http\" block not found!" << std::endl;
-		exit(1);
-	}
+	ConfigBlock configFile = ParsingHelper::parseConfigFile(configFilePath);
+	configFile.print();
 
-	std::vector<Server> servers;
+	std::vector<ServerConfig> serversConfig;
+	ConfigBlock httpBlock = configFile.getConfigBlocksByContext(Context::HTTP)[0];
+	std::vector<ConfigBlock> serverConfigBlocks = httpBlock.getConfigBlocksByContext(Context::SERVER);
 
-	std::vector<ConfigBlock> &serverConfigBlocks = httpConfigBlock->second;
-
-	// Go through all servers.
 	bool firstServer = true;
 	for (std::vector<ConfigBlock>::iterator serverBlock = serverConfigBlocks.begin(); serverBlock != serverConfigBlocks.end(); serverBlock++)
 	{
 		bool defaultServer = firstServer;
 		firstServer = false;
+		bool autoIndex = false;
 
 		std::string host;
 		int port;
+		size_t maxBodySize = 0;
+		std::vector<std::string> index;
+		std::string root;
 
-		std::map<std::string, std::vector<std::string>> directives = serverBlock->getDirectives();
+		std::map<std::string, std::vector<std::string>> &directives = serverBlock->getDirectives();
+
 		for (std::map<std::string, std::vector<std::string>>::iterator directive = directives.begin(); directive != directives.end(); directive++)
 		{
-			if (directive->first == "listen")
+			std::string directiveName = directive->first;
+			if (directiveName == "autoindex")
 			{
-				std::pair<std::string, int> hostAndPort = parseHostAndPort(directive->second);
+				autoIndex = parseAutoIndex(directive->second[0]);
+			}
+			else if (directiveName == "client_max_body_size")
+			{
+				maxBodySize = parseMaxBodySize(directive->second[0]);
+			}
+			else if (directiveName == "listen")
+			{
+				std::pair<std::string, int> hostAndPort = parseHostAndPort(directive->second[0]);
 				host = hostAndPort.first;
 				port = hostAndPort.second;
 			}
+			else if (directiveName == "index")
+			{
+				index = directive->second;
+			}
+			else if (directiveName == "root")
+			{
+				root = directive->second[0];
+			}
 		}
+
+		std::cout << "Default server: " << defaultServer << " Host: " << host << " Port: " << port << " AutoIndex: " << autoIndex << " MaxBodySize: " << maxBodySize << " Index: " << index[0] << " Root: " << root << std::endl;
+	}
+
+	return serversConfig;
+}
+
+bool ParsingHelper::parseAutoIndex(std::string &info)
+{
+	if (info == "on")
+	{
+		return true;
+	}
+	if (info == "off")
+	{
+		return false;
+	}
+	throw std::runtime_error("Error: Autoindex value should be on or off.");
+}
+
+size_t ParsingHelper::parseMaxBodySize(std::string &info)
+{
+	try
+	{
+		int maxBodySize = std::stoi(info);
+		if (maxBodySize >= 0)
+		{
+			return maxBodySize;
+		}
+		throw std::runtime_error("Error: client_max_body_size should be a positive integer.");
+	}
+	catch (const std::invalid_argument &e)
+	{
+		throw std::runtime_error("Error: client_max_body_size should be a positive integer.");
 	}
 }
 
-std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::vector<std::string> &info)
+std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::string &info)
 {
-	std::vector<std::string> values = split(info[0], ':');
-
+	std::vector<std::string> values = split(info, ':');
 	int valuesSize = values.size();
 
 	if (valuesSize == 1)
@@ -247,8 +291,7 @@ std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::vector<std::str
 		}
 		catch (const std::out_of_range &e)
 		{
-			std::cerr << "Invalid port." << std::endl;
-			exit(1);
+			throw std::runtime_error("Error: Invalid port.");
 		}
 	}
 
@@ -261,16 +304,13 @@ std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::vector<std::str
 		}
 		catch (const std::invalid_argument &e)
 		{
-			std::cerr << "Invalid port." << std::endl;
-			exit(1);
+			throw std::runtime_error("Error: Invalid port.");
 		}
 		catch (const std::out_of_range &e)
 		{
-			std::cerr << "Invalid port." << std::endl;
-			exit(1);
+			throw std::runtime_error("Error: Invalid port.");
 		}
 	}
 
-	std::cerr << "Invalid host and port." << std::endl;
-	exit(1);
+	throw std::runtime_error("Error: Invalid host and port.");
 }

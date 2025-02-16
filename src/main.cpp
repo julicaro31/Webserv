@@ -16,9 +16,15 @@ int main(int ac, char *argv[])
 		std::cout << "Welcome to the webserv" << std::endl;
 
 		// Parse and print the configuration file.
-		std::string filePath(argv[1]);
-		ConfigBlock configFile = ParsingHelper::parseConfigFile(filePath);
-		configFile.print();
+		try
+		{
+			std::string filePath(argv[1]);
+			std::vector<ServerConfig> serversCongiguration = ParsingHelper::createServersConfiguration(filePath);
+		}
+		catch (const std::exception &e)
+		{
+			std::cerr << e.what() << '\n';
+		}
 
 		std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n";
 		Request request = ParsingHelper::parseRequest(line);
