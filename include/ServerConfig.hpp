@@ -14,4 +14,3 @@ struct ServerConfig
     std::string root;
     std::map<int, std::string> errorPages;
 };
-;
