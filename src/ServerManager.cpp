@@ -52,20 +52,23 @@ void ServerManager::printServers() const
 		std::cout << "Host: " << _servers[i]->getHost() << std::endl;
 		std::cout << "Port: " << _servers[i]->getPort() << std::endl;
 		std::cout << "Root: " << _servers[i]->getRoot() << std::endl;
+		std::cout << "Index: " << _servers[i]->getIndex() << std::endl;
+		std::cout << "AutoIndex: " << _servers[i]->isAutoIndexEnabled() << std::endl;
+		std::cout << "MaxBodySize: " << _servers[i]->getMaxBodySize() << std::endl;
+		std::cout << "ErrorPages: " << _servers[i]->getErrorPage(400) << std::endl;
 	}
 }
 
 // Check if host:port is already in use in a map<std::string, int> used_ports.
 
-
 /**
  * @brief Get the Server object(raw pointer) by file descriptor
- * @param fd 
- * @return Server* 
+ * @param fd
+ * @return Server*
  */
 Server *ServerManager::getServerByFileDescriptor(int fd) const
 {
-	for (const auto &server: _servers)
+	for (const auto &server : _servers)
 	{
 		if (server->getSocketFD() == fd)
 			return server.get();
