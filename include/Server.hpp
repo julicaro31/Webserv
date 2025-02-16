@@ -6,6 +6,13 @@
 #include <string>
 #include <iostream>
 #include <map>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <string.h>
+
+#define MAX_CONNECTION 10
+// If MAX_CONNECTION	 is exceeded, new connections wait in a queue (until accept() is called).
 
 class Server
 {
@@ -18,7 +25,7 @@ private:
 	std::string _index;
 	size_t _maxBodySize;
 	std::map<int, std::string> _errorPages;
-	//std::map<std::string, Location> _locations; //need to identify Location class
+	// std::map<std::string, Location> _locations; //need to identify Location class
 
 public:
 	// still not sure if this would be the right way to do it? or use another the setters to set the values
@@ -29,6 +36,7 @@ public:
 
 	const std::string &getHost() const;
 	bool operator==(const Server &other) const;
+	bool setupSocket();
 
 	// Setters
 	void setHost(const std::string &host);
@@ -44,8 +52,10 @@ public:
 	const std::string &getRoot() const;
 	const std::string &getIndex() const;
 	bool isAutoIndexEnabled() const;
+	const std::map<int, std::string> &getErrorPages() const;
 	size_t getMaxBodySize() const;
 	std::string getErrorPage(int statusCode) const;
+	int getSocketFD() const;
 };
 
 #endif

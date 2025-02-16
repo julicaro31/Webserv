@@ -7,29 +7,31 @@
 #include <poll.h>
 #include <unistd.h>
 #include <map>
+#include <memory>
+#include <ServerConfig.hpp>
 
-# define MAX_CONNECTION 10
-//If MAX_CONNECTION	 is exceeded, new connections wait in a queue (until accept() is called).
+#define MAX_CONNECTION 10
+// If MAX_CONNECTION	 is exceeded, new connections wait in a queue (until accept() is called).
 
 class ServerManager
 {
 private:
-	std::vector<Server> _servers;
+	std::vector<std::unique_ptr<Server>> _servers;
 	std::vector<pollfd> _pollFDs;
-	std::map<int, Server *> _serverFDs;
 	std::map<int, time_t> _clientActivity;
 
 public:
 	ServerManager();
-	ServerManager(const ServerManager &other);
-	ServerManager &operator=(const ServerManager &other);
 	~ServerManager();
+	// std::unique_ptr does not support copying so we cant use copy constructor and assignment operator
+	ServerManager(const ServerManager &) = delete;
+	ServerManager &operator=(const ServerManager &other) = delete;
 
-	void addServer(const Server &server);
-	void removeServer(const Server &server);
+	void addServer(const ServerConfig &config);
 	void start();
 	void stop();
-	const std::vector<Server> &getAllServers() const;
+	const std::vector<std::unique_ptr<Server>> &getServers() const;
+
 	Server *getServerByFileDescriptor(int fd) const;
 	std::vector<pollfd> &getPollFDs();
 	void printServers() const;

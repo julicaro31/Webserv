@@ -1,7 +1,0 @@
-server {
-port=8080
-host=localhost
-root=/html
-index=index.html
-error_page_400=400.html
-}

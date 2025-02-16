@@ -42,35 +42,19 @@ Server::~Server()
 }
 
 // Getters
-const std::string &Server::getHost() const
-{
-	return _host;
-}
+const std::string &Server::getHost() const { return _host; }
 
-int Server::getPort() const
-{
-	return _port;
-}
+int Server::getPort() const { return _port; }
 
-const std::string &Server::getRoot() const
-{
-	return _root;
-}
+const std::string &Server::getRoot() const { return _root; }
 
-const std::string &Server::getIndex() const
-{
-	return _index;
-}
+const std::string &Server::getIndex() const { return _index; }
 
-bool Server::isAutoIndexEnabled() const
-{
-	return _autoIndex;
-}
+bool Server::isAutoIndexEnabled() const { return _autoIndex; }
 
-size_t Server::getMaxBodySize() const
-{
-	return _maxBodySize;
-}
+const std::map<int, std::string> &Server::getErrorPages() const { return _errorPages; }
+
+size_t Server::getMaxBodySize() const { return _maxBodySize; }
 
 std::string Server::getErrorPage(int statusCode) const
 {
@@ -79,6 +63,8 @@ std::string Server::getErrorPage(int statusCode) const
 		return it->second;
 	return "";
 }
+
+int Server::getSocketFD() const { return _socketFD; }
 
 // Setters
 void Server::setHost(const std::string &host)
@@ -114,4 +100,42 @@ void Server::setMaxBodySize(size_t maxBodySize)
 void Server::setErrorPages(const std::map<int, std::string> &errorPages)
 {
 	_errorPages = errorPages;
+}
+/**
+ * @brief This function should create a socket and bind it to the server's host and port.
+ *
+ * @return true if the socket was created successfully
+ * @return false if failed to create the socket
+ */
+bool Server::setupSocket()
+{
+
+	_socketFD = socket(AF_INET, SOCK_STREAM, 0);
+	if (_socketFD < 0)
+	{
+		perror("[Server] Socket creation failed");
+		return false;
+	}
+	// bint socket to Port
+	struct sockaddr_in _serverAddr;
+	memset(&_serverAddr, 0, sizeof(_serverAddr));
+	_serverAddr.sin_family = AF_INET;
+	_serverAddr.sin_addr.s_addr = INADDR_ANY;
+	_serverAddr.sin_port = htons(_port);
+
+	if (bind(_socketFD, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) < 0)
+	{
+		perror("[Server] Bind failed");
+		close(_socketFD);
+		return false;
+	}
+	if (listen(_socketFD, MAX_CONNECTION) < 0)
+	{
+		perror("[Server] Listen failed");
+		close(_socketFD);
+		return false;
+	}
+
+	std::cout << "[Server] Listening on " << _host << ":" << _port << std::endl;
+	return true;
 }

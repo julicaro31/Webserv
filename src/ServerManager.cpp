@@ -1,3 +1,4 @@
+#include <memory>
 #include "ServerManager.hpp"
 #include <algorithm>
 
@@ -5,51 +6,76 @@ ServerManager::ServerManager()
 {
 }
 
-ServerManager::ServerManager(const ServerManager &other)
-{
-	*this = other;
-}
-
-ServerManager &ServerManager::operator=(const ServerManager &other)
-{
-	if (this != &other)
-	{
-		_servers = other._servers;
-		_pollFDs = other._pollFDs;
-		_serverFDs = other._serverFDs;
-		_clientActivity = other._clientActivity;
-	}
-	return *this;
-}
-
 ServerManager::~ServerManager()
 {
 }
 
-void ServerManager::addServer(const Server &server)
+/**
+ * @brief  Add a server to the server manager
+ *
+ * @param config struct containing the server configuration
+ */
+void ServerManager::addServer(const ServerConfig &config)
 {
-	_servers.push_back(server);
+	Server server;
+
+	server.setHost(config.host);
+	server.setPort(config.port);
+	server.setRoot(config.root);
+	server.setIndex(config.index);
+	server.setAutoIndex(config.autoIndex);
+	server.setMaxBodySize(config.maxBodySize);
+	server.setErrorPages(config.errorPages);
+
+	if (server.setupSocket())
+	{
+		_servers.push_back(std::make_unique<Server>(std::move(server)));
+		std::cout << "[ServerManager] Server added: " << config.host << ":" << config.port << std::endl;
+	}
+	else
+	{
+		std::cerr << "[ServerManager] Error setting up server: " << config.host << ":" << config.port << std::endl;
+	}
 }
 
-// not sure if needed!
-void ServerManager::removeServer(const Server &server)
-{
-	_servers.erase(std::remove(_servers.begin(), _servers.end(), server), _servers.end());
-}
-const std::vector<Server> &ServerManager::getAllServers() const
+const std::vector<std::unique_ptr<Server>> &ServerManager::getServers() const
 {
 	return _servers;
 }
 
 void ServerManager::printServers() const
 {
+	std::cout << "ServerManager contains " << _servers.size() << " servers." << std::endl;
 	for (size_t i = 0; i < _servers.size(); i++)
 	{
 		std::cout << "Server " << i << ":\n";
-		std::cout << "Host: " << _servers[i].getHost() << std::endl;
-		std::cout << "Port: " << _servers[i].getPort() << std::endl;
-		std::cout << "Root: " << _servers[i].getRoot() << std::endl;
+		std::cout << "Host: " << _servers[i]->getHost() << std::endl;
+		std::cout << "Port: " << _servers[i]->getPort() << std::endl;
+		std::cout << "Root: " << _servers[i]->getRoot() << std::endl;
+		std::cout << "Index: " << _servers[i]->getIndex() << std::endl;
+		std::cout << "AutoIndex: " << _servers[i]->isAutoIndexEnabled() << std::endl;
+		std::cout << "MaxBodySize: " << _servers[i]->getMaxBodySize() << std::endl;
+		std::cout << "Error pages:\n";
+		for (const auto &errorPage : _servers[i]->getErrorPages())
+		{
+			std::cout << errorPage.first << ": " << errorPage.second << std::endl;
+		}
 	}
 }
 
-//Check if host:port is already in use in a map<std::string, int> used_ports.
+// Check if host:port is already in use in a map<std::string, int> used_ports.
+
+/**
+ * @brief Get the Server object(raw pointer) by file descriptor
+ * @param fd
+ * @return Server*
+ */
+Server *ServerManager::getServerByFileDescriptor(int fd) const
+{
+	for (const auto &server : _servers)
+	{
+		if (server->getSocketFD() == fd)
+			return server.get();
+	}
+	return nullptr;
+}
