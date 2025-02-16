@@ -55,7 +55,11 @@ void ServerManager::printServers() const
 		std::cout << "Index: " << _servers[i]->getIndex() << std::endl;
 		std::cout << "AutoIndex: " << _servers[i]->isAutoIndexEnabled() << std::endl;
 		std::cout << "MaxBodySize: " << _servers[i]->getMaxBodySize() << std::endl;
-		std::cout << "ErrorPages: " << _servers[i]->getErrorPage(400) << std::endl;
+		std::cout << "Error pages:\n";
+		for (const auto &errorPage : _servers[i]->getErrorPages())
+		{
+			std::cout << errorPage.first << ": " << errorPage.second << std::endl;
+		}
 	}
 }
 

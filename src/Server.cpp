@@ -52,6 +52,8 @@ const std::string &Server::getIndex() const { return _index; }
 
 bool Server::isAutoIndexEnabled() const { return _autoIndex; }
 
+const std::map<int, std::string> &Server::getErrorPages() const { return _errorPages; }
+
 size_t Server::getMaxBodySize() const { return _maxBodySize; }
 
 std::string Server::getErrorPage(int statusCode) const
