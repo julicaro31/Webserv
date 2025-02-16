@@ -24,6 +24,7 @@ public:
 
 	std::map<std::string, std::vector<ConfigBlock>> &getSubConfigBlocks();
 	std::map<std::string, std::vector<std::string>> &getDirectives();
+	std::vector<ConfigBlock> getConfigBlocksByContext(Context context);
 };
 
 #endif
