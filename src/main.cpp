@@ -27,12 +27,13 @@ int main(int ac, char *argv[])
 	{
 		std::cout << "<< DEV version >>" << std::endl;
 		ServerConfig config = {
-			"localhost",
-			8080,
-			"/html",
-			"index.html",
 			false,
+			true,
 			1000000,
+			8080,
+			"localhost",
+			"index.html",
+			"/html",
 			{{400, "error400.html"},
 			 {403, "error403.html"},
 			 {404, "error404.html"}}};
