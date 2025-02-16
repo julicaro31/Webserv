@@ -3,7 +3,8 @@
 #include <string>
 #include <map>
 
-struct ServerConfig {
+struct ServerConfig
+{
     bool autoIndex;
     bool defaultServer;
     size_t maxBodySize;
@@ -12,4 +13,5 @@ struct ServerConfig {
     std::string index;
     std::string root;
     std::map<int, std::string> errorPages;
-};;
+};
+;
