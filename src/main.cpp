@@ -41,8 +41,6 @@ int main(int ac, char *argv[])
 		ServerManager serverManager;
 		serverManager.addServer(config);
 		serverManager.printServers();
-		if (std::string(argv[2]) == "start")
-			serverManager.runPoll();
 	}
 
 	return 0;
