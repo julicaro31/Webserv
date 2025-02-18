@@ -93,7 +93,8 @@ void ServerManager::runPoll()
 	std::cout << "[ServerManager] Running " << _servers.size() << " servers..." << std::endl;
 	while (true)
 	{
-		// Call poll() with a timeout of 1000 milliseconds
+		checkTimeouts();
+		// Call poll() with a timeout of 500 milliseconds
 		int ready = poll(_pollFDs.data(), _pollFDs.size(), 500);
 		if (ready < 0)
 		{
@@ -146,7 +147,7 @@ void ServerManager::acceptNewClient(int serverFD)
 	pfd.events = POLLIN | POLLOUT;
 	_pollFDs.push_back(pfd);
 	_clientToServer[newClientFD] = getServerByFileDescriptor(serverFD);
-	_clientActivity[newClientFD] = time(NULL); // Update activity time
+	_clientActivity[newClientFD] = time(NULL); // save client activity time
 }
 
 void ServerManager::handleClientRequest(int clientFD)
@@ -196,4 +197,20 @@ void ServerManager::removeClient(int clientFD)
 	_clientToServer.erase(clientFD);
 	_clientActivity.erase(clientFD);
 	std::cout << "[ServerManager] Client FD " << clientFD << " disconnected." << std::endl;
+}
+
+// Check for inactive clients and remove them from the poll list
+void ServerManager::checkTimeouts()
+{
+	time_t now = time(NULL);
+	for (size_t i = 0; i < _pollFDs.size(); i++)
+	{
+		int clientFD = _pollFDs[i].fd;
+		if (_clientActivity.find(clientFD) != _clientActivity.end() &&
+			now - _clientActivity[clientFD] > CLIENT_TIMEOUT)
+		{
+			std::cout << "[ServerManager] Client FD " << clientFD << " timed out." << std::endl;
+			removeClient(clientFD);
+		}
+	}
 }

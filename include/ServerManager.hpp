@@ -10,8 +10,8 @@
 #include <memory>
 #include <ServerConfig.hpp>
 
-#define MAX_CONNECTION 10
-// If MAX_CONNECTION	 is exceeded, new connections wait in a queue (until accept() is called).
+#define MAX_CONNECTION 10 // is exceeded, new connections wait in a queue (until accept() is called).
+#define CLIENT_TIMEOUT 15 // disconnect clients that have been inactive, in seconds
 
 class ServerManager
 {
@@ -39,6 +39,7 @@ public:
 	void acceptNewClient(int serverFD);
 	void handleClientRequest(int clientFD);
 	void removeClient(int clientFD);
+	void checkTimeouts();
 };
 
 #endif
