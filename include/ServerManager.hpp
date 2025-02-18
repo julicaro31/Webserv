@@ -18,6 +18,7 @@ class ServerManager
 private:
 	std::vector<std::unique_ptr<Server>> _servers;
 	std::vector<pollfd> _pollFDs;
+	std::map<int, Server *> _clientToServer;
 	std::map<int, time_t> _clientActivity;
 
 public:
