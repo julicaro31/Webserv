@@ -25,6 +25,12 @@ void ConfigBlock::addDirective(const std::string &key, const std::string &value,
 
 	checkIfValidDirective(key, context, values);
 
+	if (key == "error_page")
+	{
+		_directives[key].push_back(value);
+		return;
+	}
+
 	for (std::vector<std::string>::iterator it = values.begin(); it != values.end(); it++)
 	{
 		_directives[key].push_back(*it);

@@ -207,6 +207,7 @@ std::vector<ServerConfig> ParsingHelper::createServersConfiguration(std::string 
 		size_t maxBodySize = 0;
 		std::vector<std::string> index;
 		std::string root;
+		std::map<std::string, std::vector<int>> errorPages;
 
 		std::map<std::string, std::vector<std::string>> &directives = serverBlock->getDirectives();
 
@@ -235,11 +236,26 @@ std::vector<ServerConfig> ParsingHelper::createServersConfiguration(std::string 
 			{
 				root = directive->second[0];
 			}
+			else if (directiveName == "error_page")
+			{
+				errorPages = parseErrorPages(directive->second);
+			}
 		}
 
 		std::cout << "Default server: " << defaultServer << " Host: " << host << " Port: " << port << " AutoIndex: " << autoIndex << " MaxBodySize: " << maxBodySize << " Index: " << index[0] << " Root: " << root << std::endl;
-	}
 
+		for (const auto &pair : errorPages)
+		{
+			std::cout << "Key: " << pair.first << ", Values: ";
+
+			for (const auto &val : pair.second)
+			{
+				std::cout << val << " ";
+			}
+
+			std::cout << std::endl;
+		}
+	}
 	return serversConfig;
 }
 
@@ -302,15 +318,47 @@ std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::string &info)
 			int port = std::stoi(values[1]);
 			return std::make_pair(values[0], port);
 		}
-		catch (const std::invalid_argument &e)
-		{
-			throw std::runtime_error("Error: Invalid port.");
-		}
-		catch (const std::out_of_range &e)
+		catch (const std::exception &e)
 		{
 			throw std::runtime_error("Error: Invalid port.");
 		}
 	}
 
 	throw std::runtime_error("Error: Invalid host and port.");
+}
+
+std::map<std::string, std::vector<int>> ParsingHelper::parseErrorPages(std::vector<std::string> &info)
+{
+	std::map<std::string, std::vector<int>> errorPageMap;
+
+	for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
+	{
+		parseErrorPage(errorPageMap, *it);
+	}
+
+	return errorPageMap;
+}
+
+void ParsingHelper::parseErrorPage(std::map<std::string, std::vector<int>> &errorPageMap, std::string &info)
+{
+	std::vector<std::string> values = split(info, ' ');
+
+	if (values.size() < 2)
+	{
+		throw std::runtime_error("Error: Invalid values in error_page directive.");
+	}
+
+	std::string errorPageUrl = values.back();
+
+	for (std::vector<std::string>::iterator it = values.begin(); it != values.end() - 1; it++)
+	{
+		try
+		{
+			errorPageMap[errorPageUrl].push_back(std::stoi(*it));
+		}
+		catch (const std::exception &e)
+		{
+			throw std::runtime_error("Error: Invalid status code.");
+		}
+	}
 }
