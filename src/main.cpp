@@ -1,4 +1,5 @@
 #include <iostream>
+#include "HttpParser.hpp"
 #include "ParsingHelper.hpp"
 #include "ConfigBlock.hpp"
 #include "Server.hpp"
@@ -21,7 +22,7 @@ int main(int ac, char *argv[])
 		configFile.print();
 
 		std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n";
-		Request request = ParsingHelper::parseRequest(line);
+		Request request = HttpParser::parseRequest(line);
 	}
 	else
 	{
