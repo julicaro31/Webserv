@@ -37,6 +37,8 @@ private:
 	static bool parseAutoIndex(std::string &info);
 	static size_t parseMaxBodySize(std::string &info);
 	static std::pair<std::string, int> parseHostAndPort(std::string &info);
+	static std::map<std::string, std::vector<int>> parseErrorPages(std::vector<std::string> &info);
+	static void parseErrorPage(std::map<std::string, std::vector<int>> &errorPageMap, std::string &info);
 
 	static Method parseMethod(std::string method);
 };
