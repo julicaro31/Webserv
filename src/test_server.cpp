@@ -47,9 +47,9 @@ int main()
         exit(EXIT_FAILURE);
     }
 
-    // Bind socket to port
+    // Bind socket to port 8080 on localhost
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = inet_addr("webserve");
+    address.sin_addr.s_addr = INADDR_ANY; 
     address.sin_port = htons(PORT);
     bind(server_fd, (struct sockaddr *)&address, sizeof(address));
 
@@ -61,8 +61,12 @@ int main()
     std::vector<pollfd> poll_fds;
     std::map<int, time_t> client_activity; // Stores last activity time for each client
 
-    // Add listening socket to poll list
-    poll_fds.push_back({server_fd, POLLIN, 0});
+    // Add listening socket to poll list 
+    pollfd serverPFD;
+    serverPFD.fd = server_fd;
+    serverPFD.events = POLLIN;
+    serverPFD.revents = 0;
+    poll_fds.push_back(serverPFD);
 
 
     while (true)
@@ -85,7 +89,7 @@ int main()
             if (poll_fds[i].revents & POLLIN)
             {
                 // There is a data to read from the poll_fds[i].fd
-                // If it's the listening socket, accept a new connection
+                // Check if it's a server FD (new connection)=> accept a new connection.
                 if (poll_fds[i].fd == server_fd)
                 {
                     new_socket = accept(server_fd, (struct sockaddr *)&address, &addrlen);
@@ -96,11 +100,14 @@ int main()
                     }
                     std::cout << "New client connected: " << inet_ntoa(address.sin_addr) << std::endl;
 
-                    // Add new client socket to poll list
-                    poll_fds.push_back({new_socket, POLLIN | POLLOUT, 0});
+                    pollfd clientFD;
+                    clientFD.fd = new_socket;
+                    clientFD.events = POLLIN | POLLOUT;
+                    clientFD.revents = 0;
+                    poll_fds.push_back(clientFD);
                     client_activity[new_socket] = now; // Update activity time
                 }
-                // If it's a client socket, read data
+                // If POLLIN event is not on server_fd, then it's a client socket (read data)
                 else
                 {
                     char buffer[1024] = {0};
@@ -122,7 +129,7 @@ int main()
                 }
             }
 
-            // Check if socket is ready to write
+            // Check if socket is ready to write 
             if (poll_fds[i].revents & POLLOUT)
             {
                 const char *body = "Hello, World!";

@@ -17,22 +17,19 @@ ServerManager::~ServerManager()
  */
 void ServerManager::addServer(const ServerConfig &config)
 {
-	std::unique_ptr<Server> server = std::make_unique<Server>();
+	Server server;
 
-	server->setHost(config.host);
-	server->setPort(config.port);
-	server->setRoot(config.root);
-	server->setIndex(config.index);
-	server->setAutoIndex(config.autoIndex);
-	server->setMaxBodySize(config.maxBodySize);
-	server->setErrorPages(config.errorPages);
+	server.setHost(config.host);
+	server.setPort(config.port);
+	server.setRoot(config.root);
+	server.setIndex(config.index);
+	server.setAutoIndex(config.autoIndex);
+	server.setMaxBodySize(config.maxBodySize);
+	server.setErrorPages(config.errorPages);
 
-	if (server->setupSocket())
+	if (server.setupSocket())
 	{
-		int serverFD = server->getSocketFD();
-		// Add the server's file descriptor to the poll list and move it to _servers
-		_pollFDs.push_back({serverFD, POLLIN, 0});
-		_servers.push_back(std::move(server));
+		_servers.push_back(std::make_unique<Server>(std::move(server)));
 		std::cout << "[ServerManager] Server added: " << config.host << ":" << config.port << std::endl;
 	}
 	else
@@ -46,7 +43,6 @@ const std::vector<std::unique_ptr<Server>> &ServerManager::getServers() const
 	return _servers;
 }
 
-// for testing purposes
 void ServerManager::printServers() const
 {
 	std::cout << "ServerManager contains " << _servers.size() << " servers." << std::endl;
