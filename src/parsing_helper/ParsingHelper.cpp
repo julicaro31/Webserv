@@ -186,7 +186,7 @@ Method ParsingHelper::parseMethod(std::string method)
 	return Method::NONE;
 }
 
-std::vector<ServerConfig> ParsingHelper::createServersConfiguration(std::string &configFilePath)
+std::vector<ServerConfig> ParsingHelper::getServersConfig(std::string &configFilePath)
 {
 	ConfigBlock configFile = ParsingHelper::parseConfigFile(configFilePath);
 	configFile.print();
@@ -198,16 +198,12 @@ std::vector<ServerConfig> ParsingHelper::createServersConfiguration(std::string 
 	bool firstServer = true;
 	for (std::vector<ConfigBlock>::iterator serverBlock = serverConfigBlocks.begin(); serverBlock != serverConfigBlocks.end(); serverBlock++)
 	{
-		bool defaultServer = firstServer;
+		ServerConfig serverConfig;
+		serverConfig.defaultServer = firstServer;
 		firstServer = false;
-		bool autoIndex = false;
 
-		std::string host;
-		int port;
-		size_t maxBodySize = 0;
-		std::vector<std::string> index;
-		std::string root;
-		std::map<std::string, std::vector<int>> errorPages;
+		serverConfig.autoIndex = false;
+		serverConfig.maxBodySize = 0;
 
 		std::map<std::string, std::vector<std::string>> &directives = serverBlock->getDirectives();
 
@@ -216,45 +212,36 @@ std::vector<ServerConfig> ParsingHelper::createServersConfiguration(std::string 
 			std::string directiveName = directive->first;
 			if (directiveName == "autoindex")
 			{
-				autoIndex = parseAutoIndex(directive->second[0]);
-			}
-			else if (directiveName == "client_max_body_size")
-			{
-				maxBodySize = parseMaxBodySize(directive->second[0]);
+				serverConfig.autoIndex = parseAutoIndex(directive->second[0]);
 			}
 			else if (directiveName == "listen")
 			{
 				std::pair<std::string, int> hostAndPort = parseHostAndPort(directive->second[0]);
-				host = hostAndPort.first;
-				port = hostAndPort.second;
-			}
-			else if (directiveName == "index")
-			{
-				index = directive->second;
+				serverConfig.host = hostAndPort.first;
+				serverConfig.port = hostAndPort.second;
 			}
 			else if (directiveName == "root")
 			{
-				root = directive->second[0];
+				serverConfig.root = directive->second[0];
+			}
+			else if (directiveName == "index")
+			{
+				serverConfig.index = directive->second;
+			}
+			else if (directiveName == "client_max_body_size")
+			{
+				serverConfig.maxBodySize = parseMaxBodySize(directive->second[0]);
+			}
+			else if (directiveName == "server_name")
+			{
+				serverConfig.serverName = directive->second[0];
 			}
 			else if (directiveName == "error_page")
 			{
-				errorPages = parseErrorPages(directive->second);
+				serverConfig.errorPages = parseErrorPages(directive->second);
 			}
 		}
-
-		std::cout << "Default server: " << defaultServer << " Host: " << host << " Port: " << port << " AutoIndex: " << autoIndex << " MaxBodySize: " << maxBodySize << " Index: " << index[0] << " Root: " << root << std::endl;
-
-		for (const auto &pair : errorPages)
-		{
-			std::cout << "Key: " << pair.first << ", Values: ";
-
-			for (const auto &val : pair.second)
-			{
-				std::cout << val << " ";
-			}
-
-			std::cout << std::endl;
-		}
+		serversConfig.push_back(serverConfig);
 	}
 	return serversConfig;
 }

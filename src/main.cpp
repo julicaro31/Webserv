@@ -19,7 +19,10 @@ int main(int ac, char *argv[])
 		try
 		{
 			std::string filePath(argv[1]);
-			std::vector<ServerConfig> serversCongiguration = ParsingHelper::createServersConfiguration(filePath);
+			std::vector<ServerConfig> serversCongiguration = ParsingHelper::getServersConfig(filePath);
+			ServerManager serverManager;
+			serverManager.addServer(serversCongiguration[0]);
+			serverManager.printServers();
 		}
 		catch (const std::exception &e)
 		{
@@ -38,11 +41,12 @@ int main(int ac, char *argv[])
 			1000000,
 			8080,
 			"localhost",
-			"index.html",
+			{"index.html"},
 			"/html",
-			{{400, "error400.html"},
-			 {403, "error403.html"},
-			 {404, "error404.html"}}};
+			"name",
+			{{"error400.html", {400}},
+			 {"error403.html", {403}},
+			 {"error50x.html", {501, 502, 503}}}};
 
 		ServerManager serverManager;
 		serverManager.addServer(config);

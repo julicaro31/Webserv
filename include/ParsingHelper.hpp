@@ -21,7 +21,7 @@ public:
 	static std::string toString(Context context);
 	static std::vector<std::string> split(const std::string &str, char delimiter);
 
-	static std::vector<ServerConfig> createServersConfiguration(std::string &configFilePath);
+	static std::vector<ServerConfig> getServersConfig(std::string &configFilePath);
 
 	static Request parseRequest(std::string strRequest);
 

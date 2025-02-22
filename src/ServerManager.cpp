@@ -52,13 +52,25 @@ void ServerManager::printServers() const
 		std::cout << "Host: " << _servers[i]->getHost() << std::endl;
 		std::cout << "Port: " << _servers[i]->getPort() << std::endl;
 		std::cout << "Root: " << _servers[i]->getRoot() << std::endl;
-		std::cout << "Index: " << _servers[i]->getIndex() << std::endl;
+		std::cout << "Index: ";
+		for (const std::string &element : _servers[i]->getIndex())
+		{
+			std::cout << element << " ";
+		}
+		std::cout << std::endl;
 		std::cout << "AutoIndex: " << _servers[i]->isAutoIndexEnabled() << std::endl;
 		std::cout << "MaxBodySize: " << _servers[i]->getMaxBodySize() << std::endl;
 		std::cout << "Error pages:\n";
-		for (const auto &errorPage : _servers[i]->getErrorPages())
+		for (const auto &pair : _servers[i]->getErrorPages())
 		{
-			std::cout << errorPage.first << ": " << errorPage.second << std::endl;
+			std::cout << "- " << pair.first << " : ";
+
+			for (const auto &val : pair.second)
+			{
+				std::cout << val << " ";
+			}
+
+			std::cout << std::endl;
 		}
 	}
 }

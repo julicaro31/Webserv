@@ -48,19 +48,27 @@ int Server::getPort() const { return _port; }
 
 const std::string &Server::getRoot() const { return _root; }
 
-const std::string &Server::getIndex() const { return _index; }
+const std::vector<std::string> &Server::getIndex() const { return _index; }
 
 bool Server::isAutoIndexEnabled() const { return _autoIndex; }
 
-const std::map<int, std::string> &Server::getErrorPages() const { return _errorPages; }
+const std::map<std::string, std::vector<int>> &Server::getErrorPages() const { return _errorPages; }
 
 size_t Server::getMaxBodySize() const { return _maxBodySize; }
 
 std::string Server::getErrorPage(int statusCode) const
 {
-	std::map<int, std::string>::const_iterator it = _errorPages.find(statusCode);
-	if (it != _errorPages.end())
-		return it->second;
+	for (const std::pair<std::string, std::vector<int>> pair : _errorPages)
+	{
+		const std::string key = pair.first;
+		const std::vector<int> &values = pair.second;
+		
+		if (std::find(values.begin(), values.end(), statusCode) != values.end())
+		{
+			return key;
+		}
+	}
+
 	return "";
 }
 
@@ -82,7 +90,7 @@ void Server::setRoot(const std::string &root)
 	_root = root;
 }
 
-void Server::setIndex(const std::string &index)
+void Server::setIndex(const std::vector<std::string> &index)
 {
 	_index = index;
 }
@@ -97,7 +105,7 @@ void Server::setMaxBodySize(size_t maxBodySize)
 	_maxBodySize = maxBodySize;
 }
 
-void Server::setErrorPages(const std::map<int, std::string> &errorPages)
+void Server::setErrorPages(const std::map<std::string, std::vector<int>> &errorPages)
 {
 	_errorPages = errorPages;
 }
