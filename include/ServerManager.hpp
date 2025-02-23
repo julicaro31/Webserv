@@ -35,6 +35,8 @@ public:
 
 	Server *getServerByFileDescriptor(int fd) const;
 	std::vector<pollfd> &getPollFDs();
+
+
 	void printServers() const;
 
 	void addServer(const ServerConfig &config);
