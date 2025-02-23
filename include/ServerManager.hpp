@@ -28,7 +28,6 @@ public:
 	ServerManager(const ServerManager &) = delete;
 	ServerManager &operator=(const ServerManager &other) = delete;
 
-	void addServer(const ServerConfig &config);
 	void start();
 	void stop();
 	const std::vector<std::unique_ptr<Server>> &getServers() const;
