@@ -22,7 +22,7 @@ int main(int ac, char *argv[])
 		configFile.print();
 
 		std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n";
-		Request request = HttpParser::parseRequest(line);
+		HttpParser::parseRequest(line);
 	}
 	else
 	{
