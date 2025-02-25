@@ -13,6 +13,7 @@ FILES	:=	parsing_helper/ParsingHelper \
 			configuration_file/ConfigBlock \
 			configuration_file/Directives \
 			Server ServerManager \
+			http_parser/HttpParser \
 			Logger \
 			main
 
