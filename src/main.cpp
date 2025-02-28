@@ -21,16 +21,16 @@ int main(int ac, char *argv[])
 			std::string filePath(argv[1]);
 			std::vector<ServerConfig> serversCongiguration = ParsingHelper::getServersConfig(filePath);
 			ServerManager serverManager;
-			serverManager.addServer(serversCongiguration[0]);
+			for (std::vector<ServerConfig>::iterator it = serversCongiguration.begin(); it != serversCongiguration.end(); it++)
+			{
+				serverManager.addServer(*it);
+			}
 			serverManager.printServers();
 		}
 		catch (const std::exception &e)
 		{
 			std::cerr << e.what() << '\n';
 		}
-
-		std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n";
-		Request request = ParsingHelper::parseRequest(line);
 	}
 	else
 	{
@@ -44,6 +44,7 @@ int main(int ac, char *argv[])
 			{"index.html"},
 			"/html",
 			"name",
+			{302, "http.."},
 			{{"error400.html", {400}},
 			 {"error403.html", {403}},
 			 {"error50x.html", {501, 502, 503}}}};

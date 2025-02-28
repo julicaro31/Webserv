@@ -79,13 +79,14 @@ void ConfigBlock::addSubBlock(const std::string &blockName, const std::string &p
 
 	if ((blockName == ParsingHelper::toString(Context::HTTP) && parentBlockName == ParsingHelper::toString(Context::NONE)) ||
 		(blockName == ParsingHelper::toString(Context::SERVER) && parentBlockName == ParsingHelper::toString(Context::HTTP)) ||
-		(blockName.substr(0, blockName.find(" ")) == ParsingHelper::toString(Context::LOCATION) && parentBlockName == ParsingHelper::toString(Context::SERVER)))
+		(blockName.substr(0, blockName.find(" ")) == ParsingHelper::toString(Context::LOCATION) && parentBlockName == ParsingHelper::toString(Context::SERVER)) ||
+		(blockName.substr(0, blockName.find(" ")) == ParsingHelper::toString(Context::LIMIT_EXCEPT) && parentBlockName.substr(0, parentBlockName.find(" ")) == ParsingHelper::toString(Context::LOCATION)))
 	{
 		_subConfigBlocks[blockName].push_back(block);
 	}
 	else
 	{
-		throw std::runtime_error("Error: Incorrect syntax in file related to block names.");
+		throw std::runtime_error("Error: Incorrect syntax in file related to block names: " + blockName);
 	}
 }
 

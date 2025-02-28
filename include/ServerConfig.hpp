@@ -13,5 +13,6 @@ struct ServerConfig
     std::vector<std::string> index;
     std::string root;
     std::string serverName;
+    std::pair<int, std::string> redirection;
     std::map<std::string, std::vector<int>> errorPages;
 };

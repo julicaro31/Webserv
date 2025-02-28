@@ -28,9 +28,9 @@ private:
 	std::vector<std::string> _index;
 	size_t _maxBodySize;
 	std::string _serverName;
+	std::pair<int, std::string> _redirection;
 	std::map<std::string, std::vector<int>> _errorPages;
-	// implement std::vector<Method> _limitExcept;
-	// implement return
+	// implement limitExcept // create class;
 	// std::map<std::string, Location> _locations; //need to identify Location class
 
 public:

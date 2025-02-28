@@ -110,6 +110,8 @@ std::string ParsingHelper::toString(Context context)
 		return "server";
 	case Context::LOCATION:
 		return "location";
+	case Context::LIMIT_EXCEPT:
+		return "limit_except";
 	case Context::NONE:
 		return "none";
 	default:
@@ -133,40 +135,6 @@ std::vector<std::string> ParsingHelper::split(const std::string &str, char delim
 	}
 
 	return words;
-}
-
-/// @brief Parses a request.
-/// @param strRequest Request line containing method, target's path and http version.
-/// @return Request object.
-Request ParsingHelper::parseRequest(std::string strRequest)
-{
-	std::stringstream streamStrRequest(strRequest);
-	std::string method, target, version;
-
-	streamStrRequest >> method >> target >> version;
-
-	std::map<std::string, std::string> headers;
-	std::string header;
-	std::getline(streamStrRequest, header);
-	while (getline(streamStrRequest, header))
-	{
-		if (header == "\r" || header.empty())
-		{
-			break;
-		}
-
-		size_t colonPos = header.find(':');
-		if (colonPos != std::string::npos)
-		{
-			std::string headerName = header.substr(0, colonPos);
-			std::string headerValue = ParsingHelper::trim(header.substr(colonPos + 1));
-			headers[headerName] = headerValue;
-		}
-	}
-
-	Request request(parseMethod(method), target, version, headers);
-
-	return request;
 }
 
 Method ParsingHelper::parseMethod(std::string method)
@@ -235,6 +203,10 @@ std::vector<ServerConfig> ParsingHelper::getServersConfig(std::string &configFil
 			else if (directiveName == "server_name")
 			{
 				serverConfig.serverName = directive->second[0];
+			}
+			else if (directiveName == "return")
+			{
+				serverConfig.redirection = parseReturn(directive->second);
 			}
 			else if (directiveName == "error_page")
 			{
@@ -312,6 +284,28 @@ std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::string &info)
 	}
 
 	throw std::runtime_error("Error: Invalid host and port.");
+}
+
+std::pair<int, std::string> ParsingHelper::parseReturn(std::vector<std::string> &info)
+{
+	std::pair<int, std::string> redirection;
+
+	if (info.size() != 2)
+	{
+		throw std::runtime_error("Error: return directive should have a status code and an url.");
+	}
+
+	try
+	{
+		redirection.first = std::stoi(info[0]);
+	}
+	catch (const std::exception &e)
+	{
+		throw std::runtime_error("Error: Invalid return status code.");
+	}
+
+	redirection.second = info[1];
+	return redirection;
 }
 
 std::map<std::string, std::vector<int>> ParsingHelper::parseErrorPages(std::vector<std::string> &info)
