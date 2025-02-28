@@ -4,7 +4,6 @@
 class ConfigBlock;
 
 #include "Directives.hpp"
-#include "Request.hpp"
 #include "Method.hpp"
 #include "ServerConfig.hpp"
 
