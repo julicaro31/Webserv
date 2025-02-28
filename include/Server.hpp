@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <vector>
+#include <fcntl.h>
 
 #define MAX_CONNECTION 10
 // If MAX_CONNECTION	 is exceeded, new connections wait in a queue (until accept() is called).
@@ -62,6 +63,7 @@ public:
 	size_t getMaxBodySize() const;
 	std::string getErrorPage(int statusCode) const;
 	int getSocketFD() const;
+	static int setNonBlocking(int fd);
 };
 
 #endif

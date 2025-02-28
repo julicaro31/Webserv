@@ -124,6 +124,12 @@ bool Server::setupSocket()
 		perror("[Server] Socket creation failed");
 		return false;
 	}
+	if (setNonBlocking(_socketFD) == -1)
+	{
+		perror("[Server] Failed to set socket to non-blocking");
+		close(_socketFD);
+		return false;
+	}
 	// bint socket to Port
 	struct sockaddr_in _serverAddr;
 	memset(&_serverAddr, 0, sizeof(_serverAddr));
@@ -146,4 +152,12 @@ bool Server::setupSocket()
 
 	std::cout << "[Server] Listening on " << _host << ":" << _port << std::endl;
 	return true;
+}
+
+int Server::setNonBlocking(int fd)
+{
+	int currFlag = fcntl(fd, F_GETFL);
+	if (currFlag == -1)
+		return -1;
+	return (fcntl(fd, F_SETFL, currFlag | O_NONBLOCK));
 }

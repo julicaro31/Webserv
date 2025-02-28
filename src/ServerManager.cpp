@@ -1,6 +1,7 @@
 #include <memory>
 #include "ServerManager.hpp"
 #include <algorithm>
+#include "Logger.hpp"
 
 ServerManager::ServerManager()
 {
@@ -34,6 +35,7 @@ void ServerManager::addServer(const ServerConfig &config)
 		_pollFDs.push_back({serverFD, POLLIN, 0});
 		_servers.push_back(std::move(server));
 		std::cout << "[ServerManager] Server added: " << config.host << ":" << config.port << std::endl;
+		Logger::log(INFO, "Server added: " + config.host + ":" + std::to_string(config.port));
 	}
 	else
 	{
@@ -76,6 +78,7 @@ void ServerManager::printServers() const
 
 			std::cout << std::endl;
 		}
+		std::cout << "===========================================" << std::endl;
 	}
 }
 
@@ -153,6 +156,12 @@ void ServerManager::acceptNewClient(int serverFD)
 	}
 	std::cout << "[ServerManager] New client connected on FD " << newClientFD << std::endl;
 
+	if (Server::setNonBlocking(newClientFD) == -1)
+	{
+		perror("[ServerManager] Failed to set client socket to non-blocking");
+		close(newClientFD);
+		return;
+	}
 	// Add new client socket to poll list, and map client FD to server
 	pollfd pfd;
 	pfd.fd = newClientFD;
