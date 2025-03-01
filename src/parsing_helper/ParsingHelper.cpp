@@ -197,54 +197,67 @@ std::vector<ServerConfig> ParsingHelper::getServersConfig(std::string &configFil
 	{
 		ServerConfig serverConfig;
 		serverConfig.defaultServer = firstServer;
-		firstServer = false;
 
-		serverConfig.autoIndex = false;
-		serverConfig.maxBodySize = 0;
+		parseDirectives(serverBlock->getDirectives(), serverConfig);
 
-		std::map<std::string, std::vector<std::string>> &directives = serverBlock->getDirectives();
-
-		for (std::map<std::string, std::vector<std::string>>::iterator directive = directives.begin(); directive != directives.end(); directive++)
+		try
 		{
-			std::string directiveName = directive->first;
-			if (directiveName == "autoindex")
-			{
-				serverConfig.autoIndex = parseAutoIndex(directive->second[0]);
-			}
-			else if (directiveName == "listen")
-			{
-				std::pair<std::string, int> hostAndPort = parseHostAndPort(directive->second[0]);
-				serverConfig.host = hostAndPort.first;
-				serverConfig.port = hostAndPort.second;
-			}
-			else if (directiveName == "root")
-			{
-				serverConfig.root = directive->second[0];
-			}
-			else if (directiveName == "index")
-			{
-				serverConfig.index = directive->second;
-			}
-			else if (directiveName == "client_max_body_size")
-			{
-				serverConfig.maxBodySize = parseMaxBodySize(directive->second[0]);
-			}
-			else if (directiveName == "server_name")
-			{
-				serverConfig.serverName = directive->second[0];
-			}
-			else if (directiveName == "return")
-			{
-				serverConfig.redirection = parseReturn(directive->second);
-			}
-			else if (directiveName == "error_page")
-			{
-				serverConfig.errorPages = parseErrorPages(directive->second);
-			}
+			std::vector<ConfigBlock> limitExceptBlock = serverBlock->getConfigBlocksByContext(Context::LIMIT_EXCEPT);
 		}
+		catch(const std::exception& e){}
+
 		serversConfig.push_back(serverConfig);
+
+		firstServer = false;
 	}
 	return serversConfig;
+}
+
+/// @brief Parses, validates and adds the directives to the given ServerConfig.
+/// @param directives Directives to be added.
+/// @param serverConfig ServerConfig to add the directives.
+void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::string>> &directives, ServerConfig &serverConfig)
+{
+	serverConfig.autoIndex = false;
+	serverConfig.maxBodySize = 0;
+	for (std::map<std::string, std::vector<std::string>>::iterator directive = directives.begin(); directive != directives.end(); directive++)
+	{
+		std::string directiveName = directive->first;
+		if (directiveName == "autoindex")
+		{
+			serverConfig.autoIndex = parseAutoIndex(directive->second[0]);
+		}
+		else if (directiveName == "listen")
+		{
+			std::pair<std::string, int> hostAndPort = parseHostAndPort(directive->second[0]);
+			serverConfig.host = hostAndPort.first;
+			serverConfig.port = hostAndPort.second;
+		}
+		else if (directiveName == "root")
+		{
+			serverConfig.root = directive->second[0];
+		}
+		else if (directiveName == "index")
+		{
+			serverConfig.index = directive->second;
+		}
+		else if (directiveName == "client_max_body_size")
+		{
+			serverConfig.maxBodySize = parseMaxBodySize(directive->second[0]);
+		}
+		else if (directiveName == "server_name")
+		{
+			serverConfig.serverName = directive->second[0];
+		}
+		else if (directiveName == "return")
+		{
+			serverConfig.redirection = parseReturn(directive->second);
+		}
+		else if (directiveName == "error_page")
+		{
+			serverConfig.errorPages = parseErrorPages(directive->second);
+		}
+	}
 }
 
 /// @brief Parses the string value related to the directive 'autoindex'.
@@ -314,7 +327,7 @@ std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::string &info)
 			throw std::invalid_argument("Error: Port number should be between 1024 and 65535.");
 		}
 
-		std::string host = valuesSize == 2 ? values[1] : "0.0.0.0";
+		std::string host = valuesSize == 2 ? values[0] : "0.0.0.0";
 
 		return std::make_pair(host, port);
 	}

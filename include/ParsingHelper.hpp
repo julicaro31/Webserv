@@ -32,6 +32,7 @@ private:
 	static void handleSubBlock(std::ifstream &file, ConfigBlock &block, std::string blockName, std::string line);
 	static void handleDirective(ConfigBlock &block, std::string blockName, std::string line);
 
+	static void parseDirectives(std::map<std::string, std::vector<std::string>> &directives, ServerConfig& serverConfig);
 	static bool parseAutoIndex(std::string &value);
 	static size_t parseMaxBodySize(std::string &value);
 	static std::pair<std::string, int> parseHostAndPort(std::string &info);

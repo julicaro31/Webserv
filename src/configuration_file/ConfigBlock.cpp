@@ -150,11 +150,15 @@ std::vector<ConfigBlock> ConfigBlock::getConfigBlocksByContext(Context context)
 {
 	std::string contextStr = ParsingHelper::toString(context);
 	std::map<std::string, std::vector<ConfigBlock>> configBlocks = this->getSubConfigBlocks();
-	std::map<std::string, std::vector<ConfigBlock>>::iterator it = configBlocks.find(contextStr);
-	if (it == configBlocks.end())
+
+	for (std::map<std::string, std::vector<ConfigBlock>>::iterator it = configBlocks.begin(); it != configBlocks.end(); it++)
 	{
-		Logger::log(ERROR, contextStr + " block has not been found in the configuration file.");
-		throw std::runtime_error("Error: " + contextStr + " block has not been found in the configuration file.");
+		if (ParsingHelper::split(it->first, ' ')[0] == contextStr)
+		{
+			return it->second;
+		}
 	}
-	return it->second;
+
+	Logger::log(ERROR, contextStr + " block has not been found in the configuration file.");
+	throw std::runtime_error("Error: " + contextStr + " block has not been found in the configuration file.");
 }
