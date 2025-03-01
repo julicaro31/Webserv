@@ -122,6 +122,14 @@ bool Server::setupSocket()
 	if (_socketFD < 0)
 	{
 		perror("[Server] Socket creation failed");
+		Logger::log(ERROR, "[Server] Socket creation failed");
+		return false;
+	}
+	if (setNonBlocking(_socketFD) == -1)
+	{
+		perror("[Server] Failed to set socket to non-blocking");
+		Logger::log(ERROR, "[Server] Failed to set socket to non-blocking");
+		close(_socketFD);
 		return false;
 	}
 	// bint socket to Port
@@ -134,16 +142,26 @@ bool Server::setupSocket()
 	if (bind(_socketFD, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) < 0)
 	{
 		perror("[Server] Bind failed");
+		Logger::log(ERROR, "[Server Bind failed]");
 		close(_socketFD);
 		return false;
 	}
 	if (listen(_socketFD, MAX_CONNECTION) < 0)
 	{
 		perror("[Server] Listen failed");
+		Logger::log(ERROR, "[Server] Listen failed");
 		close(_socketFD);
 		return false;
 	}
 
-	std::cout << "[Server] Listening on " << _host << ":" << _port << std::endl;
+	Logger::log(INFO, "[Server] Listening on " + _host + ":" + std::to_string(_port));
 	return true;
+}
+
+int Server::setNonBlocking(int fd)
+{
+	int currFlag = fcntl(fd, F_GETFL);
+	if (currFlag == -1)
+		return -1;
+	return (fcntl(fd, F_SETFL, currFlag | O_NONBLOCK));
 }

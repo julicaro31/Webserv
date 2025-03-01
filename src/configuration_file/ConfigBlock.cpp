@@ -46,21 +46,25 @@ void ConfigBlock::checkIfValidDirective(const std::string &key, const std::strin
 {
 	if (Directives.find(key) == Directives.end())
 	{
+		Logger::log(ERROR, "Invalid directive: " + key);
 		throw std::runtime_error("Error: Invalid directive: " + key + ".");
 	}
 
 	if (std::find(SingleUseDirectives.begin(), SingleUseDirectives.end(), key) != SingleUseDirectives.end() && !_directives[key].empty())
 	{
+		Logger::log(ERROR, key + " cannot appear more than once in a block.");
 		throw std::runtime_error("Error: " + key + " cannot appear more than once in a block.");
 	}
 
 	if (values.empty())
 	{
+		Logger::log(ERROR, key + " is empty.");
 		throw std::runtime_error("Error: " + key + " is empty.");
 	}
 
 	if (std::find(SingleValueDirectives.begin(), SingleValueDirectives.end(), key) != SingleValueDirectives.end() && values.size() != 1)
 	{
+		Logger::log(ERROR, key + " should only have one value.");
 		throw std::runtime_error("Error: " + key + " should only have one value.");
 	}
 
@@ -72,6 +76,7 @@ void ConfigBlock::checkIfValidDirective(const std::string &key, const std::strin
 			return;
 		}
 	}
+	Logger::log(ERROR, "Directive " + key + " should not be in context " + context + ".");
 	throw std::runtime_error("Error: Directive " + key + " should not be in context " + context + ".");
 }
 
@@ -84,6 +89,7 @@ void ConfigBlock::addSubBlock(const std::string &blockName, const std::string &p
 {
 	if (blockName == ParsingHelper::toString(Context::HTTP) && _subConfigBlocks[blockName].size() > 0)
 	{
+		Logger::log(ERROR, "Http block should only appear once in the configuration file.");
 		throw std::runtime_error("Error: Http block should only appear once in the configuration file.");
 	}
 
@@ -96,6 +102,7 @@ void ConfigBlock::addSubBlock(const std::string &blockName, const std::string &p
 	}
 	else
 	{
+		Logger::log(ERROR, "Incorrect syntax in file related to block names: " + blockName);
 		throw std::runtime_error("Error: Incorrect syntax in file related to block names: " + blockName);
 	}
 }
@@ -146,6 +153,7 @@ std::vector<ConfigBlock> ConfigBlock::getConfigBlocksByContext(Context context)
 	std::map<std::string, std::vector<ConfigBlock>>::iterator it = configBlocks.find(contextStr);
 	if (it == configBlocks.end())
 	{
+		Logger::log(ERROR, contextStr + " block has not been found in the configuration file.");
 		throw std::runtime_error("Error: " + contextStr + " block has not been found in the configuration file.");
 	}
 	return it->second;

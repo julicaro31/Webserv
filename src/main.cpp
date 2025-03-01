@@ -3,9 +3,11 @@
 #include "ConfigBlock.hpp"
 #include "Server.hpp"
 #include "ServerManager.hpp"
+#include "Logger.hpp"
 
 int main(int ac, char *argv[])
 {
+	Logger::init("logs.log");
 	if (ac < 2)
 	{
 		std::cout << "Wrong number of arguments." << std::endl;
@@ -13,8 +15,7 @@ int main(int ac, char *argv[])
 	}
 	if (ac == 2)
 	{
-		std::cout << "Welcome to the webserv" << std::endl;
-
+		Logger::log(INFO, "Parsing configuration file...");
 		// Parse and print the configuration file.
 		try
 		{
@@ -35,6 +36,7 @@ int main(int ac, char *argv[])
 	else
 	{
 		std::cout << "<< DEV version >>" << std::endl;
+		Logger::log(INFO, "Starting server...");
 		ServerConfig config = {
 			false,
 			true,
