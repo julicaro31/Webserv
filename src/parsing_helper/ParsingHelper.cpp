@@ -11,6 +11,7 @@ ConfigBlock ParsingHelper::parseConfigFile(std::string &configFilePath)
 
 	if (!configFile.is_open())
 	{
+		Logger::log(ERROR, "Could not open file.");
 		throw std::runtime_error("Error: Could not open file.");
 	}
 
@@ -55,16 +56,19 @@ ConfigBlock ParsingHelper::parseBlock(std::ifstream &file, std::string blockName
 			}
 			else
 			{
+				Logger::log(ERROR, "Unmatched closing brace.");
 				throw std::runtime_error("Error: Unmatched closing brace.");
 			}
 		}
 		else
 		{
+			Logger::log(ERROR, "Incorrect syntax in file.");
 			throw std::runtime_error("Error: Incorrect syntax in file.");
 		}
 	}
 	if (braceLevel > 0)
 	{
+		Logger::log(ERROR, "Missing closing brace.");
 		throw std::runtime_error("Error: Missing closing brace.");
 	}
 	return block;
@@ -257,6 +261,7 @@ bool ParsingHelper::parseAutoIndex(std::string &value)
 	{
 		return false;
 	}
+	Logger::log(ERROR, "Autoindex value must be either 'on' or 'off'.");
 	throw std::invalid_argument("Error: Autoindex value must be either 'on' or 'off'.");
 }
 
@@ -273,10 +278,12 @@ size_t ParsingHelper::parseMaxBodySize(std::string &value)
 		{
 			return maxBodySize;
 		}
+		Logger::log(ERROR, "client_max_body_size should be a positive integer.");
 		throw std::invalid_argument("Error: client_max_body_size should be a positive integer.");
 	}
 	catch (const std::exception &e)
 	{
+		Logger::log(ERROR, "client_max_body_size should be a positive integer.");
 		throw std::invalid_argument("Error: client_max_body_size should be a positive integer.");
 	}
 }
@@ -292,6 +299,7 @@ std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::string &info)
 
 	if (valuesSize > 2)
 	{
+		Logger::log(ERROR, "Invalid host and port.");
 		throw std::invalid_argument("Error: Invalid host and port.");
 	}
 
@@ -302,6 +310,7 @@ std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::string &info)
 
 		if (port < 1024 || port > 65536)
 		{
+			Logger::log(ERROR, "Port number should be between 1024 and 65535.");
 			throw std::invalid_argument("Error: Port number should be between 1024 and 65535.");
 		}
 
@@ -311,6 +320,7 @@ std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::string &info)
 	}
 	catch (const std::exception &e)
 	{
+		Logger::log(ERROR, "Invalid port.");
 		throw std::invalid_argument("Error: Invalid port.");
 	}
 }
@@ -325,6 +335,7 @@ std::pair<int, std::string> ParsingHelper::parseReturn(std::vector<std::string> 
 
 	if (values.size() != 2)
 	{
+		Logger::log(ERROR, "return directive should have a status code and an url.");
 		throw std::invalid_argument("Error: return directive should have a status code and an url.");
 	}
 	try
@@ -333,6 +344,7 @@ std::pair<int, std::string> ParsingHelper::parseReturn(std::vector<std::string> 
 	}
 	catch (const std::exception &e)
 	{
+		Logger::log(ERROR, "Invalid return status code.");
 		throw std::invalid_argument("Error: Invalid return status code.");
 	}
 
@@ -365,6 +377,7 @@ void ParsingHelper::parseErrorPage(std::map<std::string, std::vector<int>> &erro
 
 	if (values.size() < 2)
 	{
+		Logger::log(ERROR, "Invalid values in error_page directive.");
 		throw std::invalid_argument("Error: Invalid values in error_page directive.");
 	}
 
@@ -378,6 +391,7 @@ void ParsingHelper::parseErrorPage(std::map<std::string, std::vector<int>> &erro
 		}
 		catch (const std::exception &e)
 		{
+			Logger::log(ERROR, "Invalid status code.");
 			throw std::invalid_argument("Error: Invalid status code.");
 		}
 	}

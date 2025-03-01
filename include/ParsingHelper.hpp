@@ -12,6 +12,7 @@ class ConfigBlock;
 #include <string>
 #include <algorithm>
 #include <cctype>
+#include "Logger.hpp"
 
 class ParsingHelper
 {
