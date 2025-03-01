@@ -14,6 +14,7 @@
 #include <string.h>
 #include <vector>
 #include <fcntl.h>
+#include "Logger.hpp"
 
 #define MAX_CONNECTION 10
 // If MAX_CONNECTION	 is exceeded, new connections wait in a queue (until accept() is called).
