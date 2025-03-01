@@ -12,7 +12,6 @@ HDRS	:= $(find include -name "*.hpp")
 FILES	:=	parsing_helper/ParsingHelper \
 			configuration_file/ConfigBlock \
 			configuration_file/Directives \
-			request/Request \
 			Server ServerManager \
 			main
 

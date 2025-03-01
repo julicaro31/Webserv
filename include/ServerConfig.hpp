@@ -10,7 +10,9 @@ struct ServerConfig
     size_t maxBodySize;
     int port;
     std::string host;
-    std::string index;
+    std::vector<std::string> index;
     std::string root;
-    std::map<int, std::string> errorPages;
+    std::string serverName;
+    std::pair<int, std::string> redirection;
+    std::map<std::string, std::vector<int>> errorPages;
 };

@@ -16,12 +16,21 @@ int main(int ac, char *argv[])
 		std::cout << "Welcome to the webserv" << std::endl;
 
 		// Parse and print the configuration file.
-		std::string filePath(argv[1]);
-		ConfigBlock configFile = ParsingHelper::parseConfigFile(filePath);
-		configFile.print();
-
-		std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n";
-		Request request = ParsingHelper::parseRequest(line);
+		try
+		{
+			std::string filePath(argv[1]);
+			std::vector<ServerConfig> serversConfiguration = ParsingHelper::getServersConfig(filePath);
+			ServerManager serverManager;
+			for (std::vector<ServerConfig>::iterator it = serversConfiguration.begin(); it != serversConfiguration.end(); it++)
+			{
+				serverManager.addServer(*it);
+			}
+			serverManager.printServers();
+		}
+		catch (const std::exception &e)
+		{
+			std::cerr << e.what() << '\n';
+		}
 	}
 	else
 	{
@@ -32,16 +41,19 @@ int main(int ac, char *argv[])
 			1000000,
 			8080,
 			"localhost",
-			"index.html",
+			{"index.html"},
 			"/html",
-			{{400, "error400.html"},
-			 {403, "error403.html"},
-			 {404, "error404.html"}}};
+			"name",
+			{302, "http.."},
+			{{"error400.html", {400}},
+			 {"error403.html", {403}},
+			 {"error50x.html", {501, 502, 503}}}};
 
 		ServerManager serverManager;
 		serverManager.addServer(config);
 		serverManager.printServers();
-		if ((argv[1]) == std::string("start")) {
+		if ((argv[1]) == std::string("start"))
+		{
 			serverManager.runPoll();
 		}
 	}

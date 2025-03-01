@@ -25,9 +25,9 @@ void ConfigBlock::addDirective(const std::string &key, const std::string &value,
 
 	checkIfValidDirective(key, context, values);
 
-	if (key == "server_name")
+	if (key == "error_page")
 	{
-		_directives[key].push_back(values.back());
+		_directives[key].push_back(value);
 		return;
 	}
 
@@ -37,30 +37,31 @@ void ConfigBlock::addDirective(const std::string &key, const std::string &value,
 	}
 }
 
+/// @brief Checks if a directive is in the right context or if its value is valid.
+/// @param key Name of the directive to check.
+/// @param context Name of context where the directive is inside.
+/// @param values Values related to the directive.
+/// @throw std::runtime_error if the directive is not valid.
 void ConfigBlock::checkIfValidDirective(const std::string &key, const std::string &context, std::vector<std::string> &values)
 {
 	if (Directives.find(key) == Directives.end())
 	{
-		std::cerr << "Error: Invalid directive: " << key << "." << std::endl;
-		exit(1);
+		throw std::runtime_error("Error: Invalid directive: " + key + ".");
 	}
 
 	if (std::find(SingleUseDirectives.begin(), SingleUseDirectives.end(), key) != SingleUseDirectives.end() && !_directives[key].empty())
 	{
-		std::cerr << "Error: " << key << " cannot appear more than once in a block." << std::endl;
-		exit(1);
+		throw std::runtime_error("Error: " + key + " cannot appear more than once in a block.");
 	}
 
 	if (values.empty())
 	{
-		std::cerr << "Error: " << key << " is empty." << std::endl;
-		exit(1);
+		throw std::runtime_error("Error: " + key + " is empty.");
 	}
 
 	if (std::find(SingleValueDirectives.begin(), SingleValueDirectives.end(), key) != SingleValueDirectives.end() && values.size() != 1)
 	{
-		std::cerr << "Error: " << key << " should only have one value." << std::endl;
-		exit(1);
+		throw std::runtime_error("Error: " + key + " should only have one value.");
 	}
 
 	std::vector<Context> possibleContexts = Directives.at(key);
@@ -71,23 +72,31 @@ void ConfigBlock::checkIfValidDirective(const std::string &key, const std::strin
 			return;
 		}
 	}
-
-	std::cerr << "Error: Directive " << key << " should not be in context " << context << "." << std::endl;
-	exit(1);
+	throw std::runtime_error("Error: Directive " + key + " should not be in context " + context + ".");
 }
 
+/// @brief Adds a sub-block to the ConfigBlock's _subConfigBlocks.
+/// @param blockName Name of the sub-block to add.
+/// @param parentBlockName Parent sub-block's name.
+/// @param block The sub-block to add.
+/// @throw std::runtime_error if the name of the sub-block is not valid or is not inside the right block.
 void ConfigBlock::addSubBlock(const std::string &blockName, const std::string &parentBlockName, const ConfigBlock &block)
 {
+	if (blockName == ParsingHelper::toString(Context::HTTP) && _subConfigBlocks[blockName].size() > 0)
+	{
+		throw std::runtime_error("Error: Http block should only appear once in the configuration file.");
+	}
+
 	if ((blockName == ParsingHelper::toString(Context::HTTP) && parentBlockName == ParsingHelper::toString(Context::NONE)) ||
 		(blockName == ParsingHelper::toString(Context::SERVER) && parentBlockName == ParsingHelper::toString(Context::HTTP)) ||
-		(blockName.substr(0, blockName.find(" ")) == ParsingHelper::toString(Context::LOCATION) && parentBlockName == ParsingHelper::toString(Context::SERVER)))
+		(blockName.substr(0, blockName.find(" ")) == ParsingHelper::toString(Context::LOCATION) && parentBlockName == ParsingHelper::toString(Context::SERVER)) ||
+		(blockName.substr(0, blockName.find(" ")) == ParsingHelper::toString(Context::LIMIT_EXCEPT) && parentBlockName.substr(0, parentBlockName.find(" ")) == ParsingHelper::toString(Context::LOCATION)))
 	{
 		_subConfigBlocks[blockName].push_back(block);
 	}
 	else
 	{
-		std::cerr << "Error: Incorrect syntax in file related to block names." << std::endl;
-		exit(1);
+		throw std::runtime_error("Error: Incorrect syntax in file related to block names: " + blockName);
 	}
 }
 
@@ -124,4 +133,20 @@ std::map<std::string, std::vector<ConfigBlock>> &ConfigBlock::getSubConfigBlocks
 std::map<std::string, std::vector<std::string>> &ConfigBlock::getDirectives()
 {
 	return this->_directives;
+}
+
+/// @brief Gets the sub-ConfigBlock representing the given contex.
+/// @param context Name of the context to get.
+/// @return The ConfigBlock's context.
+/// @throw std::runtime_error if the context is not found.
+std::vector<ConfigBlock> ConfigBlock::getConfigBlocksByContext(Context context)
+{
+	std::string contextStr = ParsingHelper::toString(context);
+	std::map<std::string, std::vector<ConfigBlock>> configBlocks = this->getSubConfigBlocks();
+	std::map<std::string, std::vector<ConfigBlock>>::iterator it = configBlocks.find(contextStr);
+	if (it == configBlocks.end())
+	{
+		throw std::runtime_error("Error: " + contextStr + " block has not been found in the configuration file.");
+	}
+	return it->second;
 }
