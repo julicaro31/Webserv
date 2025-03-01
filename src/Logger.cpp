@@ -23,9 +23,6 @@ void Logger::log(LogLevel level, const std::string &message)
 	std::ostringstream logEntry;
 	logEntry << "[" << timestamp << "] " << levelToString(level) << ": " << message << std::endl;
 
-	// Print to console
-	std::cout << logEntry.str();
-
 	// Write to file
 	if (logFile.is_open())
 	{

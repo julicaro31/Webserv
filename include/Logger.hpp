@@ -22,7 +22,6 @@ private:
 	static LogLevel logLevel;
 
 	static std::string levelToString(LogLevel level);
-	static std::string getTimestamp();
 
 public:
 	static void init(const std::string &filename);

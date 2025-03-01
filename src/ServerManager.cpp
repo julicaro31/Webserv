@@ -154,7 +154,7 @@ void ServerManager::acceptNewClient(int serverFD)
 	{
 		perror("Failed to accept new client(connection)");
 		Logger::log(ERROR, "[ServerManager] Failed to accept new client(connection)");
-		return;
+		throw std::runtime_error("Failed to accept new client(connection)");
 	}
 	Logger::log(INFO, "[ServerManager] New client connected on FD " + std::to_string(newClientFD));
 
