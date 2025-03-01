@@ -31,11 +31,11 @@ private:
 	static void handleSubBlock(std::ifstream &file, ConfigBlock &block, std::string blockName, std::string line);
 	static void handleDirective(ConfigBlock &block, std::string blockName, std::string line);
 
-	static bool parseAutoIndex(std::string &info);
-	static size_t parseMaxBodySize(std::string &info);
+	static bool parseAutoIndex(std::string &value);
+	static size_t parseMaxBodySize(std::string &value);
 	static std::pair<std::string, int> parseHostAndPort(std::string &info);
+	static std::pair<int, std::string> parseReturn(std::vector<std::string> &values);
 	static std::map<std::string, std::vector<int>> parseErrorPages(std::vector<std::string> &info);
-	static std::pair<int, std::string> parseReturn(std::vector<std::string> &info);
 	static void parseErrorPage(std::map<std::string, std::vector<int>> &errorPageMap, std::string &info);
 
 	static Method parseMethod(std::string method);

@@ -19,9 +19,9 @@ int main(int ac, char *argv[])
 		try
 		{
 			std::string filePath(argv[1]);
-			std::vector<ServerConfig> serversCongiguration = ParsingHelper::getServersConfig(filePath);
+			std::vector<ServerConfig> serversConfiguration = ParsingHelper::getServersConfig(filePath);
 			ServerManager serverManager;
-			for (std::vector<ServerConfig>::iterator it = serversCongiguration.begin(); it != serversCongiguration.end(); it++)
+			for (std::vector<ServerConfig>::iterator it = serversConfiguration.begin(); it != serversConfiguration.end(); it++)
 			{
 				serverManager.addServer(*it);
 			}
@@ -52,7 +52,8 @@ int main(int ac, char *argv[])
 		ServerManager serverManager;
 		serverManager.addServer(config);
 		serverManager.printServers();
-		if ((argv[1]) == std::string("start")) {
+		if ((argv[1]) == std::string("start"))
+		{
 			serverManager.runPoll();
 		}
 	}
