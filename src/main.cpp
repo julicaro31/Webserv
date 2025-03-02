@@ -37,6 +37,7 @@ int main(int ac, char *argv[])
 	{
 		std::cout << "<< DEV version >>" << std::endl;
 		Logger::log(INFO, "Starting server...");
+		std::vector<Location> locations;
 		ServerConfig config = {
 			false,
 			true,
@@ -49,7 +50,8 @@ int main(int ac, char *argv[])
 			{302, "http.."},
 			{{"error400.html", {400}},
 			 {"error403.html", {403}},
-			 {"error50x.html", {501, 502, 503}}}};
+			 {"error50x.html", {501, 502, 503}}},
+			 locations};
 
 		ServerManager serverManager;
 		serverManager.addServer(config);

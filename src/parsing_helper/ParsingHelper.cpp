@@ -200,17 +200,98 @@ std::vector<ServerConfig> ParsingHelper::getServersConfig(std::string &configFil
 
 		parseDirectives(serverBlock->getDirectives(), serverConfig);
 
-		try
-		{
-			std::vector<ConfigBlock> limitExceptBlock = serverBlock->getConfigBlocksByContext(Context::LIMIT_EXCEPT);
-		}
-		catch(const std::exception& e){}
+		parseLocation(*serverBlock, serverConfig);
 
 		serversConfig.push_back(serverConfig);
 
 		firstServer = false;
 	}
 	return serversConfig;
+}
+
+/// @brief Parses and adds the location data from the given server ConfigBlock to the given ServerConfig.
+/// @param serverBlock ConfigBlock to get the location blocks from.
+/// @param serverConfig ServerConfig to add the locations.
+/// @throw std::invalid_argument if there is a syntax error related to location.
+void ParsingHelper::parseLocation(ConfigBlock &serverBlock, ServerConfig &serverConfig)
+{
+	std::vector<Location> locationBlocks;
+
+	std::map<std::string, std::vector<ConfigBlock>> configBlocks = serverBlock.getSubConfigBlocks();
+
+	for (std::map<std::string, std::vector<ConfigBlock>>::iterator it = configBlocks.begin(); it != configBlocks.end(); it++)
+	{
+		std::vector<std::string> contextInfo = ParsingHelper::split(it->first, ' ');
+
+		if (contextInfo[0] == "location")
+		{
+			int contextInfoSize = contextInfo.size();
+
+			if (contextInfoSize != 2 && contextInfoSize != 3)
+			{
+				Logger::log(ERROR, "location syntax error.");
+				throw std::invalid_argument("Error: location syntax error");
+			}
+
+			std::string modifier = contextInfoSize == 3 ? contextInfo[1] : "";
+			std::string uri = contextInfo.back();
+
+			if (modifier != "=" && modifier != "")
+			{
+				Logger::log(ERROR, "listen modifier must be '=' or empty. Regex is not available on this project.");
+				throw std::invalid_argument("Error: listen modifier must be '=' or empty. Regex is not available on this project.");
+			}
+
+			for (std::vector<ConfigBlock>::iterator locationBlock = it->second.begin(); locationBlock != it->second.end(); locationBlock++)
+			{
+				std::vector<LimitExceptDirective> limitExcepts = ParsingHelper::parseLimitExcepts(*locationBlock);
+				locationBlocks.push_back(Location(uri, modifier, limitExcepts, locationBlock->getDirectives()));
+			}
+		}
+	}
+
+	serverConfig.locations = locationBlocks;
+}
+
+/// @brief Parses and gets data related to the 'limit_except' directive.
+/// @param locationBlock Location ConfigBlock to get the data from.
+/// @return std::vector of 'limit_except' data stored in 'LimitExceptDirective'.
+/// @throw std::invalid_argument if the limit_except contains more than one method or none.
+std::vector<LimitExceptDirective> ParsingHelper::parseLimitExcepts(ConfigBlock &locationBlock)
+{
+	std::vector<LimitExceptDirective> limitExcepts;
+
+	std::map<std::string, std::vector<ConfigBlock>> subConfigsBlocks = locationBlock.getSubConfigBlocks();
+
+	for (std::map<std::string, std::vector<ConfigBlock>>::iterator it = subConfigsBlocks.begin(); it != subConfigsBlocks.end(); it++)
+	{
+		std::vector<std::string> contextInfo = ParsingHelper::split(it->first, ' ');
+
+		if (contextInfo[0] == "limit_except")
+		{
+			if (contextInfo.size() != 2 || parseMethod(contextInfo[1]) == Method::NONE)
+			{
+				Logger::log(ERROR, "limit_except must contain one method.");
+				throw std::invalid_argument("Error: limit_except must contain one method.");
+			}
+
+			for (std::vector<ConfigBlock>::iterator limitExceptBlock = it->second.begin(); limitExceptBlock != it->second.end(); limitExceptBlock++)
+			{
+				LimitExceptDirective limitExcept;
+				limitExcept.method = parseMethod(contextInfo[1]);
+
+				std::map<std::string, std::vector<std::string>>::iterator allowFinder = limitExceptBlock->getDirectives().find("allow");
+				limitExcept.allow = allowFinder != limitExceptBlock->getDirectives().end() ? allowFinder->second[0] : "";
+
+				std::map<std::string, std::vector<std::string>>::iterator denyFinder = limitExceptBlock->getDirectives().find("deny");
+				limitExcept.deny = denyFinder != limitExceptBlock->getDirectives().end() ? denyFinder->second[0] : " ";
+
+				limitExcepts.push_back(limitExcept);
+			}
+		}
+	}
+
+	return limitExcepts;
 }
 
 /// @brief Parses, validates and adds the directives to the given ServerConfig.
