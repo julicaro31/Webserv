@@ -62,7 +62,7 @@ std::string Server::getErrorPage(int statusCode) const
 	{
 		const std::string key = pair.first;
 		const std::vector<int> &values = pair.second;
-		
+
 		if (std::find(values.begin(), values.end(), statusCode) != values.end())
 		{
 			return key;
@@ -164,4 +164,14 @@ int Server::setNonBlocking(int fd)
 	if (currFlag == -1)
 		return -1;
 	return (fcntl(fd, F_SETFL, currFlag | O_NONBLOCK));
+}
+
+void Server::setDefaultServer(bool defaultServer)
+{
+	_defaultServer = defaultServer;
+}
+
+void Server::setLocations(std::vector<Location> locations)
+{
+	_locations = locations;
 }

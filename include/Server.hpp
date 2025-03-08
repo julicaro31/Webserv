@@ -15,6 +15,7 @@
 #include <vector>
 #include <fcntl.h>
 #include "Logger.hpp"
+#include "Location.hpp"
 
 #define MAX_CONNECTION 10
 // If MAX_CONNECTION	 is exceeded, new connections wait in a queue (until accept() is called).
@@ -25,6 +26,7 @@ private:
 	int _port;
 	int _socketFD;
 	bool _autoIndex;
+	bool _defaultServer;
 	std::string _host;
 	std::string _root;
 	std::vector<std::string> _index;
@@ -32,8 +34,7 @@ private:
 	std::string _serverName;
 	std::pair<int, std::string> _redirection;
 	std::map<std::string, std::vector<int>> _errorPages;
-	// implement limitExcept // create class;
-	// std::map<std::string, Location> _locations; //need to identify Location class
+	std::vector<Location> _locations;
 
 public:
 	// still not sure if this would be the right way to do it? or use another the setters to set the values
@@ -54,6 +55,8 @@ public:
 	void setIndex(const std::vector<std::string> &index);
 	void setAutoIndex(bool autoindex);
 	void setErrorPages(const std::map<std::string, std::vector<int>> &errorPages);
+	void setDefaultServer(bool defaultServer);
+	void setLocations(std::vector<Location> locations);
 
 	// Getters
 	int getPort() const;

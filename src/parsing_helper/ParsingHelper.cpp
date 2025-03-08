@@ -297,10 +297,12 @@ std::vector<LimitExceptDirective> ParsingHelper::parseLimitExcepts(ConfigBlock &
 /// @brief Parses, validates and adds the directives to the given ServerConfig.
 /// @param directives Directives to be added.
 /// @param serverConfig ServerConfig to add the directives.
+/// @throw std::runtime_error if not all mandatory directives have been parsed.
 void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::string>> &directives, ServerConfig &serverConfig)
 {
-	serverConfig.autoIndex = false;
-	serverConfig.maxBodySize = 0;
+	setDefaultValues(serverConfig);
+	std::vector<std::string> directivesSet;
+
 	for (std::map<std::string, std::vector<std::string>>::iterator directive = directives.begin(); directive != directives.end(); directive++)
 	{
 		std::string directiveName = directive->first;
@@ -338,7 +340,31 @@ void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::strin
 		{
 			serverConfig.errorPages = parseErrorPages(directive->second);
 		}
+
+		directivesSet.push_back(directiveName);
 	}
+
+	if (std::find(directivesSet.begin(), directivesSet.end(), "listen") == directivesSet.end() || std::find(directivesSet.begin(), directivesSet.end(), "root") == directivesSet.end())
+	{
+		Logger::log(ERROR, "No all mandatory directives have been set.");
+		throw std::runtime_error("Error: No all mandatory directives have been set.");
+	}
+
+	if (std::find(directivesSet.begin(), directivesSet.end(), "server") == directivesSet.end())
+	{
+		serverConfig.serverName = serverConfig.host;
+	}
+}
+
+/// @brief Sets default values for a ServerConfig.
+/// @param serverConfig The serverConfig to set the values for.
+void ParsingHelper::setDefaultValues(ServerConfig &serverConfig)
+{
+	serverConfig.autoIndex = false;
+	serverConfig.index = {"index.html"};
+	serverConfig.maxBodySize = 1;
+	serverConfig.redirection = {0, ""};
+	serverConfig.errorPages = {{"/404.html", {404}}, {"/403.html", {403}}, {"/500x.html", {500, 502, 503, 504}}};
 }
 
 /// @brief Parses the string value related to the directive 'autoindex'.
