@@ -48,9 +48,10 @@ int main(int ac, char *argv[])
 			"/html",
 			"name",
 			{302, "http.."},
-			{{"error400.html", {400}},
-			 {"error403.html", {403}},
-			 {"error50x.html", {501, 502, 503}}},
+			{{400, "error400.html"},
+			 {403, "error403.html"},
+			 {501, "error50x.html"},
+			 {502, "error50x.html"}},
 			 locations};
 
 		ServerManager serverManager;

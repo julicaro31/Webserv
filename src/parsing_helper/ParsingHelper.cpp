@@ -364,7 +364,7 @@ void ParsingHelper::setDefaultValues(ServerConfig &serverConfig)
 	serverConfig.index = {"index.html"};
 	serverConfig.maxBodySize = 1;
 	serverConfig.redirection = {0, ""};
-	serverConfig.errorPages = {{"/404.html", {404}}, {"/403.html", {403}}, {"/500x.html", {500, 502, 503, 504}}};
+	serverConfig.errorPages = {{404, "/404.html"}, {403, "/403.html"}, {500, "/500x.html"}, {502, "/500x.html"}, {503, "/500x.html"}, {504, "/500x.html"}};
 }
 
 /// @brief Parses the string value related to the directive 'autoindex'.
@@ -475,9 +475,9 @@ std::pair<int, std::string> ParsingHelper::parseReturn(std::vector<std::string> 
 /// @brief Parses string values related to the directive 'error_page'.
 /// @param info std::vector where each element contains a string with data of an error page (the status codes and the url).
 /// @return A map where the key is an url error page and its value a vector of status codes.
-std::map<std::string, std::vector<int>> ParsingHelper::parseErrorPages(std::vector<std::string> &info)
+std::map<int, std::string> ParsingHelper::parseErrorPages(std::vector<std::string> &info)
 {
-	std::map<std::string, std::vector<int>> errorPageMap;
+	std::map<int, std::string> errorPageMap;
 
 	for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
 	{
@@ -491,7 +491,7 @@ std::map<std::string, std::vector<int>> ParsingHelper::parseErrorPages(std::vect
 /// @param errorPageMap Map to stored the parsed error page.
 /// @param info Contains values of the error page to parsed. Should have status codes and an url separated by spaces.
 /// @throw std::invalid_argument if info does not contain at least one integer representing a status code and an url.
-void ParsingHelper::parseErrorPage(std::map<std::string, std::vector<int>> &errorPageMap, std::string &info)
+void ParsingHelper::parseErrorPage(std::map<int, std::string> &errorPageMap, std::string &info)
 {
 	std::vector<std::string> values = split(info, ' ');
 
@@ -507,7 +507,8 @@ void ParsingHelper::parseErrorPage(std::map<std::string, std::vector<int>> &erro
 	{
 		try
 		{
-			errorPageMap[errorPageUrl].push_back(std::stoi(*it));
+			int statusCode = std::stoi(*it);
+			errorPageMap[statusCode] = errorPageUrl;
 		}
 		catch (const std::exception &e)
 		{

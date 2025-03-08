@@ -33,7 +33,7 @@ private:
 	size_t _maxBodySize;
 	std::string _serverName;
 	std::pair<int, std::string> _redirection;
-	std::map<std::string, std::vector<int>> _errorPages;
+	std::map<int, std::string> _errorPages;
 	std::vector<Location> _locations;
 
 public:
@@ -54,7 +54,7 @@ public:
 	void setRoot(const std::string &root);
 	void setIndex(const std::vector<std::string> &index);
 	void setAutoIndex(bool autoindex);
-	void setErrorPages(const std::map<std::string, std::vector<int>> &errorPages);
+	void setErrorPages(const std::map<int, std::string> &errorPages);
 	void setDefaultServer(bool defaultServer);
 	void setLocations(std::vector<Location> locations);
 
@@ -63,7 +63,7 @@ public:
 	const std::string &getRoot() const;
 	const std::vector<std::string> &getIndex() const;
 	bool isAutoIndexEnabled() const;
-	const std::map<std::string, std::vector<int>> &getErrorPages() const;
+	const std::map<int, std::string> &getErrorPages() const;
 	size_t getMaxBodySize() const;
 	std::string getErrorPage(int statusCode) const;
 	int getSocketFD() const;
