@@ -364,7 +364,7 @@ void ParsingHelper::setDefaultValues(ServerConfig &serverConfig)
 	serverConfig.index = {"index.html"};
 	serverConfig.maxBodySize = 1;
 	serverConfig.redirection = {0, ""};
-	serverConfig.errorPages = {{404, "/404.html"}, {403, "/403.html"}, {500, "/500x.html"}, {502, "/500x.html"}, {503, "/500x.html"}, {504, "/500x.html"}};
+	serverConfig.errorPages = {{404, "/404.html"}, {403, "/403.html"}, {500, "/50x.html"}, {502, "/50x.html"}, {503, "/50x.html"}, {504, "/50x.html"}};
 }
 
 /// @brief Parses the string value related to the directive 'autoindex'.
