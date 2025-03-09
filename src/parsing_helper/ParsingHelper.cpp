@@ -197,54 +197,174 @@ std::vector<ServerConfig> ParsingHelper::getServersConfig(std::string &configFil
 	{
 		ServerConfig serverConfig;
 		serverConfig.defaultServer = firstServer;
-		firstServer = false;
 
-		serverConfig.autoIndex = false;
-		serverConfig.maxBodySize = 0;
+		parseDirectives(serverBlock->getDirectives(), serverConfig);
 
-		std::map<std::string, std::vector<std::string>> &directives = serverBlock->getDirectives();
+		parseLocation(*serverBlock, serverConfig);
 
-		for (std::map<std::string, std::vector<std::string>>::iterator directive = directives.begin(); directive != directives.end(); directive++)
-		{
-			std::string directiveName = directive->first;
-			if (directiveName == "autoindex")
-			{
-				serverConfig.autoIndex = parseAutoIndex(directive->second[0]);
-			}
-			else if (directiveName == "listen")
-			{
-				std::pair<std::string, int> hostAndPort = parseHostAndPort(directive->second[0]);
-				serverConfig.host = hostAndPort.first;
-				serverConfig.port = hostAndPort.second;
-			}
-			else if (directiveName == "root")
-			{
-				serverConfig.root = directive->second[0];
-			}
-			else if (directiveName == "index")
-			{
-				serverConfig.index = directive->second;
-			}
-			else if (directiveName == "client_max_body_size")
-			{
-				serverConfig.maxBodySize = parseMaxBodySize(directive->second[0]);
-			}
-			else if (directiveName == "server_name")
-			{
-				serverConfig.serverName = directive->second[0];
-			}
-			else if (directiveName == "return")
-			{
-				serverConfig.redirection = parseReturn(directive->second);
-			}
-			else if (directiveName == "error_page")
-			{
-				serverConfig.errorPages = parseErrorPages(directive->second);
-			}
-		}
 		serversConfig.push_back(serverConfig);
+
+		firstServer = false;
 	}
 	return serversConfig;
+}
+
+/// @brief Parses and adds the location data from the given server ConfigBlock to the given ServerConfig.
+/// @param serverBlock ConfigBlock to get the location blocks from.
+/// @param serverConfig ServerConfig to add the locations.
+/// @throw std::invalid_argument if there is a syntax error related to location.
+void ParsingHelper::parseLocation(ConfigBlock &serverBlock, ServerConfig &serverConfig)
+{
+	std::vector<Location> locationBlocks;
+
+	std::map<std::string, std::vector<ConfigBlock>> configBlocks = serverBlock.getSubConfigBlocks();
+
+	for (std::map<std::string, std::vector<ConfigBlock>>::iterator it = configBlocks.begin(); it != configBlocks.end(); it++)
+	{
+		std::vector<std::string> contextInfo = ParsingHelper::split(it->first, ' ');
+
+		if (contextInfo[0] == "location")
+		{
+			int contextInfoSize = contextInfo.size();
+
+			if (contextInfoSize != 2 && contextInfoSize != 3)
+			{
+				Logger::log(ERROR, "location syntax error.");
+				throw std::invalid_argument("Error: location syntax error");
+			}
+
+			std::string modifier = contextInfoSize == 3 ? contextInfo[1] : "";
+			std::string uri = contextInfo.back();
+
+			if (modifier != "=" && modifier != "")
+			{
+				Logger::log(ERROR, "listen modifier must be '=' or empty. Regex is not available on this project.");
+				throw std::invalid_argument("Error: listen modifier must be '=' or empty. Regex is not available on this project.");
+			}
+
+			for (std::vector<ConfigBlock>::iterator locationBlock = it->second.begin(); locationBlock != it->second.end(); locationBlock++)
+			{
+				std::vector<LimitExceptDirective> limitExcepts = ParsingHelper::parseLimitExcepts(*locationBlock);
+				locationBlocks.push_back(Location(uri, modifier, limitExcepts, locationBlock->getDirectives()));
+			}
+		}
+	}
+
+	serverConfig.locations = locationBlocks;
+}
+
+/// @brief Parses and gets data related to the 'limit_except' directive.
+/// @param locationBlock Location ConfigBlock to get the data from.
+/// @return std::vector of 'limit_except' data stored in 'LimitExceptDirective'.
+/// @throw std::invalid_argument if the limit_except contains more than one method or none.
+std::vector<LimitExceptDirective> ParsingHelper::parseLimitExcepts(ConfigBlock &locationBlock)
+{
+	std::vector<LimitExceptDirective> limitExcepts;
+
+	std::map<std::string, std::vector<ConfigBlock>> subConfigsBlocks = locationBlock.getSubConfigBlocks();
+
+	for (std::map<std::string, std::vector<ConfigBlock>>::iterator it = subConfigsBlocks.begin(); it != subConfigsBlocks.end(); it++)
+	{
+		std::vector<std::string> contextInfo = ParsingHelper::split(it->first, ' ');
+
+		if (contextInfo[0] == "limit_except")
+		{
+			if (contextInfo.size() != 2 || parseMethod(contextInfo[1]) == Method::NONE)
+			{
+				Logger::log(ERROR, "limit_except must contain one method.");
+				throw std::invalid_argument("Error: limit_except must contain one method.");
+			}
+
+			for (std::vector<ConfigBlock>::iterator limitExceptBlock = it->second.begin(); limitExceptBlock != it->second.end(); limitExceptBlock++)
+			{
+				LimitExceptDirective limitExcept;
+				limitExcept.method = parseMethod(contextInfo[1]);
+
+				std::map<std::string, std::vector<std::string>>::iterator allowFinder = limitExceptBlock->getDirectives().find("allow");
+				limitExcept.allow = allowFinder != limitExceptBlock->getDirectives().end() ? allowFinder->second[0] : "";
+
+				std::map<std::string, std::vector<std::string>>::iterator denyFinder = limitExceptBlock->getDirectives().find("deny");
+				limitExcept.deny = denyFinder != limitExceptBlock->getDirectives().end() ? denyFinder->second[0] : " ";
+
+				limitExcepts.push_back(limitExcept);
+			}
+		}
+	}
+
+	return limitExcepts;
+}
+
+/// @brief Parses, validates and adds the directives to the given ServerConfig.
+/// @param directives Directives to be added.
+/// @param serverConfig ServerConfig to add the directives.
+/// @throw std::runtime_error if not all mandatory directives have been parsed.
+void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::string>> &directives, ServerConfig &serverConfig)
+{
+	setDefaultValues(serverConfig);
+	std::vector<std::string> directivesSet;
+
+	for (std::map<std::string, std::vector<std::string>>::iterator directive = directives.begin(); directive != directives.end(); directive++)
+	{
+		std::string directiveName = directive->first;
+		if (directiveName == "autoindex")
+		{
+			serverConfig.autoIndex = parseAutoIndex(directive->second[0]);
+		}
+		else if (directiveName == "listen")
+		{
+			std::pair<std::string, int> hostAndPort = parseHostAndPort(directive->second[0]);
+			serverConfig.host = hostAndPort.first;
+			serverConfig.port = hostAndPort.second;
+		}
+		else if (directiveName == "root")
+		{
+			serverConfig.root = directive->second[0];
+		}
+		else if (directiveName == "index")
+		{
+			serverConfig.index = directive->second;
+		}
+		else if (directiveName == "client_max_body_size")
+		{
+			serverConfig.maxBodySize = parseMaxBodySize(directive->second[0]);
+		}
+		else if (directiveName == "server_name")
+		{
+			serverConfig.serverName = directive->second[0];
+		}
+		else if (directiveName == "return")
+		{
+			serverConfig.redirection = parseReturn(directive->second);
+		}
+		else if (directiveName == "error_page")
+		{
+			serverConfig.errorPages = parseErrorPages(directive->second);
+		}
+
+		directivesSet.push_back(directiveName);
+	}
+
+	if (std::find(directivesSet.begin(), directivesSet.end(), "listen") == directivesSet.end() || std::find(directivesSet.begin(), directivesSet.end(), "root") == directivesSet.end())
+	{
+		Logger::log(ERROR, "No all mandatory directives have been set.");
+		throw std::runtime_error("Error: No all mandatory directives have been set.");
+	}
+
+	if (std::find(directivesSet.begin(), directivesSet.end(), "server") == directivesSet.end())
+	{
+		serverConfig.serverName = serverConfig.host;
+	}
+}
+
+/// @brief Sets default values for a ServerConfig.
+/// @param serverConfig The serverConfig to set the values for.
+void ParsingHelper::setDefaultValues(ServerConfig &serverConfig)
+{
+	serverConfig.autoIndex = false;
+	serverConfig.index = {"index.html"};
+	serverConfig.maxBodySize = 1;
+	serverConfig.redirection = {0, ""};
+	serverConfig.errorPages = {{404, "/404.html"}, {403, "/403.html"}, {500, "/50x.html"}, {502, "/50x.html"}, {503, "/50x.html"}, {504, "/50x.html"}};
 }
 
 /// @brief Parses the string value related to the directive 'autoindex'.
@@ -314,7 +434,7 @@ std::pair<std::string, int> ParsingHelper::parseHostAndPort(std::string &info)
 			throw std::invalid_argument("Error: Port number should be between 1024 and 65535.");
 		}
 
-		std::string host = valuesSize == 2 ? values[1] : "0.0.0.0";
+		std::string host = valuesSize == 2 ? values[0] : "0.0.0.0";
 
 		return std::make_pair(host, port);
 	}
@@ -355,9 +475,9 @@ std::pair<int, std::string> ParsingHelper::parseReturn(std::vector<std::string> 
 /// @brief Parses string values related to the directive 'error_page'.
 /// @param info std::vector where each element contains a string with data of an error page (the status codes and the url).
 /// @return A map where the key is an url error page and its value a vector of status codes.
-std::map<std::string, std::vector<int>> ParsingHelper::parseErrorPages(std::vector<std::string> &info)
+std::map<int, std::string> ParsingHelper::parseErrorPages(std::vector<std::string> &info)
 {
-	std::map<std::string, std::vector<int>> errorPageMap;
+	std::map<int, std::string> errorPageMap;
 
 	for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
 	{
@@ -371,7 +491,7 @@ std::map<std::string, std::vector<int>> ParsingHelper::parseErrorPages(std::vect
 /// @param errorPageMap Map to stored the parsed error page.
 /// @param info Contains values of the error page to parsed. Should have status codes and an url separated by spaces.
 /// @throw std::invalid_argument if info does not contain at least one integer representing a status code and an url.
-void ParsingHelper::parseErrorPage(std::map<std::string, std::vector<int>> &errorPageMap, std::string &info)
+void ParsingHelper::parseErrorPage(std::map<int, std::string> &errorPageMap, std::string &info)
 {
 	std::vector<std::string> values = split(info, ' ');
 
@@ -387,7 +507,8 @@ void ParsingHelper::parseErrorPage(std::map<std::string, std::vector<int>> &erro
 	{
 		try
 		{
-			errorPageMap[errorPageUrl].push_back(std::stoi(*it));
+			int statusCode = std::stoi(*it);
+			errorPageMap[statusCode] = errorPageUrl;
 		}
 		catch (const std::exception &e)
 		{

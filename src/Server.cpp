@@ -52,23 +52,15 @@ const std::vector<std::string> &Server::getIndex() const { return _index; }
 
 bool Server::isAutoIndexEnabled() const { return _autoIndex; }
 
-const std::map<std::string, std::vector<int>> &Server::getErrorPages() const { return _errorPages; }
+const std::map<int, std::string> &Server::getErrorPages() const { return _errorPages; }
 
 size_t Server::getMaxBodySize() const { return _maxBodySize; }
 
 std::string Server::getErrorPage(int statusCode) const
 {
-	for (const std::pair<std::string, std::vector<int>> pair : _errorPages)
-	{
-		const std::string key = pair.first;
-		const std::vector<int> &values = pair.second;
-		
-		if (std::find(values.begin(), values.end(), statusCode) != values.end())
-		{
-			return key;
-		}
-	}
-
+	std::map<int, std::string>::const_iterator it = _errorPages.find(statusCode);
+	if (it != _errorPages.end())
+		return it->second;
 	return "";
 }
 
@@ -105,7 +97,7 @@ void Server::setMaxBodySize(size_t maxBodySize)
 	_maxBodySize = maxBodySize;
 }
 
-void Server::setErrorPages(const std::map<std::string, std::vector<int>> &errorPages)
+void Server::setErrorPages(const std::map<int, std::string> &errorPages)
 {
 	_errorPages = errorPages;
 }
@@ -164,4 +156,14 @@ int Server::setNonBlocking(int fd)
 	if (currFlag == -1)
 		return -1;
 	return (fcntl(fd, F_SETFL, currFlag | O_NONBLOCK));
+}
+
+void Server::setDefaultServer(bool defaultServer)
+{
+	_defaultServer = defaultServer;
+}
+
+void Server::setLocations(std::vector<Location> locations)
+{
+	_locations = locations;
 }

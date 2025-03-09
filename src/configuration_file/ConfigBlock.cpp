@@ -2,6 +2,7 @@
 #include "ParsingHelper.hpp"
 
 ConfigBlock::ConfigBlock() {}
+ConfigBlock::ConfigBlock(std::map<std::string, std::vector<std::string>> directives) : _directives(directives) {};
 ConfigBlock::~ConfigBlock() {}
 ConfigBlock::ConfigBlock(const ConfigBlock &configBlock) : _directives(configBlock._directives), _subConfigBlocks(configBlock._subConfigBlocks) {}
 
@@ -142,9 +143,9 @@ std::map<std::string, std::vector<std::string>> &ConfigBlock::getDirectives()
 	return this->_directives;
 }
 
-/// @brief Gets the sub-ConfigBlock representing the given contex.
-/// @param context Name of the context to get.
-/// @return The ConfigBlock's context.
+/// @brief Gets the configBlocks representing the given contex.
+/// @param context Name of the block's context to get.
+/// @return Vector of ConfigBlocks, whose names match the given context.
 /// @throw std::runtime_error if the context is not found.
 std::vector<ConfigBlock> ConfigBlock::getConfigBlocksByContext(Context context)
 {

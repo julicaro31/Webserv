@@ -14,6 +14,7 @@ private:
 
 public:
 	ConfigBlock();
+	ConfigBlock(std::map<std::string, std::vector<std::string>> directives);
 	~ConfigBlock();
 	ConfigBlock(const ConfigBlock &configBlock);
 	ConfigBlock &operator=(const ConfigBlock &configBlock);
