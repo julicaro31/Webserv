@@ -7,7 +7,7 @@ class Token
 {
 private:
 	Token();
-	Token(const Token &token);
+	Token(const Token &);
 };
 
 #endif
