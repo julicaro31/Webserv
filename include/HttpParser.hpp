@@ -9,7 +9,7 @@ class ConfigBlock;
 class HttpParser
 {
 public:
-	static void parseRequest(std::string strRequest);
+	static void parseRequest(std::string);
 	static bool hadError;
 
 private:
