@@ -3,24 +3,20 @@
 
 class ConfigBlock;
 
-#include "Directives.hpp"
-#include "Request.hpp"
-#include "Method.hpp"
-
-#include <fstream>
-#include <sstream>
 #include <string>
-#include <algorithm>
 #include <cctype>
 
 class HttpParser
 {
 public:
 	static void parseRequest(std::string strRequest);
+	static bool hadError;
 
 private:
+	void error(int, std::string);
+	void report(int, std::string, std::string);
 	HttpParser();
-	HttpParser(const HttpParser &parser);
+	HttpParser(const HttpParser &);
 };
 
 #endif

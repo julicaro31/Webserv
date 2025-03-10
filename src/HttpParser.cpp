@@ -14,3 +14,13 @@ void HttpParser::parseRequest(std::string Request)
 	}
 }
 
+void HttpParser::error(int line, std::string message)
+{
+	report(line, "", message);
+}
+
+void HttpParser::report(int line, std::string location, std::string message)
+{
+	std::cout << "Line: " << line << " Error:" << location << ":" << message << std::endl;
+	hadError = true;
+}
