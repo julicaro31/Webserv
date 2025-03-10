@@ -11,7 +11,7 @@ public:
 	std::vector<Token> scanTokens(void);
 private:
 	Scanner();
-	Scanner(const Scanner &scanner);
+	Scanner(const Scanner &);
 };
 
 #endif
