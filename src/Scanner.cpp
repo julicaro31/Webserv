@@ -1,4 +1,5 @@
 #include "Scanner.hpp"
+#include <cctype>
 #include <vector>
 #include "Token.hpp"
 
@@ -38,6 +39,8 @@ void Scanner::scanToken()
 		case '\n': line++; break;
 		case '"': string(); break;
 	default:
+		if (std::isdigit(c))
+			number();
 		HttpParser.error(line, "Unexpected character."); break;
 	}
 }
@@ -58,12 +61,6 @@ bool Scanner::match(char expected)
 	return (true);
 }
 
-char Scanner::peek()
-{
-	if (isAtEnd())
-		return ('\0');
-	return (source[current]);
-}
 
 void Scanner::string()
 {
@@ -83,6 +80,33 @@ void Scanner::string()
 	addToken(TOKEN7, value);
 }
 
+void Scanner::number()
+{
+	while (std::isdigit(peek()))
+		advance();
+
+	if (peek() == '.' && std::isdigit(peekNext()))
+	{
+		advance();
+		while (std::isdigit(peek()))
+			advance();
+	}
+	addToken(TOKEN8, parseDouble(source.substring(start, current)));
+}
+
+char Scanner::peek()
+{
+	if (isAtEnd())
+		return ('\0');
+	return (source[current]);
+}
+
+char Scanner:peekNext()
+{
+	if (current + 1 >= source.length())
+		return ('\0');
+	return (source[current + 1);
+}
 
 void Scanner::addToken(TokenType type)
 {
