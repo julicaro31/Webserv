@@ -25,6 +25,7 @@ void Scanner::scanToken()
 		case 'a': addToken(TOKEN1); break;
 		case 'b': addToken(TOKEN2); break;
 		case 'c': addToken(TOKEN3); break;
+		case '!': addToken(match('=') ? TOKEN4 : TOKEN5);
 	default:
 		HttpParser.error(line, "Unexpected character."); break;
 	}
@@ -33,6 +34,17 @@ void Scanner::scanToken()
 char Scanner::advance ()
 {
 	return (source[current++]);
+}
+
+bool Scanner::match(char expected)
+{
+	if (isAtEnd())
+		return (false);
+	else if (source[current] != expected)
+		return (false);
+	
+	current++;
+	return (true);
 }
 
 void Scanner::addToken(TokenType type)
