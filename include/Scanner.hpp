@@ -7,10 +7,16 @@
 
 class Scanner
 {
+private:
+	int	start = 0;
+	int	current = 0;
+	int	line = 1;
+	std::string source;
+	std::vector<Token> tokens;
+	bool isAtEnd(void);
 public:
 	std::vector<Token> scanTokens(void);
-private:
-	Scanner();
+	Scanner(std::string);
 	Scanner(const Scanner &);
 };
 
