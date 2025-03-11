@@ -17,6 +17,7 @@ private:
 	void scanToken();
 	char advance();
 	bool match(char);
+	char peek();
 	void addToken(TokenType);
 	void addToken(TokenType, std::string);
 public:
