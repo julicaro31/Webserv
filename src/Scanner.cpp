@@ -25,6 +25,8 @@ void Scanner::scanToken()
 		case 'a': addToken(TOKEN1); break;
 		case 'b': addToken(TOKEN2); break;
 		case 'c': addToken(TOKEN3); break;
+	default:
+		HttpParser.error(line, "Unexpected character."); break;
 	}
 }
 

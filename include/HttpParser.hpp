@@ -14,7 +14,7 @@ public:
 
 private:
 	void error(int, std::string);
-	void report(int, std::string, std::string);
+	static	void report(int, std::string, std::string);
 	HttpParser();
 	HttpParser(const HttpParser &);
 };
