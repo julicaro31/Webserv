@@ -2,9 +2,8 @@
 #include <vector>
 #include "Token.hpp"
 
-Scanner::std::vector<Token> Scanner::scanTokens(void)
+std::vector<Token> Scanner::scanTokens(void)
 {
-	std::vector<Token> tokens;
 	while (!isAtEnd())
 	{
 		start = current;
@@ -14,10 +13,35 @@ Scanner::std::vector<Token> Scanner::scanTokens(void)
 	return (tokens);
 }
 
-Scanner::isAtEnd(void)
+bool Scanner::isAtEnd(void)
 {
 	return (current >= source.length());
 }
+
+void Scanner::scanToken()
+{
+	char c = advance();
+	switch (c){
+		case 'a': addToken(TOKEN1); break;
+		case 'b': addToken(TOKEN2); break;
+		case 'c': addToken(TOKEN3); break;
+	}
+}
+
+char Scanner::advance ()
+{
+	return (source[current++]);
+}
+
+void Scanner::addToken(TokenType type)
+{
+	addToken(type, nullptr);
+}
+
+void Scanner::addToken(TokenType type, std::string literal)
+{
+	std::string text = source.substring(start, current);
+	tokens.push_back(Token(type, text, literal, line));
 
 Scanner::Scanner(std::string source)
 {
