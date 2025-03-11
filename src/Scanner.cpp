@@ -36,6 +36,7 @@ void Scanner::scanToken()
 		case '\r': break;
 		case '\t': break;
 		case '\n': line++; break;
+		case '"': string(); break;
 	default:
 		HttpParser.error(line, "Unexpected character."); break;
 	}
@@ -63,6 +64,25 @@ char Scanner::peek()
 		return ('\0');
 	return (source[current]);
 }
+
+void Scanner::string()
+{
+	while (peek() != '"' && !isAtEnd())
+	{
+		if (peek() == '\n')
+			line++;
+		advance();
+	}
+	if (isAtEnd())
+	{
+		HttpParser.error(line, "Unterminated string.");
+		return();
+	}
+	advance();
+	std::string value = source.subtstring(start + 1, current - 1);
+	addToken(TOKEN7, value);
+}
+
 
 void Scanner::addToken(TokenType type)
 {
