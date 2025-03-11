@@ -26,12 +26,18 @@ void Scanner::scanToken()
 		case 'b': addToken(TOKEN2); break;
 		case 'c': addToken(TOKEN3); break;
 		case '!': addToken(match('=') ? TOKEN4 : TOKEN5);
+		case '/': 
+			if (match('/'))
+				while (peek() != '\n' && !isAtEnd()) advance();
+			else 
+				addToken(TOKEN6)
+			break;
 	default:
 		HttpParser.error(line, "Unexpected character."); break;
 	}
 }
 
-char Scanner::advance ()
+char Scanner::advance()
 {
 	return (source[current++]);
 }
@@ -45,6 +51,13 @@ bool Scanner::match(char expected)
 	
 	current++;
 	return (true);
+}
+
+char Scanner::peek()
+{
+	if (isAtEnd())
+		return ('\0');
+	return (source[current]);
 }
 
 void Scanner::addToken(TokenType type)
