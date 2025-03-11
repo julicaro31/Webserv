@@ -16,6 +16,7 @@ private:
 	bool isAtEnd(void);
 	void scanToken();
 	char advance();
+	bool match(char);
 	void addToken(TokenType);
 	void addToken(TokenType, std::string);
 public:
