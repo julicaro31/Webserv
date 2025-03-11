@@ -14,6 +14,10 @@ private:
 	std::string source;
 	std::vector<Token> tokens;
 	bool isAtEnd(void);
+	void scanToken();
+	char advance();
+	void addToken(TokenType);
+	void addToken(TokenType, std::string);
 public:
 	std::vector<Token> scanTokens(void);
 	Scanner(std::string);
