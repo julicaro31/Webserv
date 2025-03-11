@@ -32,6 +32,10 @@ void Scanner::scanToken()
 			else 
 				addToken(TOKEN6)
 			break;
+		case ' ': break;
+		case '\r': break;
+		case '\t': break;
+		case '\n': line++; break;
 	default:
 		HttpParser.error(line, "Unexpected character."); break;
 	}
