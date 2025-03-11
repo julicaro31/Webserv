@@ -41,7 +41,10 @@ void Scanner::scanToken()
 	default:
 		if (std::isdigit(c))
 			number();
-		HttpParser.error(line, "Unexpected character."); break;
+		else if (std::isalpha(c))
+			identifier();
+		else
+			HttpParser.error(line, "Unexpected character."); break;
 	}
 }
 
@@ -60,7 +63,6 @@ bool Scanner::match(char expected)
 	current++;
 	return (true);
 }
-
 
 void Scanner::string()
 {
@@ -92,6 +94,20 @@ void Scanner::number()
 			advance();
 	}
 	addToken(TOKEN8, parseDouble(source.substring(start, current)));
+}
+
+void Scanner::identifier()
+{
+	while (std::isalnum(peek())
+		advance();
+
+	std::string text = source.substring(start, current);
+	auto it = keywords.find(text);
+	if (it == keywords.end())
+		type = TOKEN9;
+	else
+		type = it->second;
+	addToken(type);
 }
 
 char Scanner::peek()
