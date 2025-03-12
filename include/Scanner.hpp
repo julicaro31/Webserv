@@ -4,7 +4,7 @@
 #include "Token.hpp"
 #include <cctype>
 #include <vector>
-
+		
 class Scanner
 {
 private:
@@ -19,14 +19,19 @@ private:
 	bool match(char);
 	void string();
 	void number();
+	void identifier();
 	char peek();
 	char peekNext();
-	void addToken(TokenType);
-	void addToken(TokenType, std::string);
+	void addToken(Token::TokenType);
+	void addToken(Token::TokenType, std::string);
 public:
 	std::vector<Token> scanTokens(void);
 	Scanner(std::string);
 	Scanner(const Scanner &);
+};
+
+const std::unordered_map<std::string, Token::TokenType> Token::keywords = {
+    {"where",    Token::TokenType::WHERE},
 };
 
 #endif

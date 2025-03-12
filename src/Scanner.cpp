@@ -23,19 +23,27 @@ void Scanner::scanToken()
 {
 	char c = advance();
 	switch (c){
-		case 'a': addToken(TOKEN1); break;
-		case 'b': addToken(TOKEN2); break;
-		case 'c': addToken(TOKEN3); break;
-		case '!': addToken(match('=') ? TOKEN4 : TOKEN5);
+		case '.': if (peek() == ' ') addToken(DOT); break;
+		case ':': if (peek() == ' ') addToken(COLON); break;
+		case '*': if (peek() == ' ') addToken(STAR); break;
+		case '?': if (peek() == ' ') addToken(QUESTION_MARK); break;
+		case '=': if (peek() == ' ') addToken(EQUAL); break;
+		case '!': if (peek() == ' ') addToken(match('=') ? TOKEN4 : TOKEN5);
 		case '/': 
 			if (match('/'))
-				while (peek() != '\n' && !isAtEnd()) advance();
+				addToken(DOUBLE_SLASH);
 			else 
-				addToken(TOKEN6)
+				addToken(SLASH);
 			break;
-		case ' ': break;
-		case '\r': break;
-		case '\t': break;
+		case ' ': 
+			if (match(' '))
+				addToken(WHITESPACE)
+			else
+				addToken(Token::SINGLE_SPACE);
+			while (peek() != ' ') advance();
+			break;
+		case '\r': addToken(WHITESPACE) break;
+		case '\t': addToken(WHITESPACE) break;
 		case '\n': line++; break;
 		case '"': string(); break;
 	default:
