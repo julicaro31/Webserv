@@ -7,17 +7,19 @@
 
 class Binary;
 
+template <typename T>
 class Visitor
 {
 public:
-	virtual void visit(Binary& binary) = 0;
+	virtual T visit(T&) = 0;
 	virtual ~Visitor() = default;
 };
 
+template <typename T>
 class Expr
 {
 public:
-	virtual void accept(Visitor&) = 0;
+	virtual T accept(Visitor<T>&) const = 0;
 	virtual	~Expr() = default;
 private:
 	Expr	left;
