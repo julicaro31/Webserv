@@ -4,11 +4,12 @@
 #include <cctype>
 #include "Expr.hpp"
 
-class Binary : public Expr
+template <typename T>
+class Binary : public Expr<T>
 {
 public:
-	void accept(ExprVisitor& visitor) override;
-	Binary(Expr, Token, Expr);
+	T accept(Visitor<T>&) override;
+	Binary(Expr<T>, Token, Expr<T>);
 	~Binary();
 };
 
