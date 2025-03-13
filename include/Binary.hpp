@@ -7,7 +7,9 @@
 class Binary : public Expr
 {
 public:
+	void accept(ExprVisitor& visitor) override;
 	Binary(Expr, Token, Expr);
+	~Binary();
 };
 
 #endif
