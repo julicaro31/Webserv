@@ -52,6 +52,8 @@ void Scanner::scanToken()
 				addToken(WHITESPACE);
 			break;
 		case '\t': addToken(WHITESPACE) break;
+		case '\v': addToken(WHITESPACE) break;
+		case '\f': addToken(WHITESPACE) break;
 		case '\n': line++; break;
 		case '"': string(); break;
 		case 'H': version(); break;
