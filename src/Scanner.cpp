@@ -85,7 +85,7 @@ void Scanner::version()
 {
 	int start = current;
 
-    if (peek() != 'h' || peek(1) != 't' || peek(2) != 't' || peek(3) != 'p')
+    if (peek() != 'H' || peek(1) != 'T' || peek(2) != 'T' || peek(3) != 'P')
         return false;
     if (peek(4) != '/') return false;
     if (!std::isdigit(peek(5))) return false;
