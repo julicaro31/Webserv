@@ -42,10 +42,19 @@ void Scanner::scanToken()
 				addToken(Token::SINGLE_SPACE);
 			while (peek() != ' ') advance();
 			break;
-		case '\r': addToken(WHITESPACE) break;
+		case '\r': 
+			if (match('\n'))
+			{
+				addToken(CRLF);
+				line++;
+			}
+			else
+				addToken(WHITESPACE);
+			break;
 		case '\t': addToken(WHITESPACE) break;
 		case '\n': line++; break;
 		case '"': string(); break;
+		case 'H': version(); break;
 	default:
 		if (std::isdigit(c))
 			number();
@@ -70,6 +79,23 @@ bool Scanner::match(char expected)
 	
 	current++;
 	return (true);
+}
+
+
+void Scanner::version()
+{
+	int start = current;
+
+    if (peek() != 'h' || peek(1) != 't' || peek(2) != 't' || peek(3) != 'p')
+        return false;
+    if (peek(4) != '/') return false;
+    if (!std::isdigit(peek(5))) return false;
+    if (peek(6) != '.') return false;
+    if (!std::isdigit(peek(7))) return false;
+    if (peek(8) != ' ') return false;
+    current += 9;
+	std::string value = source.subtstring(start + 1, current - 1);
+	addToken(VERSION, value);
 }
 
 void Scanner::string()
@@ -125,7 +151,14 @@ char Scanner::peek()
 	return (source[current]);
 }
 
-char Scanner:peekNext()
+char Scanner::peek(int index)
+{
+	if (isAtEnd())
+		return ('\0');
+	return (source[current + index]);
+}
+
+char Scanner::peekNext()
 {
 	if (current + 1 >= source.length())
 		return ('\0');

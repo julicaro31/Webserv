@@ -18,9 +18,11 @@ private:
 	char advance();
 	bool match(char);
 	void string();
+	void version();
 	void number();
 	void identifier();
 	char peek();
+	char peek(int);
 	char peekNext();
 	void addToken(Token::TokenType);
 	void addToken(Token::TokenType, std::string);
