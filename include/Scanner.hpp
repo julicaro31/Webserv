@@ -20,6 +20,7 @@ private:
 	void string();
 	void version();
 	void number();
+	void uri();
 	void identifier();
 	char peek();
 	char peek(int);

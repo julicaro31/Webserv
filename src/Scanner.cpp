@@ -60,6 +60,8 @@ void Scanner::scanToken()
 	default:
 		if (std::isdigit(c))
 			number();
+		else if (std::isprint(c))
+			uri();
 		else if (std::isalpha(c))
 			identifier();
 		else
@@ -129,6 +131,14 @@ void Scanner::number()
 			advance();
 	}
 	addToken(TOKEN8, parseDouble(source.substring(start, current)));
+}
+
+void Scanner::uri()
+{
+	// check origin-form
+	// check absolute-form
+	// check authority-form,
+	// check asterisk-form
 }
 
 void Scanner::identifier()
