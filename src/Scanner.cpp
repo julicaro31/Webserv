@@ -81,7 +81,6 @@ bool Scanner::match(char expected)
 	return (true);
 }
 
-
 void Scanner::version()
 {
 	int start = current;
@@ -138,7 +137,7 @@ void Scanner::identifier()
 	std::string text = source.substring(start, current);
 	auto it = keywords.find(text);
 	if (it == keywords.end())
-		type = TOKEN9;
+		type = Token::IDENTIFIER;
 	else
 		type = it->second;
 	addToken(type);

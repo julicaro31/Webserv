@@ -33,7 +33,16 @@ public:
 };
 
 const std::unordered_map<std::string, Token::TokenType> Token::keywords = {
-    {"where",    Token::TokenType::WHERE},
+	{"where", Token::TokenType::WHERE},
+	{"GET", Token::TokenType::GET},
+	{"POST", Token::TokenType::POST},
+	{"DELETE", Token::TokenType::DELETE},
+	{"PUT", Token::TokenType::PUT},
+	{"HEAD", Token::TokenType::HEAD},
+	{"OPTIONS", Token::TokenType::OPTIONS},
+	{"CONNECT", Token::TokenType::CONNECT},
+	{"TRACE", Token::TokenType::TRACE},
+	{"PATCH", Token::TokenType::PATCH},
 };
 
 #endif
