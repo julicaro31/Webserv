@@ -12,14 +12,24 @@ public:
 	{
 		// single-char tokens
 		DOT, SLASH, QUESTION_MARK, EQUAL,
-		SINGLE_SPACE, COLON, STAR, CR, LF,
+		SINGLE_SPACE, COLON, STAR,
 
 		// One or two character tokens.
 		DOUBLE_SLASH, CRLF,
 
 		// Literals.
 		IDENTIFIER, STRING, NUMBER, METHOD,
-		REQUEST_TARGET, HTTP_VERSION, WHITESPACE,
+		REQUEST_TARGET, WHITESPACE,
+
+		// Request Line
+		GET, POST, PUT, DELETE, HEAD, OPTIONS,
+		CONNECT, TRACE, PATCH, VERSION,
+
+		// Response Line
+		STATUS_CODE, REASON_PHRASE,
+
+		// HEADER
+		HEADER_NAME, HEADER_VALUE,
 
 		// Keywords.
 		WHERE,
