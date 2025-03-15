@@ -26,7 +26,7 @@ void ConfigBlock::addDirective(const std::string &key, const std::string &value,
 
 	checkIfValidDirective(key, context, values);
 
-	if (key == "error_page")
+	if (key == "error_page" || key == "cgi_assign")
 	{
 		_directives[key].push_back(value);
 		return;

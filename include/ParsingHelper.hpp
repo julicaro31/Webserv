@@ -33,7 +33,7 @@ private:
 	static void handleSubBlock(std::ifstream &file, ConfigBlock &block, std::string blockName, std::string line);
 	static void handleDirective(ConfigBlock &block, std::string blockName, std::string line);
 
-	static void parseDirectives(std::map<std::string, std::vector<std::string>> &directives, ServerConfig &serverConfig);
+	static void parseDirectives(std::map<std::string, std::vector<std::string>> &directives, ServerConfig &serverConfig, bool isLocation = false);
 	static void setDefaultValues(ServerConfig &serverConfig);
 	static bool parseAutoIndex(std::string &value);
 	static size_t parseMaxBodySize(std::string &value);
@@ -43,6 +43,7 @@ private:
 	static void parseErrorPage(std::map<int, std::string> &errorPageMap, std::string &info);
 	static void parseLocation(ConfigBlock &serverBlock, ServerConfig &serverConfig);
 	static std::vector<LimitExceptDirective> parseLimitExcepts(ConfigBlock &locationBlock);
+	static std::map<std::string, std::string> parseCgiExtensionMap(std::vector<std::string> &info);
 
 	static Method parseMethod(std::string method);
 };

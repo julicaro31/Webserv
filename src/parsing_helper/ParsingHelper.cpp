@@ -245,7 +245,10 @@ void ParsingHelper::parseLocation(ConfigBlock &serverBlock, ServerConfig &server
 			for (std::vector<ConfigBlock>::iterator locationBlock = it->second.begin(); locationBlock != it->second.end(); locationBlock++)
 			{
 				std::vector<LimitExceptDirective> limitExcepts = ParsingHelper::parseLimitExcepts(*locationBlock);
-				locationBlocks.push_back(Location(uri, modifier, limitExcepts, locationBlock->getDirectives()));
+
+				ServerConfig locationDirectivesConfig;
+				parseDirectives(locationBlock->getDirectives(), locationDirectivesConfig, true);
+				locationBlocks.push_back(Location(uri, modifier, limitExcepts, locationDirectivesConfig));
 			}
 		}
 	}
@@ -298,7 +301,7 @@ std::vector<LimitExceptDirective> ParsingHelper::parseLimitExcepts(ConfigBlock &
 /// @param directives Directives to be added.
 /// @param serverConfig ServerConfig to add the directives.
 /// @throw std::runtime_error if not all mandatory directives have been parsed.
-void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::string>> &directives, ServerConfig &serverConfig)
+void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::string>> &directives, ServerConfig &serverConfig, bool isLocation)
 {
 	setDefaultValues(serverConfig);
 	std::vector<std::string> directivesSet;
@@ -340,11 +343,15 @@ void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::strin
 		{
 			serverConfig.errorPages = parseErrorPages(directive->second);
 		}
+		else if (directiveName == "cgi_assign")
+		{
+			serverConfig.cgiExtensionMap = parseCgiExtensionMap(directive->second);
+		}
 
 		directivesSet.push_back(directiveName);
 	}
 
-	if (std::find(directivesSet.begin(), directivesSet.end(), "listen") == directivesSet.end() || std::find(directivesSet.begin(), directivesSet.end(), "root") == directivesSet.end())
+	if ((std::find(directivesSet.begin(), directivesSet.end(), "listen") == directivesSet.end() || std::find(directivesSet.begin(), directivesSet.end(), "root") == directivesSet.end()) && !isLocation)
 	{
 		Logger::log(ERROR, "No all mandatory directives have been set.");
 		throw std::runtime_error("Error: No all mandatory directives have been set.");
@@ -516,4 +523,27 @@ void ParsingHelper::parseErrorPage(std::map<int, std::string> &errorPageMap, std
 			throw std::invalid_argument("Error: Invalid status code.");
 		}
 	}
+}
+
+/// @brief Parses into a map the executables to run depending on the extension for cgi.
+/// @param info Stores info about the file and extensions, extracted from the configuration file.
+/// @return The parsed map. The key is the file extension and the value is the executable.
+std::map<std::string, std::string> ParsingHelper::parseCgiExtensionMap(std::vector<std::string> &info)
+{
+	std::map<std::string, std::string> cgiExtensionMap;
+
+	for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
+	{
+		std::vector<std::string> values = split(*it, ' ');
+
+		if (values.size() != 2)
+		{
+			Logger::log(ERROR, "Invalid values in cgi_assign directive.");
+			throw std::invalid_argument("Error: Invalid values in cgi_assign directive.");
+		}
+
+		cgiExtensionMap[values[0]] = values[1];
+	}
+
+	return cgiExtensionMap;
 }

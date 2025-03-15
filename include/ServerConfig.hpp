@@ -17,4 +17,5 @@ struct ServerConfig
     std::pair<int, std::string> redirection;
     std::map<int, std::string> errorPages;
     std::vector<Location> locations;
+    std::map<std::string, std::string> cgiExtensionMap;
 };
