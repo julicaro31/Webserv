@@ -39,12 +39,11 @@ int main(int ac, char *argv[])
 		Logger::log(INFO, "Starting server...");
 		std::vector<Location> locations;
 		ServerConfig config = {
+			8080,
 			false,
 			true,
 			1000000,
-			8080,
 			"localhost",
-			{"index.html"},
 			"/html",
 			"name",
 			{302, "http.."},
@@ -52,6 +51,7 @@ int main(int ac, char *argv[])
 			 {403, "error403.html"},
 			 {501, "error50x.html"},
 			 {502, "error50x.html"}},
+			{"index.html"},
 			locations};
 
 		ServerManager serverManager;

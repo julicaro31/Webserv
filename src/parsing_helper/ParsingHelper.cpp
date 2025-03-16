@@ -180,6 +180,26 @@ Method ParsingHelper::parseMethod(std::string method)
 	return Method::NONE;
 }
 
+/// @brief Converts a Method to string.
+/// @param method Method to convert.
+/// @return The method as a string.
+std::string ParsingHelper::methodToStr(Method method)
+{
+	if (method == Method::GET)
+	{
+		return "GET";
+	}
+	if (method == Method::POST)
+	{
+		return "POST";
+	}
+	if (method == Method::DELETE)
+	{
+		return "DELETE";
+	}
+	return "";
+}
+
 /// @brief Parses while validating the values of a configuration file, whose path is given.
 /// @param configFilePath Path of the configuration file to parse.
 /// @return Vector of ServerConfig's. Each vector's element holds data from a server, parsed from the configuration file.
@@ -244,10 +264,11 @@ void ParsingHelper::parseLocation(ConfigBlock &serverBlock, ServerConfig &server
 
 			for (std::vector<ConfigBlock>::iterator locationBlock = it->second.begin(); locationBlock != it->second.end(); locationBlock++)
 			{
-				std::vector<LimitExceptDirective> limitExcepts = ParsingHelper::parseLimitExcepts(*locationBlock);
-
 				Location locationConfig;
+				locationConfig.uri = uri;
+				locationConfig.modifier = modifier;
 				parseDirectives(locationBlock->getDirectives(), locationConfig);
+				locationConfig.limitExcepts = parseLimitExcepts(*locationBlock);
 				locationBlocks.push_back(locationConfig);
 			}
 		}
@@ -343,10 +364,6 @@ void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::strin
 		{
 			serverConfig.errorPages = parseErrorPages(directive->second);
 		}
-		else if (directiveName == "cgi_assign")
-		{
-			serverConfig.cgiExtensionMap = parseCgiExtensionMap(directive->second);
-		}
 
 		directivesSet.push_back(directiveName);
 	}
@@ -357,7 +374,7 @@ void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::strin
 		throw std::runtime_error("Error: No all mandatory directives have been set.");
 	}
 
-	if (std::find(directivesSet.begin(), directivesSet.end(), "server") == directivesSet.end())
+	if (std::find(directivesSet.begin(), directivesSet.end(), "server_name") == directivesSet.end())
 	{
 		serverConfig.serverName = serverConfig.host;
 	}
@@ -368,6 +385,7 @@ void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::strin
 /// @param locationConfig Location to add the directives.
 void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::string>> &directives, Location &locationConfig)
 {
+	setDefaultValues(locationConfig);
 	std::vector<std::string> directivesSet;
 
 	for (std::map<std::string, std::vector<std::string>>::iterator directive = directives.begin(); directive != directives.end(); directive++)
@@ -406,15 +424,16 @@ void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::strin
 	}
 }
 
-/// @brief Sets default values for a ServerConfig.
-/// @param serverConfig The serverConfig to set the values for.
-void ParsingHelper::setDefaultValues(ServerConfig &serverConfig)
+/// @brief Sets default values for a configuration.
+/// @param config The config to set the values for.
+template <typename T>
+void ParsingHelper::setDefaultValues(T &config)
 {
-	serverConfig.autoIndex = false;
-	serverConfig.index = {"index.html"};
-	serverConfig.maxBodySize = 1;
-	serverConfig.redirection = {0, ""};
-	serverConfig.errorPages = {{404, "/404.html"}, {403, "/403.html"}, {500, "/50x.html"}, {502, "/50x.html"}, {503, "/50x.html"}, {504, "/50x.html"}};
+	config.autoIndex = false;
+	config.index = {"index.html"};
+	config.maxBodySize = 1;
+	config.redirection = {0, ""};
+	config.errorPages = {{404, "/404.html"}, {403, "/403.html"}, {500, "/50x.html"}, {502, "/50x.html"}, {503, "/50x.html"}, {504, "/50x.html"}};
 }
 
 /// @brief Parses the string value related to the directive 'autoindex'.

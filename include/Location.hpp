@@ -5,15 +5,15 @@
 
 struct Location
 {
-	std::string _uri;
-	std::string _modifier;
+	std::string uri;
+	std::string modifier;
 
 	bool autoIndex;
 	std::string root;
 	size_t maxBodySize;
 	std::vector<std::string> index;
-	std::map<int, std::string> errorPages;
 	std::pair<int, std::string> redirection;
+	std::map<int, std::string> errorPages;
 	std::map<std::string, std::string> cgiExtensionMap;
 	std::vector<LimitExceptDirective> limitExcepts;
 };

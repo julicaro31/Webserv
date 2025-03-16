@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <ServerConfig.hpp>
+#include "ParsingHelper.hpp"
 
 #define MAX_CONNECTION 10 // is exceeded, new connections wait in a queue (until accept() is called).
 #define CLIENT_TIMEOUT 15 // disconnect clients that have been inactive, in seconds
@@ -36,6 +37,7 @@ public:
 	std::vector<pollfd> &getPollFDs();
 
 	void printServers() const;
+	void printLocations(std::vector<Location> locations) const;
 
 	void addServer(const ServerConfig &config);
 	void runPoll();
