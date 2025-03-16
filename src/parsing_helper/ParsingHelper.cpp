@@ -246,9 +246,9 @@ void ParsingHelper::parseLocation(ConfigBlock &serverBlock, ServerConfig &server
 			{
 				std::vector<LimitExceptDirective> limitExcepts = ParsingHelper::parseLimitExcepts(*locationBlock);
 
-				ServerConfig locationDirectivesConfig;
-				parseDirectives(locationBlock->getDirectives(), locationDirectivesConfig, true);
-				locationBlocks.push_back(Location(uri, modifier, limitExcepts, locationDirectivesConfig));
+				Location locationConfig;
+				parseDirectives(locationBlock->getDirectives(), locationConfig);
+				locationBlocks.push_back(locationConfig);
 			}
 		}
 	}
@@ -301,7 +301,7 @@ std::vector<LimitExceptDirective> ParsingHelper::parseLimitExcepts(ConfigBlock &
 /// @param directives Directives to be added.
 /// @param serverConfig ServerConfig to add the directives.
 /// @throw std::runtime_error if not all mandatory directives have been parsed.
-void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::string>> &directives, ServerConfig &serverConfig, bool isLocation)
+void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::string>> &directives, ServerConfig &serverConfig)
 {
 	setDefaultValues(serverConfig);
 	std::vector<std::string> directivesSet;
@@ -351,7 +351,7 @@ void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::strin
 		directivesSet.push_back(directiveName);
 	}
 
-	if ((std::find(directivesSet.begin(), directivesSet.end(), "listen") == directivesSet.end() || std::find(directivesSet.begin(), directivesSet.end(), "root") == directivesSet.end()) && !isLocation)
+	if ((std::find(directivesSet.begin(), directivesSet.end(), "listen") == directivesSet.end() || std::find(directivesSet.begin(), directivesSet.end(), "root") == directivesSet.end()))
 	{
 		Logger::log(ERROR, "No all mandatory directives have been set.");
 		throw std::runtime_error("Error: No all mandatory directives have been set.");
@@ -360,6 +360,49 @@ void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::strin
 	if (std::find(directivesSet.begin(), directivesSet.end(), "server") == directivesSet.end())
 	{
 		serverConfig.serverName = serverConfig.host;
+	}
+}
+
+/// @brief Parses, validates and adds the directives to the given Location.
+/// @param directives Directives to be added.
+/// @param locationConfig Location to add the directives.
+void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::string>> &directives, Location &locationConfig)
+{
+	std::vector<std::string> directivesSet;
+
+	for (std::map<std::string, std::vector<std::string>>::iterator directive = directives.begin(); directive != directives.end(); directive++)
+	{
+		std::string directiveName = directive->first;
+		if (directiveName == "autoindex")
+		{
+			locationConfig.autoIndex = parseAutoIndex(directive->second[0]);
+		}
+		else if (directiveName == "root")
+		{
+			locationConfig.root = directive->second[0];
+		}
+		else if (directiveName == "index")
+		{
+			locationConfig.index = directive->second;
+		}
+		else if (directiveName == "client_max_body_size")
+		{
+			locationConfig.maxBodySize = parseMaxBodySize(directive->second[0]);
+		}
+		else if (directiveName == "return")
+		{
+			locationConfig.redirection = parseReturn(directive->second);
+		}
+		else if (directiveName == "error_page")
+		{
+			locationConfig.errorPages = parseErrorPages(directive->second);
+		}
+		else if (directiveName == "cgi_assign")
+		{
+			locationConfig.cgiExtensionMap = parseCgiExtensionMap(directive->second);
+		}
+
+		directivesSet.push_back(directiveName);
 	}
 }
 

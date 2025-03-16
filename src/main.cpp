@@ -52,8 +52,7 @@ int main(int ac, char *argv[])
 			 {403, "error403.html"},
 			 {501, "error50x.html"},
 			 {502, "error50x.html"}},
-			locations,
-			{{"cgi", "/usr/bin/perl"}}};
+			locations};
 
 		ServerManager serverManager;
 		serverManager.addServer(config);
