@@ -11,27 +11,25 @@ public:
 	enum TokenType
 	{
 		// single-char tokens
-		DOT, SLASH, QUESTION_MARK, EQUAL,
-		SINGLE_SPACE, COLON, STAR,
+		SINGLE_SPACE
 
-		// One or two character tokens.
-		DOUBLE_SLASH, CRLF,
+		// one or two character tokens.
+		CRLF,
 
-		// Literals.
+		// literals.
 		IDENTIFIER, STRING, NUMBER, 
 		WHITESPACE,
 
-		// Request Line
+		// request Line
 		METHOD, URI,
 
-		// Response Line
+		// response Line
 		STATUS_CODE, REASON_PHRASE,
 
-		// HEADER
+		// header
 		HEADER_NAME, HEADER_VALUE,
 
-		// Keywords.
-		WHERE,
+		// end
 		EOF,
 	};
 private:
