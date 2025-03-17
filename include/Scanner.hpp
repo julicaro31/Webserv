@@ -22,6 +22,7 @@ private:
 	void version();
 	void number();
 	void uri();
+	bool header();
 	void identifier();
 	char peek();
 	char peek(int);

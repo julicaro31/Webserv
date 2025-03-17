@@ -56,8 +56,7 @@ void Scanner::scanToken()
 	default:
 		if (std::isdigit(c))
 			number();
-		else if (line != 1)
-			header();
+		else if (header());
 		else if (std::isalpha(c))
 			identifier();
 		else
@@ -171,6 +170,44 @@ void Scanner::uri()
 		std::string value = source.subtstring(start, current + i);
 		addToken(Token::URI, value);
 	}
+}
+
+void Scanner::header()
+{
+	int i = 0;
+	int header_index = 0;
+	if (!std::isalpha(peek()))
+		return (false);
+	while (peek(i) != ':' && !isAtEnd(i))
+	{
+		if (peek(i) == '\n')
+		{
+			HttpParser.error(line, "Wrong header_name format");
+			return ();
+		}
+		++i;
+	}
+	if (isAtEnd(i))
+	{
+		HttpParser.error(line, "Wrong header_name format");
+		return ();
+	}
+	if (peek(i) == ':' && peek(i + 1) == ' ')
+		header_index = i:
+	else
+		return (false);
+	while (peek(i) != '\n' && !isAtEnd(i))
+		++i;
+	if (isAtEnd(i))
+	{
+		HttpParser.error("Wrong header_value format");
+		return ();
+	}
+	std::string header_name = source.subtstring(start, current + header_index);
+	std::string header_value = source.subtstring(current + header_index, current + i);
+	addToken(Token::HEADER_NAME, header_name);
+	addToken(Token::HEADER_VALUE, header_value);
+	return (true);
 }
 
 void Scanner::identifier()
