@@ -19,25 +19,20 @@ bool Scanner::isAtEnd(void)
 	return (current >= source.length());
 }
 
+bool Scanner::isAtEnd(int index)
+{
+	return (current + index >= source.length());
+}
+
 void Scanner::scanToken()
 {
 	char c = advance();
 	switch (c){
-		case '.': if (peek() == ' ') addToken(DOT); break;
-		case ':': if (peek() == ' ') addToken(COLON); break;
-		case '*': if (peek() == ' ') addToken(STAR); break;
-		case '?': if (peek() == ' ') addToken(QUESTION_MARK); break;
-		case '=': if (peek() == ' ') addToken(EQUAL); break;
-		case '!': if (peek() == ' ') addToken(match('=') ? TOKEN4 : TOKEN5);
-		case '/': 
-			if (match('/'))
-				addToken(DOUBLE_SLASH);
-			else 
-				addToken(SLASH);
-			break;
+		case '*': if (peek() == ' ') addToken(Token::URI); break;
+		case '/': uri(); break;
 		case ' ': 
 			if (match(' '))
-				addToken(WHITESPACE)
+				addToken(Token::WHITESPACE)
 			else
 				addToken(Token::SINGLE_SPACE);
 			while (peek() != ' ') advance();
@@ -45,23 +40,24 @@ void Scanner::scanToken()
 		case '\r': 
 			if (match('\n'))
 			{
-				addToken(CRLF);
+				addToken(Token::CRLF);
 				line++;
 			}
 			else
-				addToken(WHITESPACE);
+				addToken(Token::WHITESPACE);
 			break;
-		case '\t': addToken(WHITESPACE) break;
-		case '\v': addToken(WHITESPACE) break;
-		case '\f': addToken(WHITESPACE) break;
+		case '\t': addToken(Token::WHITESPACE) break;
+		case '\v': addToken(Token::WHITESPACE) break;
+		case '\f': addToken(Token::WHITESPACE) break;
 		case '\n': line++; break;
 		case '"': string(); break;
 		case 'H': version(); break;
+		case 'h': uri(); break;
 	default:
 		if (std::isdigit(c))
 			number();
-		else if (std::isprint(c))
-			uri();
+		else if (line != 1)
+			header();
 		else if (std::isalpha(c))
 			identifier();
 		else
@@ -80,7 +76,6 @@ bool Scanner::match(char expected)
 		return (false);
 	else if (source[current] != expected)
 		return (false);
-	
 	current++;
 	return (true);
 }
@@ -89,16 +84,16 @@ void Scanner::version()
 {
 	int start = current;
 
-    if (peek() != 'H' || peek(1) != 'T' || peek(2) != 'T' || peek(3) != 'P')
-        return false;
-    if (peek(4) != '/') return false;
-    if (!std::isdigit(peek(5))) return false;
-    if (peek(6) != '.') return false;
-    if (!std::isdigit(peek(7))) return false;
-    if (peek(8) != ' ') return false;
-    current += 9;
+	if (peek() != 'H' || peek(1) != 'T' || peek(2) != 'T' || peek(3) != 'P')
+		return false;
+	if (peek(4) != '/') return false;
+	if (!std::isdigit(peek(5))) return false;
+	if (peek(6) != '.') return false;
+	if (!std::isdigit(peek(7))) return false;
+	if (peek(8) != ' ') return false;
+	current += 9;
 	std::string value = source.subtstring(start + 1, current - 1);
-	addToken(VERSION, value);
+	addToken(Token::VERSION, value);
 }
 
 void Scanner::string()
@@ -116,36 +111,72 @@ void Scanner::string()
 	}
 	advance();
 	std::string value = source.subtstring(start + 1, current - 1);
-	addToken(TOKEN7, value);
+	addToken(Token::STRING, value);
 }
 
 void Scanner::number()
 {
 	while (std::isdigit(peek()))
 		advance();
-
 	if (peek() == '.' && std::isdigit(peekNext()))
 	{
 		advance();
 		while (std::isdigit(peek()))
 			advance();
 	}
-	addToken(TOKEN8, parseDouble(source.substring(start, current)));
+	addToken(Token::NUMBER, parseDouble(source.substring(start, current)));
 }
 
 void Scanner::uri()
 {
-	// check origin-form
-	// check absolute-form
-	// check authority-form,
-	// check asterisk-form
+	int i = 0;
+	if (peek() == '/')
+	{
+		while (peek(i) != ' ' && !isAtEnd(i))
+		{
+			if (peek(i) == '\n')
+			{
+				HttpParser.error(line, "Wrong URI origin-form format");
+				return ();
+			}
+			++i;
+		}
+		if (isAtEnd(i))
+		{
+			HttpParser.error(line, "Wrong URI origin-form format");
+			return ();
+		}
+		std::string value = source.subtstring(start, current + i);
+		addToken(Token::URI, value);
+	}
+	if (peek() == 'h' || peek(1) == 't' || peek(2) == 't' || peek(3) == 'p')
+	{
+		if (peek(4) != '/') return ();
+		if (peek(5) != '/') return ();
+		i = 5;
+		while (peek(i) != ' ' && !isAtEnd(i))
+		{
+			if (peek(i) == '\n')
+			{
+				HttpParser.error(line, "Wrong URI absolute-form format");
+				return ();
+			}
+			++i;
+		}
+		if (isAtEnd(i))
+		{
+			HttpParser.error(line, "Wrong URI absolute-form format");
+			return ();
+		}
+		std::string value = source.subtstring(start, current + i);
+		addToken(Token::URI, value);
+	}
 }
 
 void Scanner::identifier()
 {
 	while (std::isalnum(peek())
 		advance();
-
 	std::string text = source.substring(start, current);
 	auto it = keywords.find(text);
 	if (it == keywords.end())
@@ -185,6 +216,7 @@ void Scanner::addToken(TokenType type, std::string literal)
 {
 	std::string text = source.substring(start, current);
 	tokens.push_back(Token(type, text, literal, line));
+}
 
 Scanner::Scanner(std::string source)
 {
