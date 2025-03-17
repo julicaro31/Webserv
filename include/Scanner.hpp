@@ -14,6 +14,7 @@ private:
 	std::string source;
 	std::vector<Token> tokens;
 	bool isAtEnd(void);
+	bool isAtEnd(int);
 	void scanToken();
 	char advance();
 	bool match(char);
@@ -34,7 +35,6 @@ public:
 };
 
 const std::unordered_map<std::string, Token::TokenType> Token::keywords = {
-	{"where", Token::TokenType::WHERE},
 	{"GET", Token::TokenType::GET},
 	{"POST", Token::TokenType::POST},
 	{"DELETE", Token::TokenType::DELETE},
