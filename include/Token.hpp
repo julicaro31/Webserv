@@ -11,7 +11,7 @@ public:
 	enum TokenType
 	{
 		// single-char tokens
-		SINGLE_SPACE
+		SINGLE_SPACE,
 
 		// one or two character tokens.
 		CRLF,
@@ -21,7 +21,7 @@ public:
 		WHITESPACE,
 
 		// request Line
-		METHOD, URI,
+		METHOD, URI, VERSION,
 
 		// response Line
 		STATUS_CODE, REASON_PHRASE,
@@ -29,8 +29,11 @@ public:
 		// header
 		HEADER_NAME, HEADER_VALUE,
 
+		// keywords
+		GET, POST, DELETE, PUT, HEAD, OPTIONS, CONNECT, TRACE, PATCH,
+
 		// end
-		EOF,
+		EOFF,
 	};
 private:
 	TokenType	type;
