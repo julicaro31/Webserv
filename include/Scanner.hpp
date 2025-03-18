@@ -11,6 +11,17 @@ private:
 	int	start = 0;
 	int	current = 0;
 	int	line = 1;
+	std::unordered_map<std::string, Token::TokenType> keywords = {
+	{"GET", Token::TokenType::GET},
+	{"POST", Token::TokenType::POST},
+	{"DELETE", Token::TokenType::DELETE},
+	{"PUT", Token::TokenType::PUT},
+	{"HEAD", Token::TokenType::HEAD},
+	{"OPTIONS", Token::TokenType::OPTIONS},
+	{"CONNECT", Token::TokenType::CONNECT},
+	{"TRACE", Token::TokenType::TRACE},
+	{"PATCH", Token::TokenType::PATCH},
+	};
 	std::string source;
 	std::vector<Token> tokens;
 	bool isAtEnd(void);
@@ -22,7 +33,7 @@ private:
 	void version();
 	void number();
 	void uri();
-	bool header();
+	void header();
 	void identifier();
 	char peek();
 	char peek(int);
@@ -33,18 +44,6 @@ public:
 	std::vector<Token> scanTokens(void);
 	Scanner(std::string);
 	Scanner(const Scanner &);
-};
-
-const std::unordered_map<std::string, Token::TokenType> Token::keywords = {
-	{"GET", Token::TokenType::GET},
-	{"POST", Token::TokenType::POST},
-	{"DELETE", Token::TokenType::DELETE},
-	{"PUT", Token::TokenType::PUT},
-	{"HEAD", Token::TokenType::HEAD},
-	{"OPTIONS", Token::TokenType::OPTIONS},
-	{"CONNECT", Token::TokenType::CONNECT},
-	{"TRACE", Token::TokenType::TRACE},
-	{"PATCH", Token::TokenType::PATCH},
 };
 
 #endif

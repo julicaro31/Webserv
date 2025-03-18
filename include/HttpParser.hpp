@@ -11,9 +11,8 @@ class HttpParser
 public:
 	static void parseRequest(std::string);
 	static bool hadError;
-
-private:
 	void error(int, std::string);
+private:
 	static	void report(int, std::string, std::string);
 	HttpParser();
 	HttpParser(const HttpParser &);
