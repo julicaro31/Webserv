@@ -33,7 +33,7 @@ private:
 	void version();
 	void number();
 	void uri();
-	void header();
+	bool header();
 	void identifier();
 	char peek();
 	char peek(int);

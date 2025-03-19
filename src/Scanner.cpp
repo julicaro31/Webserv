@@ -173,42 +173,42 @@ void Scanner::uri()
 	}
 }
 
-void Scanner::header()
+bool Scanner::header()
 {
 	int i = 0;
 	int header_index = 0;
 	if (!std::isalpha(peek()))
-		return;
+		return (false);
 	while (peek(i) != ':' && !isAtEnd(i))
 	{
 		if (peek(i) == '\n')
 		{
 			HttpParser.error(line, "Wrong header_name format");
-			return;
+			return (false);
 		}
 		++i;
 	}
 	if (isAtEnd(i))
 	{
 		HttpParser.error(line, "Wrong header_name format");
-		return;
+		return (false);
 	}
 	if (peek(i) == ':' && peek(i + 1) == ' ')
 		header_index = i;
 	else
-		return;
+		return (false);
 	while (peek(i) != '\n' && !isAtEnd(i))
 		++i;
 	if (isAtEnd(i))
 	{
 		HttpParser.error("Wrong header_value format");
-		return;
+		return (false);
 	}
 	std::string header_name = source.substr(start, current + header_index);
 	std::string header_value = source.substr(current + header_index, current + i);
 	addToken(Token::HEADER_NAME, header_name);
 	addToken(Token::HEADER_VALUE, header_value);
-	return;
+	return (false);
 }
 
 void Scanner::identifier()
