@@ -1,6 +1,8 @@
 #include "HttpParser.hpp"
 #include <vector>
-#include "Token.hpp"
+#include "Scanner.hpp"
+#include <ostream>
+#include <iostream>
 
 
 void HttpParser::parseRequest(std::string Request)
@@ -22,5 +24,4 @@ void HttpParser::error(int line, std::string message)
 void HttpParser::report(int line, std::string location, std::string message)
 {
 	std::cout << "Line: " << line << " Error:" << location << ":" << message << std::endl;
-	hadError = true;
 }
