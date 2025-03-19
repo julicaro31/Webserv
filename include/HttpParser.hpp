@@ -10,8 +10,7 @@ class HttpParser
 {
 public:
 	static void parseRequest(std::string);
-	static bool hadError;
-	void error(int, std::string);
+	static void error(int, std::string);
 private:
 	static	void report(int, std::string, std::string);
 	HttpParser();

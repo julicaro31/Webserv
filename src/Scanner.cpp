@@ -1,7 +1,6 @@
 #include "Scanner.hpp"
 #include <cctype>
 #include <vector>
-#include "Token.hpp"
 #include "HttpParser.hpp"
 
 std::vector<Token> Scanner::scanTokens(void)
@@ -17,12 +16,12 @@ std::vector<Token> Scanner::scanTokens(void)
 
 bool Scanner::isAtEnd(void)
 {
-	return (current >= source.length());
+	return (current >= static_cast<int>(source.length()));
 }
 
 bool Scanner::isAtEnd(int index)
 {
-	return (current + index >= source.length());
+	return (current + index >= static_cast<int>(source.length()));
 }
 
 void Scanner::scanToken()
@@ -61,7 +60,7 @@ void Scanner::scanToken()
 		else if (std::isalpha(c))
 			identifier();
 		else
-			HttpParser.error(line, "Unexpected character."); break;
+			HttpParser::error(line, "Unexpected character.");
 	}
 }
 
@@ -106,7 +105,7 @@ void Scanner::string()
 	}
 	if (isAtEnd())
 	{
-		HttpParser.error(line, "Unterminated string.");
+		HttpParser::error(line, "Unterminated string.");
 		return;
 	}
 	advance();
@@ -124,7 +123,7 @@ void Scanner::number()
 		while (std::isdigit(peek()))
 			advance();
 	}
-	addToken(Token::NUMBER, parseDouble(source.substr(start, current)));
+	addToken(Token::NUMBER, source.substr(start, current));
 }
 
 void Scanner::uri()
@@ -136,14 +135,14 @@ void Scanner::uri()
 		{
 			if (peek(i) == '\n')
 			{
-				HttpParser.error(line, "Wrong URI origin-form format");
+				HttpParser::error(line, "Wrong URI origin-form format");
 				return;
 			}
 			++i;
 		}
 		if (isAtEnd(i))
 		{
-			HttpParser.error(line, "Wrong URI origin-form format");
+			HttpParser::error(line, "Wrong URI origin-form format");
 			return;
 		}
 		std::string value = source.substr(start, current + i);
@@ -158,14 +157,14 @@ void Scanner::uri()
 		{
 			if (peek(i) == '\n')
 			{
-				HttpParser.error(line, "Wrong URI absolute-form format");
+				HttpParser::error(line, "Wrong URI absolute-form format");
 				return;
 			}
 			++i;
 		}
 		if (isAtEnd(i))
 		{
-			HttpParser.error(line, "Wrong URI absolute-form format");
+			HttpParser::error(line, "Wrong URI absolute-form format");
 			return;
 		}
 		std::string value = source.substr(start, current + i);
@@ -183,14 +182,14 @@ bool Scanner::header()
 	{
 		if (peek(i) == '\n')
 		{
-			HttpParser.error(line, "Wrong header_name format");
+			HttpParser::error(line, "Wrong header_name format");
 			return (false);
 		}
 		++i;
 	}
 	if (isAtEnd(i))
 	{
-		HttpParser.error(line, "Wrong header_name format");
+		HttpParser::error(line, "Wrong header_name format");
 		return (false);
 	}
 	if (peek(i) == ':' && peek(i + 1) == ' ')
@@ -201,7 +200,7 @@ bool Scanner::header()
 		++i;
 	if (isAtEnd(i))
 	{
-		HttpParser.error("Wrong header_value format");
+		HttpParser::error(line, "Wrong header_value format");
 		return (false);
 	}
 	std::string header_name = source.substr(start, current + header_index);
@@ -241,7 +240,7 @@ char Scanner::peek(int index)
 
 char Scanner::peekNext()
 {
-	if (current + 1 >= source.length())
+	if (current + 1 >= static_cast<int>(source.length()))
 		return ('\0');
 	return (source[current + 1]);
 }
@@ -264,4 +263,9 @@ Scanner::Scanner(std::string source)
 
 Scanner::Scanner(const Scanner &scanner)
 {
+	this->source = scanner.source;
+	this->start = scanner.start;
+	this->current = scanner.current;
+	this->line = scanner.line;
+	// this->tokens = scanner.tokens;
 }

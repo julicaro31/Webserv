@@ -14,7 +14,9 @@ FILES	:=	parsing_helper/ParsingHelper \
 			configuration_file/Directives \
 			request/Request \
 			Server ServerManager \
-			http_parser/HttpParser \
+			HttpParser \
+			Scanner \
+			Token \
 			main
 
 SRCS	:= $(addprefix ${SRC_DIR}/,$(FILES:=.cpp))

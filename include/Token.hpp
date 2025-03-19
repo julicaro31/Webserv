@@ -4,6 +4,7 @@
 #include <cctype>
 #include <string>
 #include <unordered_map>
+#include <ostream>
 
 class Token
 {
@@ -43,8 +44,15 @@ private:
 	static const std::unordered_map<std::string, TokenType> keywords;
 public:
 	std::string toString();
+	TokenType getType() const;
+	std::string getLexeme() const;
+	std::string getLiteral() const;
+	int getLine() const;
 	Token(TokenType, std::string, std::string, int);
 	Token(const Token &);
+
 };
+
+std::ostream& operator<<(std::ostream& out, const Token& token);
 
 #endif
