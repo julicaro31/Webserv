@@ -2,6 +2,7 @@
 #include <cctype>
 #include <vector>
 #include "HttpParser.hpp"
+#include <iostream>
 
 std::vector<Token> Scanner::scanTokens(void)
 {
@@ -32,10 +33,12 @@ void Scanner::scanToken()
 		case '/': uri(); break;
 		case ' ': 
 			if (match(' '))
+			{
 				addToken(Token::WHITESPACE);
+				while (peek() == ' ') advance();
+			}
 			else
 				addToken(Token::SINGLE_SPACE);
-			while (peek() == ' ') advance();
 			break;
 		case '\r': 
 			if (match('\n'))
@@ -91,7 +94,7 @@ void Scanner::version()
 	if (!std::isdigit(peek(7))) return ;
 	if (peek(8) != ' ') return ;
 	current += 9;
-	std::string value = source.substr(start + 1, current - 1);
+	std::string value = source.substr(start + 1, (current - 1) - start);
 	addToken(Token::VERSION, value);
 }
 
@@ -109,7 +112,7 @@ void Scanner::string()
 		return;
 	}
 	advance();
-	std::string value = source.substr(start + 1, current - 1);
+	std::string value = source.substr(start + 1, (current - 1) - start);
 	addToken(Token::STRING, value);
 }
 
@@ -123,7 +126,7 @@ void Scanner::number()
 		while (std::isdigit(peek()))
 			advance();
 	}
-	addToken(Token::NUMBER, source.substr(start, current));
+	addToken(Token::NUMBER, source.substr(start, current - start));
 }
 
 void Scanner::uri()
@@ -145,7 +148,7 @@ void Scanner::uri()
 			HttpParser::error(line, "Wrong URI origin-form format");
 			return;
 		}
-		std::string value = source.substr(start, current + i);
+		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
 	}
 	if (peek() == 'h' || peek(1) == 't' || peek(2) == 't' || peek(3) == 'p')
@@ -167,7 +170,7 @@ void Scanner::uri()
 			HttpParser::error(line, "Wrong URI absolute-form format");
 			return;
 		}
-		std::string value = source.substr(start, current + i);
+		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
 	}
 }
@@ -203,8 +206,8 @@ bool Scanner::header()
 		HttpParser::error(line, "Wrong header_value format");
 		return (false);
 	}
-	std::string header_name = source.substr(start, current + header_index);
-	std::string header_value = source.substr(current + header_index, current + i);
+	std::string header_name = source.substr(start, (current + header_index) - start);
+	std::string header_value = source.substr(current + header_index, (current + i) - (current + header_index));
 	addToken(Token::HEADER_NAME, header_name);
 	addToken(Token::HEADER_VALUE, header_value);
 	return (false);
@@ -214,7 +217,7 @@ void Scanner::identifier()
 {
 	while (std::isalnum(peek()))
 		advance();
-	std::string text = source.substr(start, current);
+	std::string text = source.substr(start, current - start);
 	auto it = keywords.find(text);
 	Token::TokenType type;
 	if (it == keywords.end())
@@ -252,7 +255,11 @@ void Scanner::addToken(Token::TokenType type)
 
 void Scanner::addToken(Token::TokenType type, std::string literal)
 {
-	std::string text = source.substr(start, current);
+	std::cout << "-----------------------------" << std::endl;
+	std::cout << "start: " << start << std::endl;
+	std::cout << "current: " << current << std::endl;
+	std::string text = source.substr(start, current - start);
+	std::cout << "text: " << text << std::endl;
 	tokens.push_back(Token(type, text, literal, line));
 }
 
