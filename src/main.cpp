@@ -17,9 +17,9 @@ int main(int ac, char *argv[])
 		std::cout << "Welcome to the webserv" << std::endl;
 
 		// Parse and print the configuration file.
-		std::string filePath(argv[1]);
-		ConfigBlock configFile = ParsingHelper::parseConfigFile(filePath);
-		configFile.print();
+		// std::string filePath(argv[1]);
+		// ConfigBlock configFile = ParsingHelper::parseConfigFile(filePath);
+		// configFile.print();
 
 		std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n";
 		HttpParser::parseRequest(line);
