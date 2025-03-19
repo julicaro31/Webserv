@@ -35,7 +35,7 @@ void Scanner::scanToken()
 				addToken(Token::WHITESPACE);
 			else
 				addToken(Token::SINGLE_SPACE);
-			while (peek() != ' ') advance();
+			while (peek() == ' ') advance();
 			break;
 		case '\r': 
 			if (match('\n'))
@@ -56,9 +56,9 @@ void Scanner::scanToken()
 	default:
 		if (std::isdigit(c))
 			number();
-		else if (header());
 		else if (std::isalpha(c))
 			identifier();
+		else if (header());
 		else
 			HttpParser::error(line, "Unexpected character.");
 	}
@@ -247,7 +247,7 @@ char Scanner::peekNext()
 
 void Scanner::addToken(Token::TokenType type)
 {
-	addToken(type, nullptr);
+	addToken(type, "");
 }
 
 void Scanner::addToken(Token::TokenType type, std::string literal)
