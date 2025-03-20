@@ -35,10 +35,11 @@ bool Scanner::isAtEnd(int index)
 
 void Scanner::scanToken()
 {
-	char c = advance();
+	char c = peek();
 	std::cout << std::endl;
 	std::cout << "===================================="  << std::endl;
 	std::cout << "current token: " << c << std::endl;
+	std::cout << "peek() == " << peek() << std::endl;
 	std::cout << std::endl;
 	switch (c){
 		case '*': if (peek() == ' ') addToken(Token::URI); break;
@@ -77,6 +78,7 @@ void Scanner::scanToken()
 		else
 			HttpParser::error(line, "Unexpected character.");
 	}
+	advance();
 }
 
 char Scanner::advance()
