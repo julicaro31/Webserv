@@ -59,7 +59,7 @@ int Token::getLine() const
 
 std::ostream& operator<<(std::ostream& out, const Token& token)
 {
-	out << "----------------------------------------------" << std::endl;
+	out << "---------------" << std::endl;
 	out << "TokenType: " << tokenToString(token.getType()) << std::endl;
 	out << "Token.lexeme: " << token.getLexeme() << std::endl; 
 	out	<< "Token.literal: " << token.getLiteral() << std::endl;

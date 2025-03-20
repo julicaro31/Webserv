@@ -3,13 +3,21 @@
 #include <vector>
 #include "HttpParser.hpp"
 #include <iostream>
+#include "debug.hpp"
 
 std::vector<Token> Scanner::scanTokens(void)
 {
+	std::cout << source;
+	int i = 0;
 	while (!isAtEnd())
 	{
 		start = current;
 		scanToken();
+		++i;
+		std::cout << tokens.back();
+		std::cout << "i: " << i << std::endl;
+		std::cout << "start: " << start << std::endl;
+		std::cout << "current: " << current << std::endl;
 	}
 	tokens.push_back(Token(Token::EOFF, "", "", line));
 	return (tokens);
@@ -28,6 +36,10 @@ bool Scanner::isAtEnd(int index)
 void Scanner::scanToken()
 {
 	char c = advance();
+	std::cout << std::endl;
+	std::cout << "===================================="  << std::endl;
+	std::cout << "current token: " << c << std::endl;
+	std::cout << std::endl;
 	switch (c){
 		case '*': if (peek() == ' ') addToken(Token::URI); break;
 		case '/': uri(); break;
@@ -132,8 +144,10 @@ void Scanner::number()
 void Scanner::uri()
 {
 	int i = 0;
+	DEBUG_PRINT("peek() == " + std::string(1, peek()));
 	if (peek() == '/')
 	{
+		DEBUG_PRINT("in peek if statement, before while loop");
 		while (peek(i) != ' ' && !isAtEnd(i))
 		{
 			if (peek(i) == '\n')
@@ -143,6 +157,7 @@ void Scanner::uri()
 			}
 			++i;
 		}
+		DEBUG_PRINT("in peek if statement, after while loop");
 		if (isAtEnd(i))
 		{
 			HttpParser::error(line, "Wrong URI origin-form format");
@@ -150,7 +165,10 @@ void Scanner::uri()
 		}
 		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
+		DEBUG_PRINT("token added in peek == '\' ");
+		return;
 	}
+	DEBUG_PRINT("before http check");
 	if (peek() == 'h' || peek(1) == 't' || peek(2) == 't' || peek(3) == 'p')
 	{
 		if (peek(4) != '/') return;
@@ -172,6 +190,7 @@ void Scanner::uri()
 		}
 		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
+		DEBUG_PRINT("token added in http check");
 	}
 }
 
@@ -255,11 +274,11 @@ void Scanner::addToken(Token::TokenType type)
 
 void Scanner::addToken(Token::TokenType type, std::string literal)
 {
-	std::cout << "-----------------------------" << std::endl;
-	std::cout << "start: " << start << std::endl;
-	std::cout << "current: " << current << std::endl;
+	// std::cout << "-----------------------------" << std::endl;
+	// std::cout << "start: " << start << std::endl;
+	// std::cout << "current: " << current << std::endl;
 	std::string text = source.substr(start, current - start);
-	std::cout << "text: " << text << std::endl;
+	// std::cout << "text: " << text << std::endl;
 	tokens.push_back(Token(type, text, literal, line));
 }
 
