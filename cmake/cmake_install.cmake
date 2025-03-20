@@ -1,4 +1,4 @@
-# Install script for directory: /home/spenning/projects/Webserv
+# Install script for directory: /home/mynodeus/Documents/projects/Webserv
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -50,5 +50,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/spenning/projects/Webserv/cmake/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/mynodeus/Documents/projects/Webserv/cmake/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
