@@ -10,10 +10,10 @@ void HttpParser::parseRequest(std::string Request)
 	Scanner scanner = Scanner(Request);
 	std::vector<Token> tokens = scanner.scanTokens();
 
-	for (auto token : tokens)
-	{
-		std::cout << token << std::endl;
-	}
+	// for (auto token : tokens)
+	// {
+	// 	std::cout << token << std::endl;
+	// }
 }
 
 void HttpParser::error(int line, std::string message)
