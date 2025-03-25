@@ -1,6 +1,7 @@
 #include <memory>
 #include "ServerManager.hpp"
 #include <algorithm>
+#include "Logger.hpp"
 
 ServerManager::ServerManager()
 {
@@ -33,11 +34,11 @@ void ServerManager::addServer(const ServerConfig &config)
 		// Add the server's file descriptor to the poll list and move it to _servers
 		_pollFDs.push_back({serverFD, POLLIN, 0});
 		_servers.push_back(std::move(server));
-		std::cout << "[ServerManager] Server added: " << config.host << ":" << config.port << std::endl;
+		Logger::log(INFO, "[ServerManager] Server added: " + config.host + ":" + std::to_string(config.port));
 	}
 	else
 	{
-		std::cerr << "[ServerManager] Error setting up server: " << config.host << ":" << config.port << std::endl;
+		Logger::log(ERROR, "[ServerManager] Error setting up server: " + config.host + ":" + std::to_string(config.port));
 	}
 }
 
@@ -46,24 +47,31 @@ const std::vector<std::unique_ptr<Server>> &ServerManager::getServers() const
 	return _servers;
 }
 
-// for testing purposes
+// for testing purposes, no need to move it to logger
 void ServerManager::printServers() const
 {
 	std::cout << "ServerManager contains " << _servers.size() << " servers." << std::endl;
+	Logger::log(INFO, "[ServerManager] ServerManager contains " + std::to_string(_servers.size()) + " servers.");
 	for (size_t i = 0; i < _servers.size(); i++)
 	{
 		std::cout << "Server " << i << ":\n";
 		std::cout << "Host: " << _servers[i]->getHost() << std::endl;
 		std::cout << "Port: " << _servers[i]->getPort() << std::endl;
 		std::cout << "Root: " << _servers[i]->getRoot() << std::endl;
-		std::cout << "Index: " << _servers[i]->getIndex() << std::endl;
+		std::cout << "Index: ";
+		for (const std::string &element : _servers[i]->getIndex())
+		{
+			std::cout << element << " ";
+		}
+		std::cout << std::endl;
 		std::cout << "AutoIndex: " << _servers[i]->isAutoIndexEnabled() << std::endl;
 		std::cout << "MaxBodySize: " << _servers[i]->getMaxBodySize() << std::endl;
 		std::cout << "Error pages:\n";
-		for (const auto &errorPage : _servers[i]->getErrorPages())
+		for (const std::pair<const int, std::string> &errorPage : _servers[i]->getErrorPages())
 		{
 			std::cout << errorPage.first << ": " << errorPage.second << std::endl;
 		}
+		std::cout << "===========================================" << std::endl;
 	}
 }
 
@@ -90,7 +98,7 @@ Server *ServerManager::getServerByFileDescriptor(int fd) const
  */
 void ServerManager::runPoll()
 {
-	std::cout << "[ServerManager] Running " << _servers.size() << " servers..." << std::endl;
+	Logger::log(INFO, "[ServerManager] Running " + std::to_string(_servers.size()) + " servers...");
 	while (true)
 	{
 		checkTimeouts();
@@ -99,6 +107,7 @@ void ServerManager::runPoll()
 		if (ready < 0)
 		{
 			perror("poll error");
+			Logger::log(ERROR, "[ServerManager] Poll error");
 			// need to close all sockets
 			continue;
 		}
@@ -122,7 +131,7 @@ void ServerManager::runPoll()
 			}
 			if (_pollFDs[i].revents & POLLHUP && !(_pollFDs[i].revents & POLLIN))
 			{
-				std::cout << "[ServerManager] Detected POLLHUP on FD " << _pollFDs[i].fd << std::endl;
+				Logger::log(INFO, "[ServerManager] Detected POLLHUP on FD " + std::to_string(_pollFDs[i].fd));
 				removeClient(_pollFDs[i].fd);
 			}
 		}
@@ -137,10 +146,18 @@ void ServerManager::acceptNewClient(int serverFD)
 	if (newClientFD < 0)
 	{
 		perror("Failed to accept new client(connection)");
+		Logger::log(ERROR, "[ServerManager] Failed to accept new client(connection)");
+		throw std::runtime_error("Failed to accept new client(connection)");
+	}
+	Logger::log(INFO, "[ServerManager] New client connected on FD " + std::to_string(newClientFD));
+
+	if (Server::setNonBlocking(newClientFD) == -1)
+	{
+		perror("[ServerManager] Failed to set client socket to non-blocking");
+		Logger::log(ERROR, "[ServerManager] Failed to set client socket to non-blocking");
+		close(newClientFD);
 		return;
 	}
-	std::cout << "[ServerManager] New client connected on FD " << newClientFD << std::endl;
-
 	// Add new client socket to poll list, and map client FD to server
 	pollfd pfd;
 	pfd.fd = newClientFD;
@@ -158,6 +175,7 @@ void ServerManager::handleClientRequest(int clientFD)
 	if (r < 0)
 	{
 		perror("Failed to read from client");
+		Logger::log(ERROR, "[ServerManager] Failed to read from client");
 		removeClient(clientFD);
 		return;
 	}
@@ -170,8 +188,7 @@ void ServerManager::handleClientRequest(int clientFD)
 
 	_clientActivity[clientFD] = time(NULL); // Update activity timestamp
 
-	std::cout << "[ServerManager] Received from client FD " << clientFD << '\n'
-			  << buffer << std::endl;
+	Logger::log(INFO, "[ServerManager] Received from client FD " + std::to_string(clientFD) + '\n' + buffer);
 
 	// Respond with a simple "Hello, World!" message
 	const char *body = "Hello, World!";
@@ -179,6 +196,7 @@ void ServerManager::handleClientRequest(int clientFD)
 	if (send(clientFD, response.c_str(), response.length(), 0) < 0)
 	{
 		perror("[ServerManager] Failed to send response");
+		Logger::log(ERROR, "[ServerManager] Failed to send response");
 		removeClient(clientFD);
 	}
 }
@@ -196,7 +214,7 @@ void ServerManager::removeClient(int clientFD)
 	}
 	_clientToServer.erase(clientFD);
 	_clientActivity.erase(clientFD);
-	std::cout << "[ServerManager] Client FD " << clientFD << " disconnected." << std::endl;
+	Logger::log(INFO, "[ServerManager] Client FD " + std::to_string(clientFD) + " disconnected.");
 }
 
 // Check for inactive clients and remove them from the poll list
@@ -209,7 +227,7 @@ void ServerManager::checkTimeouts()
 		if (_clientActivity.find(clientFD) != _clientActivity.end() &&
 			now - _clientActivity[clientFD] > CLIENT_TIMEOUT)
 		{
-			std::cout << "[ServerManager] Client FD " << clientFD << " timed out." << std::endl;
+			Logger::log(INFO, "[ServerManager] Client FD " + std::to_string(clientFD) + " timed out.");
 			removeClient(clientFD);
 		}
 	}
