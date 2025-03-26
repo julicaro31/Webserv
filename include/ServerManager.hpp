@@ -35,7 +35,6 @@ public:
 	Server *getServerByFileDescriptor(int fd) const;
 	std::vector<pollfd> &getPollFDs();
 
-
 	void printServers() const;
 
 	void addServer(const ServerConfig &config);
@@ -44,7 +43,6 @@ public:
 	void handleClientRequest(int clientFD);
 	void removeClient(int clientFD);
 	void checkTimeouts();
-
 };
 
 #endif

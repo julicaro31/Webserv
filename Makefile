@@ -11,13 +11,14 @@ HDRS	:= $(find include -name "*.hpp")
 #keep main at the end
 FILES	:=	parsing_helper/ParsingHelper \
 			configuration_file/ConfigBlock \
+			configuration_file/Location \
 			configuration_file/Directives \
-			request/Request \
 			Server ServerManager \
 			HttpParser \
 			Scanner \
 			Token \
 			debug \
+			Logger \
 			main
 
 SRCS	:= $(addprefix ${SRC_DIR}/,$(FILES:=.cpp))
