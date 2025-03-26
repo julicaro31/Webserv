@@ -1,3 +1,0 @@
-/home/mynodeus/Documents/projects/Webserv/cmake/CMakeFiles/my_app.dir
-/home/mynodeus/Documents/projects/Webserv/cmake/CMakeFiles/edit_cache.dir
-/home/mynodeus/Documents/projects/Webserv/cmake/CMakeFiles/rebuild_cache.dir
