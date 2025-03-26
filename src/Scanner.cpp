@@ -40,6 +40,7 @@ void Scanner::scanToken()
 	std::cout << "===================================="  << std::endl;
 	std::cout << "current token: " << c << std::endl;
 	std::cout << "peek() == " << peek() << std::endl;
+	std::cout << "int(peek()) == " << int(peek()) << std::endl;
 	std::cout << std::endl;
 	switch (c){
 		case '*': if (peek() == ' ') addToken(Token::URI); break;
@@ -108,8 +109,6 @@ void Scanner::version()
 	if (!std::isdigit(peek(5))) return ;
 	if (peek(6) != '.') return ;
 	if (!std::isdigit(peek(7))) return ;
-	std::cout << int(peek(8)) << std::endl;
-	std::cout << int(' ') <<std::endl;
 	if (peek(8) == SPACE || peek(8) == CR);
 	else return;
 	current += 9;
