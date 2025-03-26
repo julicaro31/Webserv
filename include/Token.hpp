@@ -12,7 +12,7 @@ public:
 	enum TokenType
 	{
 		// single-char tokens
-		SINGLE_SPACE,
+		SINGLE_SPACE, CR, LF,
 
 		// one or two character tokens.
 		CRLF,
