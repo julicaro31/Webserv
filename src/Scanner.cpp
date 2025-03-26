@@ -99,6 +99,7 @@ bool Scanner::match(char expected)
 void Scanner::version()
 {
 	int start = current;
+	DEBUG_PRINT("in version func");
 
 	if (peek() != 'H' || peek(1) != 'T' || peek(2) != 'T' || peek(3) != 'P')
 		return ;
@@ -106,9 +107,12 @@ void Scanner::version()
 	if (!std::isdigit(peek(5))) return ;
 	if (peek(6) != '.') return ;
 	if (!std::isdigit(peek(7))) return ;
-	if (peek(8) != ' ') return ;
+	std::cout << int(peek(8)) << std::endl;
+	std::cout << int(' ') <<std::endl;
+	if (peek(8) == SPACE || peek(8) == CR);
+	else return;
 	current += 9;
-	std::string value = source.substr(start + 1, (current - 1) - start);
+	std::string value = source.substr(start, (current - 1) - start);
 	addToken(Token::VERSION, value);
 }
 
@@ -167,6 +171,7 @@ void Scanner::uri()
 		}
 		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
+		current += i;
 		DEBUG_PRINT("token added in peek == '\' ");
 		return;
 	}
@@ -192,6 +197,7 @@ void Scanner::uri()
 		}
 		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
+		current += i;
 		DEBUG_PRINT("token added in http check");
 	}
 }
