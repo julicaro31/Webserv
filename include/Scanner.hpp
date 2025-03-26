@@ -5,6 +5,10 @@
 #include <cctype>
 #include <vector>
 		
+
+#define SPACE 13
+#define	CR 32
+
 class Scanner
 {
 private:
