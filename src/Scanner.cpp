@@ -171,7 +171,7 @@ void Scanner::uri()
 		}
 		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
-		current += i;
+		current += (i - 1);
 		DEBUG_PRINT("token added in peek == '\' ");
 		return;
 	}
@@ -197,7 +197,7 @@ void Scanner::uri()
 		}
 		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
-		current += i;
+		current += (i - 1);
 		DEBUG_PRINT("token added in http check");
 	}
 }
