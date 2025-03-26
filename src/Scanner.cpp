@@ -60,11 +60,11 @@ void Scanner::scanToken()
 				line++;
 			}
 			else
-				addToken(Token::WHITESPACE);
+				addToken(Token::WHITESPACE); 
 			break;
-		case '\t': addToken(Token::WHITESPACE); break;
-		case '\v': addToken(Token::WHITESPACE); break;
-		case '\f': addToken(Token::WHITESPACE); break;
+		case '\t': addToken(Token::WHITESPACE); advance(); break;
+		case '\v': addToken(Token::WHITESPACE); advance(); break;
+		case '\f': addToken(Token::WHITESPACE); advance(); break;
 		case '\n': line++; break;
 		case '"': string(); break;
 		case 'H': version(); break;
@@ -78,7 +78,8 @@ void Scanner::scanToken()
 		else
 			HttpParser::error(line, "Unexpected character.");
 	}
-	advance();
+	if (start == current)
+		advance();
 }
 
 char Scanner::advance()
@@ -171,7 +172,7 @@ void Scanner::uri()
 		}
 		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
-		current += (i - 1);
+		current += i;
 		DEBUG_PRINT("token added in peek == '\' ");
 		return;
 	}
@@ -197,7 +198,7 @@ void Scanner::uri()
 		}
 		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
-		current += (i - 1);
+		current += i;
 		DEBUG_PRINT("token added in http check");
 	}
 }
