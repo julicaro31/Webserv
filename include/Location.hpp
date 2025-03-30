@@ -2,6 +2,7 @@
 #define __LOCATION_H__
 
 #include "LimitExceptDirective.hpp"
+#include <map>
 
 struct Location
 {
