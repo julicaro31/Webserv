@@ -14,6 +14,7 @@ FILES	:=	parsing_helper/ParsingHelper \
 			configuration_file/Directives \
 			Server ServerManager \
 			Logger \
+			Response \
 			main
 
 SRCS	:= $(addprefix ${SRC_DIR}/,$(FILES:=.cpp))
