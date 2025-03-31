@@ -1,5 +1,6 @@
 #include "Scanner.hpp"
 #include <cctype>
+#include <string>
 #include <vector>
 #include "HttpParser.hpp"
 #include <iostream>
@@ -36,16 +37,14 @@ bool Scanner::isAtEnd(int index)
 void Scanner::scanToken()
 {
 	char c = peek();
-	std::cout << std::endl;
-	std::cout << "===================================="  << std::endl;
-	std::cout << "current token: " << c << std::endl;
-	std::cout << "peek() == " << peek() << std::endl;
-	std::cout << "int(peek()) == " << int(peek()) << std::endl;
-	std::cout << std::endl;
+	DEBUG_PRINT("current token: " + std::to_string(c));
+	DEBUG_PRINT("peek() == " + std::to_string(peek()));
+	DEBUG_PRINT("int(peek()) == " + std::to_string(int(peek())));
 	switch (c){
-		case '*': if (peek() == ' ') addToken(Token::URI);
-		case '/': uri();
+		case '*': DEBUG_PRINT("uri '*' case"); if (peek() == ' ') addToken(Token::URI);
+		case '/': DEBUG_PRINT("uri '/' case"); uri();
 		case ' ': 
+			DEBUG_PRINT("space case");
 			if (peekNext() == ' ')
 			{
 				addToken(Token::WHITESPACE);
@@ -55,7 +54,7 @@ void Scanner::scanToken()
 				addToken(Token::SINGLE_SPACE);
 			break;
 		case '\r': 
-			DEBUG_PRINT("in CR case");
+			DEBUG_PRINT("CR case");
 			if (peekNext() == '\n')
 			{
 				addToken(Token::CRLF);
@@ -65,15 +64,15 @@ void Scanner::scanToken()
 			else
 				addToken(Token::WHITESPACE); 
 			break;
-		case '\t': addToken(Token::WHITESPACE); advance(); break;
-		case '\v': addToken(Token::WHITESPACE); advance(); break;
-		case '\f': addToken(Token::WHITESPACE); advance(); break;
-		case '\n': DEBUG_PRINT("in LF"); addToken(Token::LF); line++; break;
-		case '"': DEBUG_PRINT("in string"); string();
-		case 'H': DEBUG_PRINT("in version"); version();
-		case 'h': DEBUG_PRINT("in uri"); uri(); 
+		case '\t': DEBUG_PRINT("tab case"); addToken(Token::WHITESPACE); advance(); break;
+		case '\v': DEBUG_PRINT("vertical tab case"); addToken(Token::WHITESPACE); advance(); break;
+		case '\f': DEBUG_PRINT("form feed case"); addToken(Token::WHITESPACE); advance(); break;
+		case '\n': DEBUG_PRINT("LF case"); addToken(Token::LF); line++; break;
+		case '"': DEBUG_PRINT("string case"); string();
+		case 'H': DEBUG_PRINT("version case"); version();
+		case 'h': DEBUG_PRINT("uri case"); uri(); 
 	default:
-		DEBUG_PRINT("in default");
+		DEBUG_PRINT("default case");
 		if (std::isdigit(c))
 			number();
 		else if (std::isalpha(c))
@@ -106,7 +105,6 @@ bool Scanner::match(char expected)
 void Scanner::version()
 {
 	int start = current;
-	DEBUG_PRINT("in version()");
 
 	if (peek() != 'H' || peek(1) != 'T' || peek(2) != 'T' || peek(3) != 'P')
 		return ;
@@ -141,6 +139,7 @@ void Scanner::string()
 
 void Scanner::number()
 {
+	DEBUG_PRINT("number case");
 	while (std::isdigit(peek()))
 		advance();
 	if (peek() == '.' && std::isdigit(peekNext()))
@@ -155,7 +154,7 @@ void Scanner::number()
 void Scanner::uri()
 {
 	int i = 0;
-	DEBUG_PRINT("peek() == " + std::string(1, peek()));
+	DEBUG_PRINT("peek() == " + std::to_string(peek()));
 	if (peek() == '/')
 	{
 		DEBUG_PRINT("in peek if statement, before while loop");
@@ -249,6 +248,7 @@ bool Scanner::header()
 
 void Scanner::identifier()
 {
+	DEBUG_PRINT("identifier case");
 	while (std::isalnum(peek()))
 		advance();
 	std::string text = source.substr(start, current - start);
@@ -289,11 +289,7 @@ void Scanner::addToken(Token::TokenType type)
 
 void Scanner::addToken(Token::TokenType type, std::string literal)
 {
-	// std::cout << "-----------------------------" << std::endl;
-	// std::cout << "start: " << start << std::endl;
-	// std::cout << "current: " << current << std::endl;
 	std::string text = source.substr(start, current - start);
-	// std::cout << "text: " << text << std::endl;
 	tokens.push_back(Token(type, text, literal, line));
 }
 
@@ -308,5 +304,6 @@ Scanner::Scanner(const Scanner &scanner)
 	this->start = scanner.start;
 	this->current = scanner.current;
 	this->line = scanner.line;
+	// TODO: implement deep copy of tokens
 	// this->tokens = scanner.tokens;
 }
