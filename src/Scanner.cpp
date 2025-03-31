@@ -43,10 +43,10 @@ void Scanner::scanToken()
 	std::cout << "int(peek()) == " << int(peek()) << std::endl;
 	std::cout << std::endl;
 	switch (c){
-		case '*': if (peek() == ' ') addToken(Token::URI); break;
-		case '/': uri(); break;
+		case '*': if (peek() == ' ') addToken(Token::URI);
+		case '/': uri();
 		case ' ': 
-			if (match(' '))
+			if (peekNext() == ' ')
 			{
 				addToken(Token::WHITESPACE);
 				while (peek() == ' ') advance();
@@ -55,10 +55,12 @@ void Scanner::scanToken()
 				addToken(Token::SINGLE_SPACE);
 			break;
 		case '\r': 
-			if (match('\n'))
+			DEBUG_PRINT("in CR case");
+			if (peekNext() == '\n')
 			{
 				addToken(Token::CRLF);
 				line++;
+				current += 2;
 			}
 			else
 				addToken(Token::WHITESPACE); 
@@ -67,16 +69,18 @@ void Scanner::scanToken()
 		case '\v': addToken(Token::WHITESPACE); advance(); break;
 		case '\f': addToken(Token::WHITESPACE); advance(); break;
 		case '\n': DEBUG_PRINT("in LF"); addToken(Token::LF); line++; break;
-		case '"': DEBUG_PRINT("in string"); string(); break;
-		case 'H': DEBUG_PRINT("in version"); version(); break;
-		case 'h': DEBUG_PRINT("in uri"); uri(); break;
+		case '"': DEBUG_PRINT("in string"); string();
+		case 'H': DEBUG_PRINT("in version"); version();
+		case 'h': DEBUG_PRINT("in uri"); uri(); 
 	default:
 		DEBUG_PRINT("in default");
 		if (std::isdigit(c))
 			number();
 		else if (std::isalpha(c))
-			identifier();
-		else if (header());
+		{
+			if (header()) break;
+			else; identifier();
+		}
 		else
 			HttpParser::error(line, "Unexpected character.");
 	}
@@ -207,6 +211,7 @@ bool Scanner::header()
 {
 	int i = 0;
 	int header_index = 0;
+	DEBUG_PRINT("in header()");
 	if (!std::isalpha(peek()))
 		return (false);
 	while (peek(i) != ':' && !isAtEnd(i))
@@ -223,8 +228,8 @@ bool Scanner::header()
 		HttpParser::error(line, "Wrong header_name format");
 		return (false);
 	}
-	if (peek(i) == ':' && peek(i + 1) == ' ')
-		header_index = i;
+	if (peek(i) == ':' && peek(i + 1) == CR)
+		header_index = ++i;
 	else
 		return (false);
 	while (peek(i) != '\n' && !isAtEnd(i))
@@ -238,7 +243,8 @@ bool Scanner::header()
 	std::string header_value = source.substr(current + header_index, (current + i) - (current + header_index));
 	addToken(Token::HEADER_NAME, header_name);
 	addToken(Token::HEADER_VALUE, header_value);
-	return (false);
+	current += i;
+	return (true);
 }
 
 void Scanner::identifier()
