@@ -6,6 +6,8 @@ std::string tokenToString(Token::TokenType tokenType)
     static const std::unordered_map<Token::TokenType, std::string> tokenMap = 
 	{
         {Token::SINGLE_SPACE, "SINGLE_SPACE"},
+        {Token::CR, "CR"},
+        {Token::LF, "LF"},
         {Token::CRLF, "CRLF"},
         {Token::IDENTIFIER, "IDENTIFIER"},
         {Token::STRING, "STRING"},

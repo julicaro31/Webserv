@@ -66,11 +66,12 @@ void Scanner::scanToken()
 		case '\t': addToken(Token::WHITESPACE); advance(); break;
 		case '\v': addToken(Token::WHITESPACE); advance(); break;
 		case '\f': addToken(Token::WHITESPACE); advance(); break;
-		case '\n': line++; break;
-		case '"': string(); break;
-		case 'H': version(); break;
-		case 'h': uri(); break;
+		case '\n': DEBUG_PRINT("in LF"); addToken(Token::LF); line++; break;
+		case '"': DEBUG_PRINT("in string"); string(); break;
+		case 'H': DEBUG_PRINT("in version"); version(); break;
+		case 'h': DEBUG_PRINT("in uri"); uri(); break;
 	default:
+		DEBUG_PRINT("in default");
 		if (std::isdigit(c))
 			number();
 		else if (std::isalpha(c))
@@ -101,7 +102,7 @@ bool Scanner::match(char expected)
 void Scanner::version()
 {
 	int start = current;
-	DEBUG_PRINT("in version func");
+	DEBUG_PRINT("in version()");
 
 	if (peek() != 'H' || peek(1) != 'T' || peek(2) != 'T' || peek(3) != 'P')
 		return ;
