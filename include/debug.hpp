@@ -28,6 +28,10 @@
 
 #define DEBUG_PRINT(msg) debugPrint(__FILE__,__LINE__,__func__, msg)
 
+# ifndef DEBUG_MACRO
+#  define DEBUG_MACRO 0
+# endif
+
 void debugPrint(const char* , int , const char* , const std::string&);
 
 #endif

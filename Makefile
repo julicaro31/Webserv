@@ -26,6 +26,9 @@ OBJS	:= $(addprefix $(OBJ_DIR)/,$(FILES:=.o))
 
 all: $(NAME)
 
+debug: FLAGS += -DDEBUG_MACRO
+debug: fclean $(NAME)
+
 $(NAME): $(OBJ_DIR) $(OBJS) $(HDRS)
 	$(CC) $(OBJS) $(FLAGS) -o $(NAME)
 
