@@ -16,9 +16,9 @@ std::vector<Token> Scanner::scanTokens(void)
 		scanToken();
 		++i;
 		std::cout << tokens.back();
-		std::cout << "i: " << i << std::endl;
-		std::cout << "start: " << start << std::endl;
-		std::cout << "current: " << current << std::endl;
+		DEBUG_PRINT("i: " + std::to_string(i));
+		DEBUG_PRINT("start: " + std::to_string(start));
+		DEBUG_PRINT("current: " + std::to_string(current));
 	}
 	tokens.push_back(Token(Token::EOFF, "", "", line));
 	return (tokens);
