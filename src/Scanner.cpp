@@ -8,7 +8,7 @@
 
 std::vector<Token> Scanner::scanTokens(void)
 {
-	std::cout << source;
+	DEBUG_PRINT("source: " + source);
 	int i = 0;
 	while (!isAtEnd())
 	{

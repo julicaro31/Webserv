@@ -66,6 +66,7 @@ std::ostream& operator<<(std::ostream& out, const Token& token)
 	out << "Token.lexeme: " << token.getLexeme() << std::endl; 
 	out	<< "Token.literal: " << token.getLiteral() << std::endl;
 	out	<< "Token.line: " << token.getLine() << std::endl;
+	out << "---------------" << std::endl;
 	return (out);
 }
 
