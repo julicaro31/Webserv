@@ -14,7 +14,9 @@ std::string formatString(const std::string &field, int n)
 
 void debugPrint(const char * file, int line, const char * func, const std::string & message)
 {
-	std::cout	
+	if (DEBUG_MACRO == 1)
+	{
+		std::cout	
 				<< "["
 				<< "file: " BYELLOW << formatString(file, 15)
 				<< RESET
@@ -29,5 +31,6 @@ void debugPrint(const char * file, int line, const char * func, const std::strin
 				<< message
 				<< RESET
 				<< std::endl;
+	}
 }
 
