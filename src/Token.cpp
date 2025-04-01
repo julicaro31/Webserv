@@ -70,6 +70,14 @@ std::ostream& operator<<(std::ostream& out, const Token& token)
 	return (out);
 }
 
+Token::Token(const Token &token)
+{
+	this->type = token.type;
+	this->lexeme = token.lexeme;
+	this->literal = token.literal;
+	this->line = token.line;
+}
+
 Token::Token(TokenType type, std::string lexeme, std::string literal, int line)
 {
 	this->type = type;
@@ -78,10 +86,7 @@ Token::Token(TokenType type, std::string lexeme, std::string literal, int line)
 	this->line = line;
 }
 
-Token::Token(const Token &token)
+Token::~Token(void)
 {
-	this->type = token.type;
-	this->lexeme = token.lexeme;
-	this->literal = token.literal;
-	this->line = token.line;
 }
+
