@@ -22,7 +22,7 @@ int main(int ac, char *argv[])
 		// ConfigBlock configFile = ParsingHelper::parseConfigFile(filePath);
 		// configFile.print();
 
-		std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n";
+		std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n\r\n{\n\"param1\": \"value1\",\n\"param2\": \"value2\"\n}";
 		HttpParser::parseRequest(line);
 		try
 		{
