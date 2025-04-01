@@ -18,17 +18,14 @@ public:
 		CRLF,
 
 		// literals.
-		IDENTIFIER, STRING, NUMBER, 
-		WHITESPACE,
+		IDENTIFIER, WHITESPACE,
+		BODY,
 
 		// request Line
 		METHOD, URI, VERSION,
 
-		// response Line
-		STATUS_CODE, REASON_PHRASE,
-
 		// header
-		HEADER_NAME, HEADER_VALUE,
+		HEADER,
 
 		// keywords
 		GET, POST, DELETE, PUT, HEAD, OPTIONS, CONNECT, TRACE, PATCH,
