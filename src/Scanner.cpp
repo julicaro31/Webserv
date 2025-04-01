@@ -24,15 +24,6 @@ std::vector<Token> Scanner::scanTokens(void)
 	return (tokens);
 }
 
-bool Scanner::isAtEnd(void)
-{
-	return (current >= static_cast<int>(source.length()));
-}
-
-bool Scanner::isAtEnd(int index)
-{
-	return (current + index >= static_cast<int>(source.length()));
-}
 
 void Scanner::scanToken()
 {
@@ -41,8 +32,8 @@ void Scanner::scanToken()
 	DEBUG_PRINT("peek() == " + std::to_string(peek()));
 	DEBUG_PRINT("int(peek()) == " + std::to_string(int(peek())));
 	switch (c){
-		case '*': DEBUG_PRINT("uri '*' case"); if (peek() == ' ') addToken(Token::URI);
-		case '/': DEBUG_PRINT("uri '/' case"); uri();
+		case '*': DEBUG_PRINT("uri '*' case"); if (peek() == ' ') addToken(Token::URI); [[fallthrough]];
+		case '/': DEBUG_PRINT("uri '/' case"); uri(); [[fallthrough]];
 		case ' ': 
 			DEBUG_PRINT("space case");
 			if (peekNext() == ' ')
@@ -68,9 +59,9 @@ void Scanner::scanToken()
 		case '\v': DEBUG_PRINT("vertical tab case"); addToken(Token::WHITESPACE); advance(); break;
 		case '\f': DEBUG_PRINT("form feed case"); addToken(Token::WHITESPACE); advance(); break;
 		case '\n': DEBUG_PRINT("LF case"); addToken(Token::LF); line++; break;
-		case '"': DEBUG_PRINT("string case"); string();
-		case 'H': DEBUG_PRINT("version case"); version();
-		case 'h': DEBUG_PRINT("uri case"); uri(); 
+		case '"': DEBUG_PRINT("string case"); string(); [[fallthrough]];
+		case 'H': DEBUG_PRINT("version case"); version(); [[fallthrough]];
+		case 'h': DEBUG_PRINT("uri case"); uri(); [[fallthrough]];
 	default:
 		DEBUG_PRINT("default case");
 		if (std::isdigit(c))
@@ -78,7 +69,7 @@ void Scanner::scanToken()
 		else if (std::isalpha(c))
 		{
 			if (header()) break;
-			else; identifier();
+			else identifier();
 		}
 		else
 			HttpParser::error(line, "Unexpected character.");
@@ -87,19 +78,15 @@ void Scanner::scanToken()
 		advance();
 }
 
-char Scanner::advance()
+void Scanner::addToken(Token::TokenType type)
 {
-	return (source[current++]);
+	addToken(type, "");
 }
 
-bool Scanner::match(char expected)
+void Scanner::addToken(Token::TokenType type, std::string literal)
 {
-	if (isAtEnd())
-		return (false);
-	else if (source[current] != expected)
-		return (false);
-	current++;
-	return (true);
+	std::string text = source.substr(start, current - start);
+	tokens.push_back(Token(type, text, literal, line));
 }
 
 void Scanner::version()
@@ -282,15 +269,19 @@ char Scanner::peekNext()
 	return (source[current + 1]);
 }
 
-void Scanner::addToken(Token::TokenType type)
+bool Scanner::isAtEnd(void)
 {
-	addToken(type, "");
+	return (current >= static_cast<int>(source.length()));
 }
 
-void Scanner::addToken(Token::TokenType type, std::string literal)
+bool Scanner::isAtEnd(int index)
 {
-	std::string text = source.substr(start, current - start);
-	tokens.push_back(Token(type, text, literal, line));
+	return (current + index >= static_cast<int>(source.length()));
+}
+
+char Scanner::advance()
+{
+	return (source[current++]);
 }
 
 Scanner::Scanner(std::string source)
@@ -306,4 +297,8 @@ Scanner::Scanner(const Scanner &scanner)
 	this->line = scanner.line;
 	// TODO: implement deep copy of tokens
 	// this->tokens = scanner.tokens;
+}
+
+Scanner::~Scanner(void)
+{
 }
