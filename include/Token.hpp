@@ -41,8 +41,8 @@ public:
 	std::string getLexeme() const;
 	std::string getLiteral() const;
 	int getLine() const;
-	Token(const Token &);
 	Token(TokenType, std::string, std::string, int);
+	Token(const Token &);
 	~Token(void);
 private:
 	TokenType	type;
