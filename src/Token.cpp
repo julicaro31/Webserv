@@ -16,14 +16,6 @@ std::string tokenToString(Token::TokenType tokenType)
         {Token::URI, "URI"},
         {Token::VERSION, "VERSION"},
         {Token::HEADER, "HEADER"},
-        {Token::GET, "GET"},
-        {Token::DELETE, "DELETE"},
-        {Token::PUT, "PUT"},
-        {Token::HEAD, "HEAD"},
-        {Token::OPTIONS, "OPTIONS"},
-        {Token::CONNECT, "CONNECT"},
-        {Token::TRACE, "TRACE"},
-        {Token::PATCH, "PATCH"},
         {Token::EOFF, "EOFF"},
     };
     return tokenMap.at(tokenType);

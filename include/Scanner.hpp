@@ -20,15 +20,15 @@ private:
 	int	current = 0;
 	int	line = 1;
 	const std::unordered_map<std::string, Token::TokenType> keywords = {
-	{"GET", Token::TokenType::GET},
-	{"POST", Token::TokenType::POST},
-	{"DELETE", Token::TokenType::DELETE},
-	{"PUT", Token::TokenType::PUT},
-	{"HEAD", Token::TokenType::HEAD},
-	{"OPTIONS", Token::TokenType::OPTIONS},
-	{"CONNECT", Token::TokenType::CONNECT},
-	{"TRACE", Token::TokenType::TRACE},
-	{"PATCH", Token::TokenType::PATCH},
+	{"GET", Token::TokenType::METHOD},
+	{"POST", Token::TokenType::METHOD},
+	{"DELETE", Token::TokenType::METHOD},
+	{"PUT", Token::TokenType::METHOD},
+	{"HEAD", Token::TokenType::METHOD},
+	{"OPTIONS", Token::TokenType::METHOD},
+	{"CONNECT", Token::TokenType::METHOD},
+	{"TRACE", Token::TokenType::METHOD},
+	{"PATCH", Token::TokenType::METHOD},
 	};
 	std::string source;
 	std::vector<Token> tokens;
