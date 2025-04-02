@@ -27,9 +27,6 @@ public:
 		// header
 		HEADER,
 
-		// keywords
-		GET, POST, DELETE, PUT, HEAD, OPTIONS, CONNECT, TRACE, PATCH,
-
 		// end
 		EOFF,
 	};
