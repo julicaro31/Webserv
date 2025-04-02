@@ -32,13 +32,19 @@ void Scanner::scanToken()
 	DEBUG_PRINT("peek() == " + std::to_string(peek()));
 	DEBUG_PRINT("int(peek()) == " + std::to_string(int(peek())));
 	switch (c){
-		case '*': DEBUG_PRINT("uri '*' case"); 
+		case '*': 
+			DEBUG_PRINT("uri '*' case"); 
 			if (peek() == ' ')
 			{
 				addToken(Token::URI);
 				break;
-			} [[fallthrough]];
-		case '/': DEBUG_PRINT("uri '/' case"); if (uri()) break; [[fallthrough]];
+			} 
+			[[fallthrough]];
+		case '/': 
+			DEBUG_PRINT("uri '/' case"); 
+			if (uri()) 
+				break; 
+			[[fallthrough]];
 		case ' ': 
 			DEBUG_PRINT("space case");
 			if (peekNext() == ' ')
@@ -63,18 +69,44 @@ void Scanner::scanToken()
 			else
 				addToken(Token::WHITESPACE); 
 			break;
-		case '\t': DEBUG_PRINT("tab case"); addToken(Token::WHITESPACE); advance(); break;
-		case '\v': DEBUG_PRINT("vertical tab case"); addToken(Token::WHITESPACE); advance(); break;
-		case '\f': DEBUG_PRINT("form feed case"); addToken(Token::WHITESPACE); advance(); break;
-		case '\n': DEBUG_PRINT("LF case"); addToken(Token::LF); line++; break;
-		case 'H': DEBUG_PRINT("version case"); if (version()) break; [[fallthrough]];
-		case 'h': DEBUG_PRINT("uri case"); if (uri()) break; [[fallthrough]];
+		case '\t': 
+			DEBUG_PRINT("tab case"); 
+			addToken(Token::WHITESPACE); 
+			advance(); 
+			break;
+		case '\v': 
+			DEBUG_PRINT("vertical tab case"); 
+			addToken(Token::WHITESPACE); 
+			advance(); 
+			break;
+		case '\f': 
+			DEBUG_PRINT("form feed case"); 
+			addToken(Token::WHITESPACE); 
+			advance(); 
+			break;
+		case '\n': 
+			DEBUG_PRINT("LF case"); 
+			addToken(Token::LF); 
+			line++; 
+			break;
+		case 'H': 
+			DEBUG_PRINT("version case"); 
+			if (version()) 
+				break; 
+			[[fallthrough]];
+		case 'h': 
+			DEBUG_PRINT("uri case"); 
+			if (uri()) 
+				break; 
+			[[fallthrough]];
 	default:
 	DEBUG_PRINT("default case");
 		if (std::isalpha(c))
 		{
-			if (header()) break;
-			else identifier();
+			if (header()) 
+				break;
+			else
+				identifier();
 		}
 		else
 			HttpParser::error(line, "Unexpected character.");
@@ -99,15 +131,21 @@ bool Scanner::version()
 	int start = current;
 
 	if (peek() != 'H' || peek(1) != 'T' || peek(2) != 'T' || peek(3) != 'P')
-		return (false) ;
-	if (peek(4) != '/') return (false) ;
-	if (!std::isdigit(peek(5))) return (false) ;
-	if (peek(6) != '.') return (false) ;
-	if (!std::isdigit(peek(7))) return (false) ;
-	if (peek(8) == SPACE || peek(8) == CR);
-	else return (false);
+		return (false);
+	if (peek(4) != '/') 
+		return (false);
+	if (!std::isdigit(peek(5))) 
+		return (false);
+	if (peek(6) != '.') 
+		return (false);
+	if (!std::isdigit(peek(7))) 
+		return (false);
+	if (peek(8) == SPACE || peek(8) == CR)
+		;
+	else 
+		return (false);
 	current += 9;
-	std::string value = source.substr(start, (current - 1) - start);
+	std::string value = source.substr(start + 5, (current - 1) - start);
 	addToken(Token::VERSION, value);
 	return (true);
 }
