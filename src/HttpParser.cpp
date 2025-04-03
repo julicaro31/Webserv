@@ -5,9 +5,9 @@
 #include <iostream>
 
 
-void HttpParser::parseRequest(std::string Request)
+void HttpParser::parseRequest(std::string request)
 {
-	Scanner scanner = Scanner(Request);
+	Scanner scanner = Scanner(request);
 	std::vector<Token> tokens = scanner.scanTokens();
 
 	// for (auto token : tokens)
