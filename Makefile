@@ -17,6 +17,7 @@ FILES	:=	parsing_helper/ParsingHelper \
 			Scanner \
 			Token \
 			debug \
+			Request \
 			main
 
 SRCS	:= $(addprefix ${SRC_DIR}/,$(FILES:=.cpp))
