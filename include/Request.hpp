@@ -19,8 +19,8 @@ public:
 	std::string getUri(void) const;
 	std::vector<std::pair<std::string, std::string>> getHeaders(void) const;
 	std::string getBody(void) const;
-	Request(const Request &);
 	Request(std::vector<Token>);
+	Request(const Request &);
 	~Request(void);
 private:
 	Method method;
