@@ -17,10 +17,6 @@ int main(int ac, char *argv[])
 	if (ac == 2)
 	{
 		Logger::log(INFO, "Parsing configuration file...");
-		// Parse and print the configuration file.
-		// std::string filePath(argv[1]);
-		// ConfigBlock configFile = ParsingHelper::parseConfigFile(filePath);
-		// configFile.print();
 
 		std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n\r\n{\n\"param1\": \"value1\",\n\"param2\": \"value2\"\n}";
 		Request request = HttpParser::parseRequest(line);
