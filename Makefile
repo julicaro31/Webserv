@@ -1,6 +1,6 @@
 NAME	:= webserv
 CC		:= c++
-FLAGS	:= -Wall -Wextra -Werror -Iinclude -std=c++17
+FLAGS	:= -Wall -Wextra -Werror -Iinclude -std=c++17 -g
 
 
 OBJ_DIR	:= obj
