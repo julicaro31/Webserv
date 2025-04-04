@@ -298,18 +298,17 @@ char Scanner::advance()
 }
 
 Scanner::Scanner(std::string source)
+	: source {source}
 {
-	this->source = source;
 }
 
 Scanner::Scanner(const Scanner &scanner)
+	: start {scanner.start}
+	, current {scanner.current}
+	, line {scanner.line}
+	, source {scanner.source}
+	, tokens {scanner.tokens}
 {
-	this->source = scanner.source;
-	this->start = scanner.start;
-	this->current = scanner.current;
-	this->line = scanner.line;
-	// TODO: implement deep copy of tokens
-	// this->tokens = scanner.tokens;
 }
 
 Scanner::~Scanner(void)
