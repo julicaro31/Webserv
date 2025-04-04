@@ -3,6 +3,7 @@
 
 #include "Token.hpp"
 #include <cctype>
+#include <unordered_map>
 #include <vector>
 
 #define SPACE 13
@@ -11,7 +12,7 @@
 class Scanner
 {
 public:
-	std::vector<Token> scanTokens(void);
+	std::unordered_map<int, std::vector<Token>> scanTokens(void);
 	Scanner(std::string);
 	Scanner(const Scanner &);
 	~Scanner(void);
@@ -31,7 +32,7 @@ private:
 	{"PATCH", Token::TokenType::METHOD},
 	};
 	std::string source;
-	std::vector<Token> tokens;
+	std::unordered_map<int, std::vector<Token>>  tokens;
 private:
 	void scanToken();
 	void addToken(Token::TokenType);
@@ -40,6 +41,7 @@ private:
 	bool uri();
 	bool header();
 	void identifier();
+	void body();
 	char peek();
 	char peek(int);
 	char peekNext();

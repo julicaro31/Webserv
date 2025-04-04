@@ -6,7 +6,7 @@
 #include <iostream>
 #include "debug.hpp"
 
-std::vector<Token> Scanner::scanTokens(void)
+std::unordered_map<int, std::vector<Token>> Scanner::scanTokens(void)
 {
 	DEBUG_PRINT("\nsource: \n" + source);
 	int i = 0;
@@ -15,12 +15,12 @@ std::vector<Token> Scanner::scanTokens(void)
 		start = current;
 		scanToken();
 		++i;
-		std::cout << tokens.back();
+		std::cout << tokens[line].back();
 		DEBUG_PRINT("i: " + std::to_string(i));
 		DEBUG_PRINT("start: " + std::to_string(start));
 		DEBUG_PRINT("current: " + std::to_string(current));
 	}
-	tokens.push_back(Token(Token::EOFF, "", "", line));
+	tokens[line].push_back(Token(Token::EOFF, "", "", line));
 	return (tokens);
 }
 
@@ -28,6 +28,7 @@ std::vector<Token> Scanner::scanTokens(void)
 void Scanner::scanToken()
 {
 	char c = peek();
+
 	DEBUG_PRINT("current token: " + std::to_string(c));
 	DEBUG_PRINT("peek() == " + std::to_string(peek()));
 	DEBUG_PRINT("int(peek()) == " + std::to_string(int(peek())));
@@ -62,8 +63,8 @@ void Scanner::scanToken()
 			DEBUG_PRINT("CR case");
 			if (peekNext() == '\n')
 			{
-				addToken(Token::CRLF);
 				line++;
+				addToken(Token::CRLF);
 				current += 2;
 			}
 			else
@@ -86,8 +87,8 @@ void Scanner::scanToken()
 			break;
 		case '\n': 
 			DEBUG_PRINT("LF case"); 
-			addToken(Token::LF); 
 			line++; 
+			addToken(Token::LF); 
 			break;
 		case 'H': 
 			DEBUG_PRINT("version case"); 
@@ -113,6 +114,8 @@ void Scanner::scanToken()
 	}
 	if (start == current)
 		advance();
+	if (line > 1 && tokens[line].size() == 1 && tokens[line].back().getType() == Token::CRLF)
+		body();
 }
 
 void Scanner::addToken(Token::TokenType type)
@@ -123,7 +126,7 @@ void Scanner::addToken(Token::TokenType type)
 void Scanner::addToken(Token::TokenType type, std::string literal)
 {
 	std::string text = source.substr(start, current - start);
-	tokens.push_back(Token(type, text, literal, line));
+	tokens[line].push_back(Token(type, text, literal, line));
 }
 
 bool Scanner::version()
@@ -259,6 +262,17 @@ void Scanner::identifier()
 	else
 		type = it->second;
 	addToken(type);
+}
+
+void Scanner::body()
+{
+	int i = current;
+
+	while (!peek(i))
+		i++;
+	std::string body = source.substr(start, (current + i) - start);
+	addToken(Token::BODY, body);
+	current += i;
 }
 
 char Scanner::peek()

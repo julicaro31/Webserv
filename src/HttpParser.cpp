@@ -1,4 +1,5 @@
 #include "HttpParser.hpp"
+#include <unordered_map>
 #include <vector>
 #include "Scanner.hpp"
 #include <ostream>
@@ -8,7 +9,7 @@
 void HttpParser::parseRequest(std::string request)
 {
 	Scanner scanner = Scanner(request);
-	std::vector<Token> tokens = scanner.scanTokens();
+	std::unordered_map<int, std::vector<Token>> tokens = scanner.scanTokens();
 
 	// for (auto token : tokens)
 	// {
