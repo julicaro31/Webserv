@@ -2,31 +2,6 @@
 #include "Token.hpp"
 #include <utility>
 
-Request::Method Request::getMethod(void) const
-{
-	return (method);
-}
-
-float Request::getVersion(void) const
-{
-	return (version);
-}
-
-std::string Request::getUri (void) const
-{
-	return (uri);
-}
-
-std::vector<std::pair<std::string, std::string>> Request::getHeaders(void) const
-{
-	return (headers);
-}
-
-std::string Request::getBody(void) const
-{
-	return (body);
-}
-
 Request::Request(std::vector<Token> tokens)
 {
 	for (auto it:tokens)
@@ -67,12 +42,12 @@ Request::Request(std::vector<Token> tokens)
 }
 
 Request::Request(const Request & request)
+	: method{ request.method}
+	, version {request.version}
+	, uri {request.uri}
+	, headers {request.headers}
+	, body {request.body}
 {
-	method = request.getMethod();
-	version = request.getVersion();
-	uri = request.getUri();
-	headers = request.getHeaders();
-	body = request.getBody();
 }
 
 Request::~Request(void)
