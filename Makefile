@@ -1,6 +1,6 @@
 NAME	:= webserv
 CC		:= c++
-FLAGS	:= -Wall -Wextra -Werror -Iinclude -std=c++17 -g
+FLAGS	:= -Wall -Wextra -Werror -Iinclude -std=c++17
 
 
 OBJ_DIR	:= obj
@@ -27,7 +27,7 @@ OBJS	:= $(addprefix $(OBJ_DIR)/,$(FILES:=.o))
 
 all: $(NAME)
 
-debug: FLAGS += -DDEBUG_MACRO
+debug: FLAGS += -DDEBUG_MACRO -g
 debug: fclean $(NAME)
 
 $(NAME): $(OBJ_DIR) $(OBJS) $(HDRS)
