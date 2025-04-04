@@ -11,10 +11,10 @@
 class Scanner
 {
 public:
+	std::vector<Token> scanTokens(void);
 	Scanner(std::string);
 	Scanner(const Scanner &);
 	~Scanner(void);
-	std::vector<Token> scanTokens(void);
 private:
 	int	start = 0;
 	int	current = 0;
