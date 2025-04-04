@@ -14,11 +14,6 @@ public:
 		POST,
 		DELETE,
 	};
-	Method getMethod(void) const;
-	float getVersion(void) const;
-	std::string getUri(void) const;
-	std::vector<std::pair<std::string, std::string>> getHeaders(void) const;
-	std::string getBody(void) const;
 	Request(std::vector<Token>);
 	Request(const Request &);
 	~Request(void);
