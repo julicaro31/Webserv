@@ -163,7 +163,7 @@ std::vector<std::string> ParsingHelper::split(const std::string &str, char delim
 /// @brief Converts a string to the corresponding method.
 /// @param method Method as a string to convert.
 /// @return The string as a 'Method'.
-Method ParsingHelper::parseMethod(std::string method)
+Method ParsingHelper::strToMethod(std::string method)
 {
 	if (method == "GET")
 	{
@@ -293,16 +293,16 @@ std::vector<LimitExceptDirective> ParsingHelper::parseLimitExcepts(ConfigBlock &
 
 		if (contextInfo[0] == "limit_except")
 		{
-			if (contextInfo.size() != 2 || parseMethod(contextInfo[1]) == Method::NONE)
+			if (contextInfo.size() < 2)
 			{
-				Logger::log(ERROR, "limit_except must contain one method.");
-				throw std::invalid_argument("Error: limit_except must contain one method.");
+				Logger::log(ERROR, "limit_except must contain at least one method.");
+				throw std::invalid_argument("Error: limit_except must contain at least one method.");
 			}
 
 			for (std::vector<ConfigBlock>::iterator limitExceptBlock = it->second.begin(); limitExceptBlock != it->second.end(); limitExceptBlock++)
 			{
 				LimitExceptDirective limitExcept;
-				limitExcept.method = parseMethod(contextInfo[1]);
+				limitExcept.methods = parseMethods(contextInfo);
 
 				std::map<std::string, std::vector<std::string>>::iterator allowFinder = limitExceptBlock->getDirectives().find("allow");
 				limitExcept.allow = allowFinder != limitExceptBlock->getDirectives().end() ? allowFinder->second[0] : "";
@@ -316,6 +316,28 @@ std::vector<LimitExceptDirective> ParsingHelper::parseLimitExcepts(ConfigBlock &
 	}
 
 	return limitExcepts;
+}
+
+/// @brief Parses the methods from the limit_except directive.
+/// @param methods Vector of strings containing the methods.
+/// @return A vector of Method.
+/// @throw std::invalid_argument if any of the methods is not valid.
+std::vector<Method> ParsingHelper::parseMethods(std::vector<std::string> &methods)
+{
+	std::vector<Method> parsedMethods;
+
+	for (std::vector<std::string>::iterator it = methods.begin() + 1; it != methods.end(); it++)
+	{
+		Method method = strToMethod(*it);
+		if (method == Method::NONE)
+		{
+			Logger::log(ERROR, "Invalid method in limit_except directive.");
+			throw std::invalid_argument("Error: Invalid method in limit_except directive.");
+		}
+		parsedMethods.push_back(method);
+	}
+
+	return parsedMethods;
 }
 
 /// @brief Parses, validates and adds the directives to the given ServerConfig.
@@ -415,9 +437,9 @@ void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::strin
 		{
 			locationConfig.errorPages = parseErrorPages(directive->second);
 		}
-		else if (directiveName == "cgi_assign")
+		else if (directiveName == "cgi_pass")
 		{
-			locationConfig.cgiExtensionMap = parseCgiExtensionMap(directive->second);
+			locationConfig.cgiPass = directive->second[0];
 		}
 
 		directivesSet.push_back(directiveName);
@@ -585,27 +607,4 @@ void ParsingHelper::parseErrorPage(std::map<int, std::string> &errorPageMap, std
 			throw std::invalid_argument("Error: Invalid status code.");
 		}
 	}
-}
-
-/// @brief Parses into a map the executables to run depending on the extension for cgi.
-/// @param info Stores info about the file and extensions, extracted from the configuration file.
-/// @return The parsed map. The key is the file extension and the value is the executable.
-std::map<std::string, std::string> ParsingHelper::parseCgiExtensionMap(std::vector<std::string> &info)
-{
-	std::map<std::string, std::string> cgiExtensionMap;
-
-	for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
-	{
-		std::vector<std::string> values = split(*it, ' ');
-
-		if (values.size() != 2)
-		{
-			Logger::log(ERROR, "Invalid values in cgi_assign directive.");
-			throw std::invalid_argument("Error: Invalid values in cgi_assign directive.");
-		}
-
-		cgiExtensionMap[values[0]] = values[1];
-	}
-
-	return cgiExtensionMap;
 }

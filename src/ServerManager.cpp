@@ -105,11 +105,7 @@ void ServerManager::printLocations(std::vector<Location> locations) const
 			std::cout << "	-" << errorPage.first << ": " << errorPage.second << std::endl;
 		}
 
-		std::cout << "	CGI: " << std::endl;
-		for (const std::pair<const std::string, std::string> &cgi : it->cgiExtensionMap)
-		{
-			std::cout << "	-" << cgi.first << ": " << cgi.second << std::endl;
-		}
+		std::cout << "	CGI: " << it->cgiPass << std::endl;
 
 		std::cout << "	Index: ";
 		for (const std::string &element : it->index)
@@ -121,7 +117,13 @@ void ServerManager::printLocations(std::vector<Location> locations) const
 		std::cout << "	Limit except: " << std::endl;
 		for (std::vector<LimitExceptDirective>::iterator led = it->limitExcepts.begin(); led != it->limitExcepts.end(); led++)
 		{
-			std::cout << "	-Method: " << ParsingHelper::methodToStr(led->method) << " Allow: " << led->allow << " Deny: " << led->deny << std::endl;
+			std::cout << "	-Mehods: ";
+			for (std::vector<Method>::iterator method = led->methods.begin(); method != led->methods.end(); method++)
+			{
+				std::cout << ParsingHelper::methodToStr(*method) << " ";
+			}
+
+			std::cout << " Allow: " << led->allow << " Deny: " << led->deny << std::endl;
 		}
 
 		std::cout << std::endl;

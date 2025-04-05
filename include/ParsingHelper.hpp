@@ -50,9 +50,8 @@ private:
 	static void parseErrorPage(std::map<int, std::string> &errorPageMap, std::string &info);
 	static void parseLocation(ConfigBlock &serverBlock, ServerConfig &serverConfig);
 	static std::vector<LimitExceptDirective> parseLimitExcepts(ConfigBlock &locationBlock);
-	static std::map<std::string, std::string> parseCgiExtensionMap(std::vector<std::string> &info);
-
-	static Method parseMethod(std::string method);
+	static std::vector<Method> parseMethods(std::vector<std::string> &methods);
+	static Method strToMethod(std::string method);
 };
 
 #endif
