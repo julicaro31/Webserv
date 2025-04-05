@@ -15,7 +15,7 @@ struct Location
 	std::vector<std::string> index;
 	std::pair<int, std::string> redirection;
 	std::map<int, std::string> errorPages;
-	std::map<std::string, std::string> cgiExtensionMap;
+	std::string cgiPass;
 	std::vector<LimitExceptDirective> limitExcepts;
 };
 
