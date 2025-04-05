@@ -12,7 +12,8 @@ const std::map<std::string, std::vector<Context>> Directives =
 		{"return", {Context::SERVER, Context::LOCATION}},
 		{"root", {Context::HTTP, Context::SERVER, Context::LOCATION}},
 		{"autoindex", {Context::HTTP, Context::SERVER, Context::LOCATION}},
-		{"index", {Context::HTTP, Context::SERVER, Context::LOCATION}}};
+		{"index", {Context::HTTP, Context::SERVER, Context::LOCATION}},
+		{"cgi_assign", {Context::LOCATION}}};
 
 /// @brief Directives that can only appear once per block not to cause ambiguities.
 const std::vector<std::string> SingleUseDirectives = {"listen", "server_name", "client_max_body_size", "root", "autoindex", "return"};
