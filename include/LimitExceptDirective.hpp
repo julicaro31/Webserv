@@ -7,7 +7,7 @@
 
 struct LimitExceptDirective
 {
-	Method method;
+	std::vector<Method> methods;
 	std::string allow;
 	std::string deny;
 };
