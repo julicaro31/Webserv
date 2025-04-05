@@ -16,7 +16,7 @@ private:
 	void handlePostRequest(const std::string &uri);
 	void handleDeleteRequest(const std::string &uri);
 
-	bool isCGI(const std::string &uri) const;
+	bool isCGI() const;
 	bool isAllowed(Method method) const;
 	bool isFile(const std::string &uri) const;
 
@@ -26,7 +26,7 @@ private:
 	std::pair<int, std::string> _redirection;
 	std::map<int, std::string> _errorPages;
 	std::vector<std::string> _index;
-	std::map<std::string, std::string> _cgiExtensionMap;
+	std::string _cgiPass;
 	std::vector<LimitExceptDirective> _limitExcepts;
 };
 

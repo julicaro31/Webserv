@@ -31,7 +31,7 @@ void Response::setConfiguration(const std::string uri, Server &server)
 		_redirection = server.getRedirection();
 		_errorPages = server.getErrorPages();
 		_index = server.getIndex();
-		_cgiExtensionMap = std::map<std::string, std::string>();
+		_cgiPass = "";
 		_limitExcepts = {};
 	}
 	else
@@ -42,7 +42,7 @@ void Response::setConfiguration(const std::string uri, Server &server)
 		_redirection = bestMatch->redirection;
 		_errorPages = bestMatch->errorPages;
 		_index = bestMatch->index;
-		_cgiExtensionMap = bestMatch->cgiExtensionMap;
+		_cgiPass = bestMatch->cgiPass;
 		_limitExcepts = bestMatch->limitExcepts;
 	}
 }
@@ -55,7 +55,7 @@ void Response::handleGetRequest(const std::string &uri)
 		return;
 	}
 
-	if (isCGI(uri))
+	if (isCGI())
 	{
 		// Handle CGI request
 	}
@@ -94,7 +94,7 @@ void Response::handlePostRequest(const std::string &uri)
 		return;
 	}
 
-	if (isCGI(uri))
+	if (isCGI())
 	{
 		// Handle CGI request
 	}
@@ -106,7 +106,7 @@ void Response::handlePostRequest(const std::string &uri)
 
 void Response::handleDeleteRequest(const std::string &uri)
 {
-	if (isAllowed(Method::DELETE) == false || isCGI(uri))
+	if (isAllowed(Method::DELETE) == false || isCGI())
 	{
 		// Handle method not allowed (405)
 		return;
@@ -117,33 +117,24 @@ void Response::handleDeleteRequest(const std::string &uri)
 	}
 }
 
-bool Response::isCGI(const std::string &uri) const
+bool Response::isCGI() const
 {
-	const size_t extensionPos = uri.find_last_of('.');
-	if (extensionPos == std::string::npos)
-	{
-		return false;
-	}
-	std::string extension = uri.substr(extensionPos);
-	if (_cgiExtensionMap.find(extension) != _cgiExtensionMap.end())
-	{
-		return true;
-	}
-	return false;
+	return _cgiPass != "";
 }
 
 bool Response::isAllowed(Method method) const
 {
 	for (std::vector<LimitExceptDirective>::const_iterator limit = _limitExcepts.begin(); limit != _limitExcepts.end(); limit++)
 	{
-		if (limit->method == method)
+		if (std::find(limit->methods.begin(), limit->methods.end(), method) != limit->methods.end())
 		{
 			return true;
 		}
-		else if (limit->deny == "all")
+		if (limit->deny == "all")
 		{
 			return false;
 		}
+
 		// return (limit->allow == host);
 	}
 	return true;
