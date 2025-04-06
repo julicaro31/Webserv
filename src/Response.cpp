@@ -62,7 +62,8 @@ void Response::handleGetRequest(const std::string &uri)
 	else if (isFile(uri))
 	{
 		std::string filePath = uri + "/" + uri;
-		// Check if exists and serve file
+		// Check if exists and return requested file
+		// If not found: 404
 	}
 	else
 	{
@@ -71,7 +72,8 @@ void Response::handleGetRequest(const std::string &uri)
 			if (isFile(*index))
 			{
 				std::string filePath = uri + "/" + *index;
-				// Check if exists and serve file
+				// Check if exists and return index file
+				// If not found: 404
 				return;
 			}
 		}
@@ -81,14 +83,14 @@ void Response::handleGetRequest(const std::string &uri)
 		}
 		else
 		{
-			// Handle 404 Not Found
+			// Return 404 Not Found
 		}
 	}
 }
 
 void Response::handlePostRequest(const std::string &uri)
 {
-	if (isAllowed(Method::POST) == false)
+	if (!isAllowed(Method::POST) || !isFile(uri))
 	{
 		// Handle method not allowed (405)
 		return;
@@ -106,14 +108,23 @@ void Response::handlePostRequest(const std::string &uri)
 
 void Response::handleDeleteRequest(const std::string &uri)
 {
-	if (isAllowed(Method::DELETE) == false || isCGI())
+	if (isAllowed(Method::DELETE) == false)
 	{
 		// Handle method not allowed (405)
 		return;
 	}
+	if (isCGI())
+	{
+		// Handle CGI request
+	}
+	else if (isFile(uri))
+	{
+		// Delete file
+	}
 	else
 	{
-		// Handle delete file or folder
+		// No write access: 403
+		// Try delete it
 	}
 }
 
