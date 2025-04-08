@@ -37,6 +37,7 @@ private:
 	void scanToken();
 	void addToken(Token::TokenType);
 	void addToken(Token::TokenType, std::string);
+	void addToken(Token::TokenType, std::string, std::string);
 	bool version();
 	bool uri();
 	bool header();
