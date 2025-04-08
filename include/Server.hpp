@@ -27,13 +27,13 @@ private:
 	int _socketFD;
 	bool _autoIndex;
 	bool _defaultServer;
+	size_t _maxBodySize;
 	std::string _host;
 	std::string _root;
-	std::vector<std::string> _index;
-	size_t _maxBodySize;
 	std::string _serverName;
 	std::pair<int, std::string> _redirection;
 	std::map<int, std::string> _errorPages;
+	std::vector<std::string> _index;
 	std::vector<Location> _locations;
 
 public:
@@ -50,23 +50,30 @@ public:
 	// Setters
 	void setHost(const std::string &host);
 	void setPort(int port);
+	void setAutoIndex(bool autoindex);
+	void setDefaultServer(bool defaultServer);
 	void setMaxBodySize(size_t maxBodySize);
 	void setRoot(const std::string &root);
-	void setIndex(const std::vector<std::string> &index);
-	void setAutoIndex(bool autoindex);
+	void setServerName(std::string serverName);
+	void setRedirection(std::pair<int, std::string> redirection);
 	void setErrorPages(const std::map<int, std::string> &errorPages);
-	void setDefaultServer(bool defaultServer);
+	void setIndex(const std::vector<std::string> &index);
 	void setLocations(std::vector<Location> locations);
 
 	// Getters
 	int getPort() const;
-	const std::string &getRoot() const;
-	const std::vector<std::string> &getIndex() const;
 	bool isAutoIndexEnabled() const;
-	const std::map<int, std::string> &getErrorPages() const;
+	bool isDefaultServer() const;
 	size_t getMaxBodySize() const;
+	const std::string &getRoot() const;
+	const std::string &getServerName() const;
+	const std::pair<int, std::string> getRedirection() const;
+	const std::map<int, std::string> &getErrorPages() const;
 	std::string getErrorPage(int statusCode) const;
+	const std::vector<std::string> &getIndex() const;
+	std::vector<Location> getLocations() const;
 	int getSocketFD() const;
+
 	static int setNonBlocking(int fd);
 };
 

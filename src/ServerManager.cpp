@@ -22,11 +22,15 @@ void ServerManager::addServer(const ServerConfig &config)
 
 	server->setHost(config.host);
 	server->setPort(config.port);
-	server->setRoot(config.root);
-	server->setIndex(config.index);
 	server->setAutoIndex(config.autoIndex);
+	server->setDefaultServer(config.defaultServer);
 	server->setMaxBodySize(config.maxBodySize);
+	server->setRoot(config.root);
+	server->setServerName(config.serverName);
+	server->setRedirection(config.redirection);
 	server->setErrorPages(config.errorPages);
+	server->setIndex(config.index);
+	server->setLocations(config.locations);
 
 	if (server->setupSocket())
 	{
@@ -54,24 +58,73 @@ void ServerManager::printServers() const
 	Logger::log(INFO, "[ServerManager] ServerManager contains " + std::to_string(_servers.size()) + " servers.");
 	for (size_t i = 0; i < _servers.size(); i++)
 	{
-		std::cout << "Server " << i << ":\n";
+		std::cout << "Server #" << i + 1 << " Name: " << _servers[i]->getServerName() << ":" << std::endl;
 		std::cout << "Host: " << _servers[i]->getHost() << std::endl;
 		std::cout << "Port: " << _servers[i]->getPort() << std::endl;
+		std::cout << "AutoIndex: " << _servers[i]->isAutoIndexEnabled() << std::endl;
+		std::cout << "Is default server: " << _servers[i]->isDefaultServer() << std::endl;
+		std::cout << "MaxBodySize: " << _servers[i]->getMaxBodySize() << std::endl;
 		std::cout << "Root: " << _servers[i]->getRoot() << std::endl;
+
+		std::cout << "Redirection: " << _servers[i]->getRedirection().first << " " << _servers[i]->getRedirection().second << std::endl;
+
+		std::cout << "Error pages:" << std::endl;
+		for (const std::pair<const int, std::string> &errorPage : _servers[i]->getErrorPages())
+		{
+			std::cout << "-" << errorPage.first << ": " << errorPage.second << std::endl;
+		}
+
 		std::cout << "Index: ";
 		for (const std::string &element : _servers[i]->getIndex())
 		{
 			std::cout << element << " ";
 		}
 		std::cout << std::endl;
-		std::cout << "AutoIndex: " << _servers[i]->isAutoIndexEnabled() << std::endl;
-		std::cout << "MaxBodySize: " << _servers[i]->getMaxBodySize() << std::endl;
-		std::cout << "Error pages:\n";
-		for (const std::pair<const int, std::string> &errorPage : _servers[i]->getErrorPages())
-		{
-			std::cout << errorPage.first << ": " << errorPage.second << std::endl;
-		}
+
+		printLocations(_servers[i]->getLocations());
+
 		std::cout << "===========================================" << std::endl;
+	}
+}
+
+void ServerManager::printLocations(std::vector<Location> locations) const
+{
+	for (std::vector<Location>::iterator it = locations.begin(); it != locations.end(); it++)
+	{
+		std::cout << std::endl;
+		std::cout << "Location " << it->modifier << " " << it->uri << std::endl;
+		std::cout << "	AutoIndex: " << it->autoIndex << std::endl;
+		std::cout << "	MaxBodySize: " << it->maxBodySize << std::endl;
+		std::cout << "	Root: " << it->root << std::endl;
+
+		std::cout << "	Redirection: " << it->redirection.first << " " << it->redirection.second << std::endl;
+
+		std::cout << "	Error pages:" << std::endl;
+		for (const std::pair<const int, std::string> &errorPage : it->errorPages)
+		{
+			std::cout << "	-" << errorPage.first << ": " << errorPage.second << std::endl;
+		}
+
+		std::cout << "	CGI: " << std::endl;
+		for (const std::pair<const std::string, std::string> &cgi : it->cgiExtensionMap)
+		{
+			std::cout << "	-" << cgi.first << ": " << cgi.second << std::endl;
+		}
+
+		std::cout << "	Index: ";
+		for (const std::string &element : it->index)
+		{
+			std::cout << "	" << element << " ";
+		}
+		std::cout << std::endl;
+
+		std::cout << "	Limit except: " << std::endl;
+		for (std::vector<LimitExceptDirective>::iterator led = it->limitExcepts.begin(); led != it->limitExcepts.end(); led++)
+		{
+			std::cout << "	-Method: " << ParsingHelper::methodToStr(led->method) << " Allow: " << led->allow << " Deny: " << led->deny << std::endl;
+		}
+
+		std::cout << std::endl;
 	}
 }
 

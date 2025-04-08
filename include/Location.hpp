@@ -1,22 +1,22 @@
 #ifndef __LOCATION_H__
 #define __LOCATION_H__
 
-#include "ConfigBlock.hpp"
 #include "LimitExceptDirective.hpp"
+#include <map>
 
-class Location : public ConfigBlock
+struct Location
 {
-public:
-	Location(std::string uri, std::string modifier, std::vector<LimitExceptDirective> limitExcepts, std::map<std::string, std::vector<std::string>> directives);
+	std::string uri;
+	std::string modifier;
 
-	const std::string getUri() const;
-	const std::string getModifier() const;
-	const std::vector<LimitExceptDirective> getLimitExcepts() const;
-
-private:
-	std::string _uri;
-	std::string _modifier;
-	std::vector<LimitExceptDirective> _limitExcepts;
+	bool autoIndex;
+	std::string root;
+	size_t maxBodySize;
+	std::vector<std::string> index;
+	std::pair<int, std::string> redirection;
+	std::map<int, std::string> errorPages;
+	std::map<std::string, std::string> cgiExtensionMap;
+	std::vector<LimitExceptDirective> limitExcepts;
 };
 
 #endif

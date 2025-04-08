@@ -46,15 +46,19 @@ const std::string &Server::getHost() const { return _host; }
 
 int Server::getPort() const { return _port; }
 
-const std::string &Server::getRoot() const { return _root; }
-
-const std::vector<std::string> &Server::getIndex() const { return _index; }
-
 bool Server::isAutoIndexEnabled() const { return _autoIndex; }
 
-const std::map<int, std::string> &Server::getErrorPages() const { return _errorPages; }
+bool Server::isDefaultServer() const { return _defaultServer; }
 
 size_t Server::getMaxBodySize() const { return _maxBodySize; }
+
+const std::string &Server::getRoot() const { return _root; }
+
+const std::string &Server::getServerName() const { return _serverName; }
+
+const std::pair<int, std::string> Server::getRedirection() const { return _redirection; }
+
+const std::map<int, std::string> &Server::getErrorPages() const { return _errorPages; }
 
 std::string Server::getErrorPage(int statusCode) const
 {
@@ -63,6 +67,10 @@ std::string Server::getErrorPage(int statusCode) const
 		return it->second;
 	return "";
 }
+
+const std::vector<std::string> &Server::getIndex() const { return _index; }
+
+std::vector<Location> Server::getLocations() const { return _locations; }
 
 int Server::getSocketFD() const { return _socketFD; }
 
@@ -77,19 +85,14 @@ void Server::setPort(int port)
 	_port = port;
 }
 
-void Server::setRoot(const std::string &root)
-{
-	_root = root;
-}
-
-void Server::setIndex(const std::vector<std::string> &index)
-{
-	_index = index;
-}
-
 void Server::setAutoIndex(bool enableAutoIndex)
 {
 	_autoIndex = enableAutoIndex;
+}
+
+void Server::setDefaultServer(bool defaultServer)
+{
+	_defaultServer = defaultServer;
 }
 
 void Server::setMaxBodySize(size_t maxBodySize)
@@ -97,10 +100,35 @@ void Server::setMaxBodySize(size_t maxBodySize)
 	_maxBodySize = maxBodySize;
 }
 
+void Server::setRoot(const std::string &root)
+{
+	_root = root;
+}
+
+void Server::setServerName(std::string serverName)
+{
+	_serverName = serverName;
+}
+
+void Server::setRedirection(std::pair<int, std::string> redirection)
+{
+	_redirection = redirection;
+}
+
 void Server::setErrorPages(const std::map<int, std::string> &errorPages)
 {
 	_errorPages = errorPages;
 }
+
+void Server::setIndex(const std::vector<std::string> &index)
+{
+	_index = index;
+}
+void Server::setLocations(std::vector<Location> locations)
+{
+	_locations = locations;
+}
+
 /**
  * @brief This function should create a socket and bind it to the server's host and port.
  *
@@ -156,14 +184,4 @@ int Server::setNonBlocking(int fd)
 	if (currFlag == -1)
 		return -1;
 	return (fcntl(fd, F_SETFL, currFlag | O_NONBLOCK));
-}
-
-void Server::setDefaultServer(bool defaultServer)
-{
-	_defaultServer = defaultServer;
-}
-
-void Server::setLocations(std::vector<Location> locations)
-{
-	_locations = locations;
 }

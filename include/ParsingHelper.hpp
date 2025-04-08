@@ -21,12 +21,15 @@ public:
 	static std::string trim(const std::string &str);
 	static std::string toString(Context context);
 	static std::vector<std::string> split(const std::string &str, char delimiter);
+	static std::string methodToStr(Method method);
 
 	static std::vector<ServerConfig> getServersConfig(std::string &configFilePath);
 
 private:
-	ParsingHelper();
-	ParsingHelper(const ParsingHelper &parsingHelper);
+	ParsingHelper() = delete;
+	ParsingHelper(const ParsingHelper &parsingHelper) = delete;
+	~ParsingHelper() = delete;
+	const ParsingHelper &operator=(const ParsingHelper &parsingHelper) = delete;
 
 	static ConfigBlock parseConfigFile(std::string &configFilePath);
 	static ConfigBlock parseBlock(std::ifstream &file, std::string blockName, int braceLevel = 0);
@@ -34,7 +37,11 @@ private:
 	static void handleDirective(ConfigBlock &block, std::string blockName, std::string line);
 
 	static void parseDirectives(std::map<std::string, std::vector<std::string>> &directives, ServerConfig &serverConfig);
-	static void setDefaultValues(ServerConfig &serverConfig);
+	static void parseDirectives(std::map<std::string, std::vector<std::string>> &directives, Location &locationConfig);
+	
+	template <typename T>
+	static void setDefaultValues(T &config);
+	
 	static bool parseAutoIndex(std::string &value);
 	static size_t parseMaxBodySize(std::string &value);
 	static std::pair<std::string, int> parseHostAndPort(std::string &info);
@@ -43,6 +50,7 @@ private:
 	static void parseErrorPage(std::map<int, std::string> &errorPageMap, std::string &info);
 	static void parseLocation(ConfigBlock &serverBlock, ServerConfig &serverConfig);
 	static std::vector<LimitExceptDirective> parseLimitExcepts(ConfigBlock &locationBlock);
+	static std::map<std::string, std::string> parseCgiExtensionMap(std::vector<std::string> &info);
 
 	static Method parseMethod(std::string method);
 };
