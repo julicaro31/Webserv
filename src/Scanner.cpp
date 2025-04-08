@@ -20,7 +20,8 @@ std::unordered_map<int, std::vector<Token>> Scanner::scanTokens(void)
 		DEBUG_PRINT("start: " + std::to_string(start));
 		DEBUG_PRINT("current: " + std::to_string(current));
 	}
-	addToken(Token::END_OF_FILE);
+	start = current;
+	addToken(Token::END_OF_FILE, "", "");
 	return (tokens);
 }
 
@@ -126,6 +127,11 @@ void Scanner::addToken(Token::TokenType type)
 void Scanner::addToken(Token::TokenType type, std::string literal)
 {
 	std::string text = source.substr(start, current - start);
+	tokens[line].push_back(Token(type, text, literal, line));
+}
+
+void Scanner::addToken(Token::TokenType type, std::string text, std::string literal)
+{
 	tokens[line].push_back(Token(type, text, literal, line));
 }
 
