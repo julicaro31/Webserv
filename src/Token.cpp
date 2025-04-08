@@ -16,7 +16,7 @@ std::string tokenToString(Token::TokenType tokenType)
         {Token::URI, "URI"},
         {Token::VERSION, "VERSION"},
         {Token::HEADER, "HEADER"},
-        {Token::EOFF, "EOFF"},
+        {Token::END_OF_FILE, "EOF"},
     };
     return tokenMap.at(tokenType);
 }

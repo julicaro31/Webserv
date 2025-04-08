@@ -28,7 +28,7 @@ public:
 		HEADER,
 
 		// end
-		EOFF,
+		END_OF_FILE,
 	};
 	std::string toString();
 	TokenType getType() const;

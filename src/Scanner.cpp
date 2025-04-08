@@ -4,6 +4,7 @@
 #include <vector>
 #include "HttpParser.hpp"
 #include <iostream>
+#include "Token.hpp"
 #include "debug.hpp"
 
 std::unordered_map<int, std::vector<Token>> Scanner::scanTokens(void)
@@ -15,12 +16,11 @@ std::unordered_map<int, std::vector<Token>> Scanner::scanTokens(void)
 		start = current;
 		scanToken();
 		++i;
-		std::cout << tokens[line].back();
 		DEBUG_PRINT("i: " + std::to_string(i));
 		DEBUG_PRINT("start: " + std::to_string(start));
 		DEBUG_PRINT("current: " + std::to_string(current));
 	}
-	tokens[line].push_back(Token(Token::EOFF, "", "", line));
+	addToken(Token::END_OF_FILE);
 	return (tokens);
 }
 
