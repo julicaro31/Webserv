@@ -30,6 +30,7 @@ public:
 		// end
 		END_OF_FILE,
 	};
+	static std::string tokenToString(Token::TokenType);
 	std::string toString();
 	TokenType getType() const;
 	std::string getLexeme() const;
