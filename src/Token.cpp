@@ -1,7 +1,7 @@
 #include "Token.hpp"
 #include <string>
 
-std::string tokenToString(Token::TokenType tokenType) 
+std::string Token::tokenToString(Token::TokenType tokenType) 
 {
     static const std::unordered_map<Token::TokenType, std::string> tokenMap = 
 	{
@@ -50,7 +50,7 @@ int Token::getLine() const
 std::ostream& operator<<(std::ostream& out, const Token& token)
 {
 	out << "---------------" << std::endl;
-	out << "TokenType: " << tokenToString(token.getType()) << std::endl;
+	out << "TokenType: " << token.tokenToString(token.getType()) << std::endl;
 	out << "Token.lexeme: " << token.getLexeme() << std::endl; 
 	out	<< "Token.literal: " << token.getLiteral() << std::endl;
 	out	<< "Token.line: " << token.getLine() << std::endl;
