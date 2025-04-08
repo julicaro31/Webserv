@@ -1,20 +1,28 @@
 #include "HttpParser.hpp"
 #include <unordered_map>
-#include <vector>
-#include "Scanner.hpp"
-#include <ostream>
-#include <iostream>
 
 
 void HttpParser::parseRequest(std::string request)
 {
 	Scanner scanner = Scanner(request);
-	std::unordered_map<int, std::vector<Token>> tokens = scanner.scanTokens();
+	std::unordered_map<int, std::vector<Token>> mappedTokens = scanner.scanTokens();
+	std::vector<Token> tokens = HttpParser::vectorizeTokens(mappedTokens);
+}
 
-	// for (auto token : tokens)
-	// {
-	// 	std::cout << token << std::endl;
-	// }
+std::vector<Token> HttpParser::vectorizeTokens(std::unordered_map<int, std::vector<Token>> tokens)
+{
+	int size = tokens.size();
+	std::vector<Token> tokenVector;
+
+	for (int i = 0; i < size; ++i)
+	{
+		std::vector<Token> temp = tokens[i];
+		for (auto it:temp)
+		{
+			tokenVector.push_back(it);
+		}
+	}
+	return (tokenVector);
 }
 
 void HttpParser::error(int line, std::string message)
