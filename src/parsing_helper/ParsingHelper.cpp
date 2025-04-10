@@ -415,9 +415,9 @@ void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::strin
 		{
 			locationConfig.errorPages = parseErrorPages(directive->second);
 		}
-		else if (directiveName == "cgi_assign")
+		else if (directiveName == "cgi_pass")
 		{
-			locationConfig.cgiExtensionMap = parseCgiExtensionMap(directive->second);
+			locationConfig.cgiPass = directive->second[0];
 		}
 
 		directivesSet.push_back(directiveName);
@@ -585,27 +585,4 @@ void ParsingHelper::parseErrorPage(std::map<int, std::string> &errorPageMap, std
 			throw std::invalid_argument("Error: Invalid status code.");
 		}
 	}
-}
-
-/// @brief Parses into a map the executables to run depending on the extension for cgi.
-/// @param info Stores info about the file and extensions, extracted from the configuration file.
-/// @return The parsed map. The key is the file extension and the value is the executable.
-std::map<std::string, std::string> ParsingHelper::parseCgiExtensionMap(std::vector<std::string> &info)
-{
-	std::map<std::string, std::string> cgiExtensionMap;
-
-	for (std::vector<std::string>::iterator it = info.begin(); it != info.end(); it++)
-	{
-		std::vector<std::string> values = split(*it, ' ');
-
-		if (values.size() != 2)
-		{
-			Logger::log(ERROR, "Invalid values in cgi_assign directive.");
-			throw std::invalid_argument("Error: Invalid values in cgi_assign directive.");
-		}
-
-		cgiExtensionMap[values[0]] = values[1];
-	}
-
-	return cgiExtensionMap;
 }

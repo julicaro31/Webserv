@@ -13,10 +13,10 @@ const std::map<std::string, std::vector<Context>> Directives =
 		{"root", {Context::HTTP, Context::SERVER, Context::LOCATION}},
 		{"autoindex", {Context::HTTP, Context::SERVER, Context::LOCATION}},
 		{"index", {Context::HTTP, Context::SERVER, Context::LOCATION}},
-		{"cgi_assign", {Context::LOCATION}}};
+		{"cgi_pass", {Context::LOCATION}}};
 
 /// @brief Directives that can only appear once per block not to cause ambiguities.
-const std::vector<std::string> SingleUseDirectives = {"listen", "server_name", "client_max_body_size", "root", "autoindex", "return"};
+const std::vector<std::string> SingleUseDirectives = {"listen", "server_name", "client_max_body_size", "root", "autoindex", "return", "cgi_pass"};
 
 /// @brief Directives that can only have one value per block.
-const std::vector<std::string> SingleValueDirectives = {"listen", "client_max_body_size", "root", "autoindex"};
+const std::vector<std::string> SingleValueDirectives = {"listen", "client_max_body_size", "root", "autoindex", "cgi_pass"};

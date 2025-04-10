@@ -105,11 +105,7 @@ void ServerManager::printLocations(std::vector<Location> locations) const
 			std::cout << "	-" << errorPage.first << ": " << errorPage.second << std::endl;
 		}
 
-		std::cout << "	CGI: " << std::endl;
-		for (const std::pair<const std::string, std::string> &cgi : it->cgiExtensionMap)
-		{
-			std::cout << "	-" << cgi.first << ": " << cgi.second << std::endl;
-		}
+		std::cout << "	CGI: " << it->cgiPass << std::endl;
 
 		std::cout << "	Index: ";
 		for (const std::string &element : it->index)
