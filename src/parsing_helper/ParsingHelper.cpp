@@ -206,7 +206,7 @@ std::string ParsingHelper::methodToStr(Method method)
 std::vector<ServerConfig> ParsingHelper::getServersConfig(std::string &configFilePath)
 {
 	ConfigBlock configFile = ParsingHelper::parseConfigFile(configFilePath);
-	configFile.print();
+	// configFile.print();
 
 	std::vector<ServerConfig> serversConfig;
 	ConfigBlock httpBlock = configFile.getConfigBlocksByContext(Context::HTTP)[0];

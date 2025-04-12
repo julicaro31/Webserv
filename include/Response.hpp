@@ -3,21 +3,37 @@
 
 #include "Server.hpp"
 #include "ParsingHelper.hpp"
+#include <set>
+#include <filesystem>
 
 class Response
 {
 public:
-	// handleRequest();
+	Response(const std::string &uri, const Server &server);
+
+	// Once the Request is merged, this method can have a Request object as paremeter
+	std::string getRequestMsg(Method method, const std::string &uri, const std::string clientHost);
 
 private:
-	void setConfiguration(const std::string uri, Server &server);
+	// REQUEST HANDLERS
+	void handleGetRequest(const std::string &uri, const std::string clientHost);
+	void handlePostRequest(const std::string &uri, const std::string clientHost);
+	void handleDeleteRequest(const std::string &uri, const std::string clientHost);
+	void handleBadRequest();
 
-	void handleGetRequest(const std::string &uri);
-	void handlePostRequest(const std::string &uri);
-	void handleDeleteRequest(const std::string &uri);
+	// METHOD NOT ALLOW
+	void handleMethodNotAllowed();
+	std::string getAllowedMethods() const;
+	bool isAllowed(Method method, const std::string clientHost) const;
+
+	// SERVE FILE
+	void handleFileServing(const std::string &path);
+	const std::string readFile(const std::string &path);
+
+	// FILE NOT FOUND
+	void handleFileNotFound();
 
 	bool isCGI() const;
-	bool isAllowed(Method method) const;
 	bool isFile(const std::string &uri) const;
 
 	bool _autoIndex;
@@ -28,6 +44,10 @@ private:
 	std::vector<std::string> _index;
 	std::string _cgiPass;
 	std::vector<LimitExceptDirective> _limitExcepts;
+
+	std::string _msg;
 };
+
+void testResponse(const std::string &uri, const Server &server);
 
 #endif

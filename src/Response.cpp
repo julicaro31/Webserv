@@ -1,6 +1,6 @@
 #include "Response.hpp"
 
-void Response::setConfiguration(const std::string uri, Server &server)
+Response::Response(const std::string &uri, const Server &server)
 {
 	const std::vector<Location> &locations = server.getLocations();
 	const Location *bestMatch = nullptr;
@@ -47,12 +47,32 @@ void Response::setConfiguration(const std::string uri, Server &server)
 	}
 }
 
-void Response::handleGetRequest(const std::string &uri)
+std::string Response::getRequestMsg(Method method, const std::string &uri, const std::string clientHost)
 {
-	if (isAllowed(Method::GET) == false)
+	if (method == Method::GET)
 	{
-		// Handle method not allowed (405)
-		return;
+		handleGetRequest(uri, clientHost);
+	}
+	else if (method == Method::POST)
+	{
+		handlePostRequest(uri, clientHost);
+	}
+	else if (method == Method::DELETE)
+	{
+		handleDeleteRequest(uri, clientHost);
+	}
+	else
+	{
+		handleBadRequest();
+	}
+	return _msg;
+}
+
+void Response::handleGetRequest(const std::string &uri, const std::string clientHost)
+{
+	if (isAllowed(Method::GET, clientHost) == false)
+	{
+		return handleMethodNotAllowed();
 	}
 
 	if (isCGI())
@@ -61,9 +81,9 @@ void Response::handleGetRequest(const std::string &uri)
 	}
 	else if (isFile(uri))
 	{
-		std::string filePath = uri + "/" + uri;
-		// Check if exists and return requested file
-		// If not found: 404
+		std::string filePath = _root + uri;
+
+		handleFileServing(filePath);
 	}
 	else
 	{
@@ -71,9 +91,8 @@ void Response::handleGetRequest(const std::string &uri)
 		{
 			if (isFile(*index))
 			{
-				std::string filePath = uri + "/" + *index;
-				// Check if exists and return index file
-				// If not found: 404
+				std::string filePath = _root + "/" + *index;
+				handleFileServing(filePath);
 				return;
 			}
 		}
@@ -83,17 +102,16 @@ void Response::handleGetRequest(const std::string &uri)
 		}
 		else
 		{
-			// Return 404 Not Found
+			handleFileNotFound();
 		}
 	}
 }
 
-void Response::handlePostRequest(const std::string &uri)
+void Response::handlePostRequest(const std::string &uri, const std::string clientHost)
 {
-	if (!isAllowed(Method::POST) || !isFile(uri))
+	if (!isAllowed(Method::POST, clientHost) || !isFile(uri))
 	{
-		// Handle method not allowed (405)
-		return;
+		return handleMethodNotAllowed();
 	}
 
 	if (isCGI())
@@ -106,12 +124,11 @@ void Response::handlePostRequest(const std::string &uri)
 	}
 }
 
-void Response::handleDeleteRequest(const std::string &uri)
+void Response::handleDeleteRequest(const std::string &uri, const std::string clientHost)
 {
-	if (isAllowed(Method::DELETE) == false)
+	if (isAllowed(Method::DELETE, clientHost) == false)
 	{
-		// Handle method not allowed (405)
-		return;
+		return handleMethodNotAllowed();
 	}
 	if (isCGI())
 	{
@@ -128,30 +145,122 @@ void Response::handleDeleteRequest(const std::string &uri)
 	}
 }
 
+void Response::handleBadRequest()
+{
+}
+
+void Response::handleMethodNotAllowed()
+{
+	_msg =
+		"HTTP/1.1 405 Method Not Allowed\r\n"
+		"Content-Length: 0\r\n"
+		"Allow: " +
+		getAllowedMethods() + "\r\n"
+							  "\r\n";
+}
+
+std::string Response::getAllowedMethods() const
+{
+	std::set<std::string> methods;
+
+	for (std::vector<LimitExceptDirective>::const_iterator it = _limitExcepts.begin(); it != _limitExcepts.end(); it++)
+	{
+		for (std::vector<Method>::const_iterator method = it->methods.begin(); method != it->methods.end(); method++)
+		{
+			methods.insert(ParsingHelper::methodToStr(*method));
+		}
+	}
+
+	std::string str = "";
+
+	for (std::set<std::string>::const_iterator it = methods.begin(); it != methods.end(); it++)
+	{
+		str += *it + " ";
+	}
+
+	if (!str.empty())
+	{
+		str.pop_back();
+	}
+
+	return str;
+}
+
+bool Response::isAllowed(Method method, const std::string clientHost) const
+{
+	for (std::vector<LimitExceptDirective>::const_iterator it = _limitExcepts.begin(); it != _limitExcepts.end(); it++)
+	{
+		if (std::find(it->methods.begin(), it->methods.end(), method) != it->methods.end())
+		{
+			return true;
+		}
+		if (it->deny == "all")
+		{
+			return false;
+		}
+
+		return (it->allow == clientHost);
+	}
+	return true;
+}
+
+void Response::handleFileServing(const std::string &path)
+{
+	try
+	{
+		std::string content = readFile(path);
+		_msg =
+			"HTTP/1.1 200 OK\r\n"
+			"Content-Type: text/html\r\n" // get proper extension (it's not always /html)
+			"Content-Length: " +
+			std::to_string(content.size()) + "\r\n"
+											 "\r\n" +
+			content;
+	}
+	catch (const std::runtime_error &e)
+	{
+		handleFileNotFound();
+	}
+}
+
+void Response::handleFileNotFound()
+{
+	_msg =
+		"HTTP/1.1 404 Not Found\r\n"
+		"Content-Type: text/plain\r\n"
+		"Content-Length: 17\r\n"
+		"\r\n"
+		"File Not Found";
+}
+
+const std::string Response::readFile(const std::string &path)
+{
+	std::string fullPath = std::filesystem::current_path().c_str() + path;
+
+	std::ifstream file(fullPath, std::ios::binary);
+	if (!file.is_open())
+	{
+		throw std::runtime_error("Failed to open file: " + fullPath);
+	}
+	std::ostringstream ss;
+	ss << file.rdbuf();
+	return ss.str();
+}
+
 bool Response::isCGI() const
 {
 	return _cgiPass != "";
 }
 
-bool Response::isAllowed(Method method) const
-{
-	for (std::vector<LimitExceptDirective>::const_iterator limit = _limitExcepts.begin(); limit != _limitExcepts.end(); limit++)
-	{
-		if (std::find(limit->methods.begin(), limit->methods.end(), method) != limit->methods.end())
-		{
-			return true;
-		}
-		if (limit->deny == "all")
-		{
-			return false;
-		}
-
-		// return (limit->allow == host);
-	}
-	return true;
-}
-
 bool Response::isFile(const std::string &uri) const
 {
 	return uri.back() != '/';
+}
+
+void testResponse(const std::string &uri, const Server &server)
+{
+	Response response(uri, server);
+	std::string msg = response.getRequestMsg(Method::GET, uri, "clientHost");
+
+	std::cout << msg << std::endl;
 }

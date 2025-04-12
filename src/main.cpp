@@ -4,6 +4,7 @@
 #include "Server.hpp"
 #include "ServerManager.hpp"
 #include "Logger.hpp"
+#include "Response.hpp"
 
 int main(int ac, char *argv[])
 {
@@ -26,7 +27,13 @@ int main(int ac, char *argv[])
 			{
 				serverManager.addServer(*it);
 			}
-			serverManager.printServers();
+			// serverManager.printServers();
+
+			if (serverManager.getServers().size() > 0)
+			{
+				// TEST RESPONSE WITH FIRST SERVER (example)
+				testResponse("/index.html", *serverManager.getServers()[0]);
+			}
 		}
 		catch (const std::exception &e)
 		{
