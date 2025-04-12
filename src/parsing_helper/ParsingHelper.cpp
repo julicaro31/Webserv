@@ -452,7 +452,7 @@ template <typename T>
 void ParsingHelper::setDefaultValues(T &config)
 {
 	config.autoIndex = false;
-	config.index = {"index.html"};
+	config.index = {};
 	config.maxBodySize = 1;
 	config.redirection = {0, ""};
 	config.errorPages = {{404, "/404.html"}, {403, "/403.html"}, {500, "/50x.html"}, {502, "/50x.html"}, {503, "/50x.html"}, {504, "/50x.html"}};

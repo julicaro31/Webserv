@@ -5,6 +5,8 @@
 #include "ParsingHelper.hpp"
 #include <set>
 #include <filesystem>
+#include <unordered_map>
+#include <string>
 
 class Response
 {
@@ -29,6 +31,8 @@ private:
 	// SERVE FILE
 	void handleFileServing(const std::string &path);
 	const std::string readFile(const std::string &path);
+	std::string getMimeType(const std::string& fileName);
+	void handleAutoIndex(const std::string &path);
 
 	// FILE NOT FOUND
 	void handleFileNotFound();
@@ -46,6 +50,16 @@ private:
 	std::vector<LimitExceptDirective> _limitExcepts;
 
 	std::string _msg;
+
+	const std::unordered_map<std::string, std::string> mimeTypes = 
+	{
+		{".html", "text/html"},
+		{".htm", "text/html"},
+		{".txt", "text/plain"},
+		{".jpg", "image/jpeg"},
+		{".jpeg", "image/jpeg"},
+		{".png", "image/png"},
+	};
 };
 
 void testResponse(const std::string &uri, const Server &server);

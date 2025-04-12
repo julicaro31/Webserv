@@ -98,7 +98,7 @@ void Response::handleGetRequest(const std::string &uri, const std::string client
 		}
 		if (_autoIndex)
 		{
-			// Handle autoindex
+			handleAutoIndex(uri);
 		}
 		else
 		{
@@ -211,7 +211,7 @@ void Response::handleFileServing(const std::string &path)
 		std::string content = readFile(path);
 		_msg =
 			"HTTP/1.1 200 OK\r\n"
-			"Content-Type: text/html\r\n" // get proper extension (it's not always /html)
+			"Content-Type: " + getMimeType(path) +"\r\n"
 			"Content-Length: " +
 			std::to_string(content.size()) + "\r\n"
 											 "\r\n" +
@@ -245,6 +245,59 @@ const std::string Response::readFile(const std::string &path)
 	std::ostringstream ss;
 	ss << file.rdbuf();
 	return ss.str();
+}
+
+std::string Response::getMimeType(const std::string& fileName)
+{
+	std::string fileExtension = "";
+	size_t dotPos = fileName.find_last_of('.');
+    if (dotPos != std::string::npos && dotPos != 0)
+	{
+        fileExtension = fileName.substr(dotPos);
+    }
+    
+	std::unordered_map<std::string, std::string>::const_iterator it = mimeTypes.find(fileExtension);
+
+	if (it != mimeTypes.end())
+	{
+		return it->second;
+	}
+	return "text/html";
+}
+
+void Response::handleAutoIndex(const std::string &dirPath)
+{
+    std::string body = 
+		"<!DOCTYPE html>\n"
+		"<html>\n"
+		"<head><title>Index of " + dirPath + "</title></head>\n"
+		"<body>\n"
+		"<h1>Index of " + dirPath + "</h1>\n"
+		"<ul>\n";
+
+	std::string fullPath = std::filesystem::current_path().c_str() + dirPath;
+	try
+	{
+		for (const auto& entry : std::filesystem::directory_iterator(fullPath)) 
+		{
+      	  	std::string name = entry.path().filename().string();
+       		body += "  <li><a href=\"" + name + "\">" + name + "</a></li>\n";
+    	}
+	}
+	catch (const std::filesystem::filesystem_error& e)
+	{
+		handleFileNotFound();
+		return;
+	}
+
+    body += "</ul>\n</body>\n</html>\n";
+
+    _msg = 
+		"HTTP/1.1 200 OK\r\n"
+    	"Content-Type: text/html\r\n"
+        "Content-Length: " + std::to_string(body.size()) + "\r\n"
+		"\r\n" +
+        body;
 }
 
 bool Response::isCGI() const
