@@ -14,31 +14,36 @@ public:
 	Response(const std::string &uri, const Server &server);
 
 	// Once the Request is merged, this method can have a Request object as paremeter
-	std::string getRequestMsg(Method method, const std::string &uri, const std::string clientHost);
+	void setStatusAndMsg(Method method, const std::string &uri, const std::string clientHost);
+	int getStatus() const;
+	std::string getMsg() const;
 
 private:
-	// REQUEST HANDLERS
-	void handleGetRequest(const std::string &uri, const std::string clientHost);
-	void handlePostRequest(const std::string &uri, const std::string clientHost);
-	void handleDeleteRequest(const std::string &uri, const std::string clientHost);
-	void handleBadRequest();
-
-	// METHOD NOT ALLOW
-	void handleMethodNotAllowed();
-	std::string getAllowedMethods() const;
-	bool isAllowed(Method method, const std::string clientHost) const;
-
-	// SERVE FILE
-	void handleFileServing(const std::string &path);
-	const std::string readFile(const std::string &path);
-	std::string getMimeType(const std::string& fileName);
-	void handleAutoIndex(const std::string &path);
-
-	// FILE NOT FOUND
-	void handleFileNotFound();
+	int _status;
+	std::string _msg;
 
 	bool isCGI() const;
 	bool isFile(const std::string &uri) const;
+	const std::string getFullPath(const std::string &path);
+	const std::string getFileContent(const std::string &path);
+
+	// Error msgs
+	void handleResponseError(int status);
+	std::string getAllowedMethods() const;
+	bool isAllowed(Method method, const std::string clientHost) const;
+
+	// Get request
+	void handleGetRequest(const std::string &uri, const std::string clientHost);
+	void handleFileServing(const std::string &path);
+	std::string getMimeType(const std::string &fileName);
+	void handleAutoIndex(const std::string &path);
+
+	// Post request
+	void handlePostRequest(const std::string &uri, const std::string clientHost);
+
+	// Delete request
+	void handleDeleteRequest(const std::string &uri, const std::string clientHost);
+	void handleDeletion(const std::string &path);
 
 	bool _autoIndex;
 	size_t _maxBodySize;
@@ -49,16 +54,22 @@ private:
 	std::string _cgiPass;
 	std::vector<LimitExceptDirective> _limitExcepts;
 
-	std::string _msg;
+	const std::unordered_map<int, std::string> defaultErrorMsgs =
+		{
+			{400, "Bad Request"},
+			{403, "Forbidden"},
+			{404, "File Not Found"},
+			{405, "Method Not Allowed"},
+			{500, "Internal Server Error"}};
 
-	const std::unordered_map<std::string, std::string> mimeTypes = 
-	{
-		{".html", "text/html"},
-		{".htm", "text/html"},
-		{".txt", "text/plain"},
-		{".jpg", "image/jpeg"},
-		{".jpeg", "image/jpeg"},
-		{".png", "image/png"},
+	const std::unordered_map<std::string, std::string> mimeTypes =
+		{
+			{".html", "text/html"},
+			{".htm", "text/html"},
+			{".txt", "text/plain"},
+			{".jpg", "image/jpeg"},
+			{".jpeg", "image/jpeg"},
+			{".png", "image/png"},
 	};
 };
 

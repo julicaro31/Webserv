@@ -1,5 +1,6 @@
 #include "Response.hpp"
 
+/// Creates a Response object. Based on the uri, finds the most suitable location in the configuration file.
 Response::Response(const std::string &uri, const Server &server)
 {
 	const std::vector<Location> &locations = server.getLocations();
@@ -22,7 +23,7 @@ Response::Response(const std::string &uri, const Server &server)
 			}
 		}
 	}
-
+	// If there is no match, the configuration is the one outside the location blocks
 	if (bestMatch == nullptr)
 	{
 		_autoIndex = server.isAutoIndexEnabled();
@@ -36,6 +37,7 @@ Response::Response(const std::string &uri, const Server &server)
 	}
 	else
 	{
+		// Configuration in most suitable location
 		_autoIndex = bestMatch->autoIndex;
 		_maxBodySize = bestMatch->maxBodySize;
 		_root = bestMatch->root;
@@ -46,8 +48,12 @@ Response::Response(const std::string &uri, const Server &server)
 		_limitExcepts = bestMatch->limitExcepts;
 	}
 }
+int Response::getStatus() const { return _status; }
 
-std::string Response::getRequestMsg(Method method, const std::string &uri, const std::string clientHost)
+std::string Response::getMsg() const { return _msg; }
+
+// Sets the status code and msg response to a Get, Post or Delete request
+void Response::setStatusAndMsg(Method method, const std::string &uri, const std::string clientHost)
 {
 	if (method == Method::GET)
 	{
@@ -63,102 +69,62 @@ std::string Response::getRequestMsg(Method method, const std::string &uri, const
 	}
 	else
 	{
-		handleBadRequest();
+		handleResponseError(400);
 	}
-	return _msg;
 }
 
-void Response::handleGetRequest(const std::string &uri, const std::string clientHost)
+bool Response::isCGI() const
 {
-	if (isAllowed(Method::GET, clientHost) == false)
-	{
-		return handleMethodNotAllowed();
-	}
+	return _cgiPass != "";
+}
 
-	if (isCGI())
-	{
-		// Handle CGI request
-	}
-	else if (isFile(uri))
-	{
-		std::string filePath = _root + uri;
+bool Response::isFile(const std::string &uri) const
+{
+	return uri.back() != '/';
+}
 
-		handleFileServing(filePath);
-	}
-	else
+const std::string Response::getFullPath(const std::string &path)
+{
+	return std::filesystem::current_path().c_str() + path;
+}
+
+// Returns the content of a file in a string
+const std::string Response::getFileContent(const std::string &path)
+{
+	std::ifstream file(path, std::ios::binary);
+	if (!file.is_open())
 	{
-		for (std::vector<std::string>::const_iterator index = _index.begin(); index != _index.end(); index++)
+		throw std::runtime_error("Failed to open file: " + path);
+	}
+	std::ostringstream ss;
+	ss << file.rdbuf();
+	return ss.str();
+}
+
+// If the error page corresponding to the status, it retrieves it. Otherwise responses the appropriate default msg.
+void Response::handleResponseError(int status)
+{
+	_status = status;
+	std::map<int, std::string>::const_iterator it = _errorPages.find(status);
+
+	std::string content = "";
+	if (it != _errorPages.end())
+	{
+		try
 		{
-			if (isFile(*index))
-			{
-				std::string filePath = _root + "/" + *index;
-				handleFileServing(filePath);
-				return;
-			}
+			content = getFileContent(getFullPath(_root + it->second));
 		}
-		if (_autoIndex)
+		catch (const std::exception &e)
 		{
-			handleAutoIndex(uri);
-		}
-		else
-		{
-			handleFileNotFound();
 		}
 	}
+
+	std::string allowMethods = status == 405 ? +"\r\nAllow: " + getAllowedMethods() : "";
+
+	_msg = "HTTP/1.1 " + std::to_string(status) + " " + defaultErrorMsgs.find(status)->second + "\r\nContent-Length: " + std::to_string(content.size()) + allowMethods + "\r\n\r\n" + content;
 }
 
-void Response::handlePostRequest(const std::string &uri, const std::string clientHost)
-{
-	if (!isAllowed(Method::POST, clientHost) || !isFile(uri))
-	{
-		return handleMethodNotAllowed();
-	}
-
-	if (isCGI())
-	{
-		// Handle CGI request
-	}
-	else
-	{
-		// Handle upload
-	}
-}
-
-void Response::handleDeleteRequest(const std::string &uri, const std::string clientHost)
-{
-	if (isAllowed(Method::DELETE, clientHost) == false)
-	{
-		return handleMethodNotAllowed();
-	}
-	if (isCGI())
-	{
-		// Handle CGI request
-	}
-	else if (isFile(uri))
-	{
-		// Delete file
-	}
-	else
-	{
-		// No write access: 403
-		// Try delete it
-	}
-}
-
-void Response::handleBadRequest()
-{
-}
-
-void Response::handleMethodNotAllowed()
-{
-	_msg =
-		"HTTP/1.1 405 Method Not Allowed\r\n"
-		"Content-Length: 0\r\n"
-		"Allow: " +
-		getAllowedMethods() + "\r\n"
-							  "\r\n";
-}
-
+// Gets the allowed methods by checking the limit_except directive
 std::string Response::getAllowedMethods() const
 {
 	std::set<std::string> methods;
@@ -186,6 +152,7 @@ std::string Response::getAllowedMethods() const
 	return str;
 }
 
+// Returns if the method is allowed by checking the limit_except directive
 bool Response::isAllowed(Method method, const std::string clientHost) const
 {
 	for (std::vector<LimitExceptDirective>::const_iterator it = _limitExcepts.begin(); it != _limitExcepts.end(); it++)
@@ -204,58 +171,80 @@ bool Response::isAllowed(Method method, const std::string clientHost) const
 	return true;
 }
 
+void Response::handleGetRequest(const std::string &uri, const std::string clientHost)
+{
+	if (isAllowed(Method::GET, clientHost) == false)
+	{
+		return handleResponseError(405);
+	}
+
+	if (isCGI())
+	{
+		// Handle CGI request
+	}
+	else if (isFile(uri))
+	{
+		handleFileServing(_root + uri);
+	}
+	else
+	{
+		// If the uri is a folder, it will serve an index (if exists)
+		for (std::vector<std::string>::const_iterator index = _index.begin(); index != _index.end(); index++)
+		{
+			if (isFile(*index))
+			{
+				return handleFileServing(_root + "/" + *index);
+			}
+		}
+		if (_autoIndex)
+		{
+			handleAutoIndex(uri);
+		}
+		else
+		{
+			handleResponseError(404);
+		}
+	}
+}
+
 void Response::handleFileServing(const std::string &path)
 {
+	std::string fullPath = getFullPath(path);
+	std::filesystem::file_status fileStatus = std::filesystem::status(fullPath);
+
+	// Check if file exists
+	if (!std::filesystem::exists(fileStatus) || !std::filesystem::is_regular_file(fileStatus))
+	{
+		return handleResponseError(404);
+	}
+
+	// Check permissions
+	if ((fileStatus.permissions() & std::filesystem::perms::others_read) == std::filesystem::perms::none)
+	{
+		return handleResponseError(403);
+	}
+
 	try
 	{
-		std::string content = readFile(path);
-		_msg =
-			"HTTP/1.1 200 OK\r\n"
-			"Content-Type: " + getMimeType(path) +"\r\n"
-			"Content-Length: " +
-			std::to_string(content.size()) + "\r\n"
-											 "\r\n" +
-			content;
+		const std::string content = getFileContent(fullPath);
+		_status = 200;
+		_msg = "HTTP/1.1 200 OK\r\nContent-Type: " + getMimeType(path) + "\r\nContent-Length: " + std::to_string(content.size()) + "\r\n\r\n" + content;
 	}
 	catch (const std::runtime_error &e)
 	{
-		handleFileNotFound();
+		handleResponseError(500);
 	}
 }
 
-void Response::handleFileNotFound()
-{
-	_msg =
-		"HTTP/1.1 404 Not Found\r\n"
-		"Content-Type: text/plain\r\n"
-		"Content-Length: 17\r\n"
-		"\r\n"
-		"File Not Found";
-}
-
-const std::string Response::readFile(const std::string &path)
-{
-	std::string fullPath = std::filesystem::current_path().c_str() + path;
-
-	std::ifstream file(fullPath, std::ios::binary);
-	if (!file.is_open())
-	{
-		throw std::runtime_error("Failed to open file: " + fullPath);
-	}
-	std::ostringstream ss;
-	ss << file.rdbuf();
-	return ss.str();
-}
-
-std::string Response::getMimeType(const std::string& fileName)
+std::string Response::getMimeType(const std::string &fileName)
 {
 	std::string fileExtension = "";
 	size_t dotPos = fileName.find_last_of('.');
-    if (dotPos != std::string::npos && dotPos != 0)
+	if (dotPos != std::string::npos && dotPos != 0)
 	{
-        fileExtension = fileName.substr(dotPos);
-    }
-    
+		fileExtension = fileName.substr(dotPos);
+	}
+
 	std::unordered_map<std::string, std::string>::const_iterator it = mimeTypes.find(fileExtension);
 
 	if (it != mimeTypes.end())
@@ -265,55 +254,97 @@ std::string Response::getMimeType(const std::string& fileName)
 	return "text/html";
 }
 
+// Lists all the directories and files in the directory path given
 void Response::handleAutoIndex(const std::string &dirPath)
 {
-    std::string body = 
-		"<!DOCTYPE html>\n"
-		"<html>\n"
-		"<head><title>Index of " + dirPath + "</title></head>\n"
-		"<body>\n"
-		"<h1>Index of " + dirPath + "</h1>\n"
-		"<ul>\n";
+	std::string body = "<!DOCTYPE html>\n<html>\n<head><title>Index of " + dirPath + "</title></head>\n<body>\n<h1>Index of " + dirPath + "</h1>\n<ul>\n";
 
 	std::string fullPath = std::filesystem::current_path().c_str() + dirPath;
 	try
 	{
-		for (const auto& entry : std::filesystem::directory_iterator(fullPath)) 
+		for (const auto &entry : std::filesystem::directory_iterator(fullPath))
 		{
-      	  	std::string name = entry.path().filename().string();
-       		body += "  <li><a href=\"" + name + "\">" + name + "</a></li>\n";
-    	}
+			std::string name = entry.path().filename().string();
+			body += "  <li><a href=\"" + name + "\">" + name + "</a></li>\n";
+		}
 	}
-	catch (const std::filesystem::filesystem_error& e)
+	catch (const std::filesystem::filesystem_error &e)
 	{
-		handleFileNotFound();
+		handleResponseError(404);
 		return;
 	}
 
-    body += "</ul>\n</body>\n</html>\n";
+	body += "</ul>\n</body>\n</html>\n";
 
-    _msg = 
-		"HTTP/1.1 200 OK\r\n"
-    	"Content-Type: text/html\r\n"
-        "Content-Length: " + std::to_string(body.size()) + "\r\n"
-		"\r\n" +
-        body;
+	_msg = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body;
 }
 
-bool Response::isCGI() const
+void Response::handlePostRequest(const std::string &uri, const std::string clientHost)
 {
-	return _cgiPass != "";
+	if (!isAllowed(Method::POST, clientHost) || !isFile(uri))
+	{
+		return handleResponseError(405);
+	}
+
+	if (isCGI())
+	{
+		// Handle CGI request
+	}
+	else
+	{
+		// Handle upload
+	}
 }
 
-bool Response::isFile(const std::string &uri) const
+void Response::handleDeleteRequest(const std::string &uri, const std::string clientHost)
 {
-	return uri.back() != '/';
+	if (isAllowed(Method::DELETE, clientHost) == false)
+	{
+		return handleResponseError(405);
+	}
+	if (isCGI())
+	{
+		// Handle CGI request
+	}
+	else
+	{
+		return handleDeletion(_root + uri);
+	}
 }
 
+void Response::handleDeletion(const std::string &path)
+{
+	std::string fullPath = getFullPath(path);
+	std::filesystem::file_status fileStatus = std::filesystem::status(fullPath);
+
+	// Check if file exists
+	if (!std::filesystem::exists(fileStatus) || std::filesystem::is_directory(fileStatus))
+	{
+		return handleResponseError(404);
+	}
+
+	// Check permissions
+	if ((std::filesystem::perms::others_write) == std::filesystem::perms::none)
+	{
+		return handleResponseError(403);
+	}
+
+	if (std::filesystem::remove(fullPath))
+	{
+		_msg = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nFile deleted";
+	}
+	else
+	{
+		handleResponseError(500);
+	}
+}
+
+// A method to test the response, must delete later
 void testResponse(const std::string &uri, const Server &server)
 {
 	Response response(uri, server);
-	std::string msg = response.getRequestMsg(Method::GET, uri, "clientHost");
+	response.setStatusAndMsg(Method::DELETE, uri, "clientHost");
 
-	std::cout << msg << std::endl;
+	std::cout << "Status: " << std::to_string(response.getStatus()) << std::endl
+			  << response.getMsg() << std::endl;
 }
