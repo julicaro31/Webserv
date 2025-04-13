@@ -14,7 +14,7 @@ public:
 	Response(const std::string &uri, const Server &server);
 
 	// Once the Request is merged, this method can have a Request object as paremeter
-	void setStatusAndMsg(Method method, const std::string &uri, const std::string clientHost);
+	void setStatusAndMsg(Method method, const std::string &uri, const std::string &clientHost, const std::string &body);
 	int getStatus() const;
 	std::string getMsg() const;
 
@@ -30,19 +30,20 @@ private:
 	// Error msgs
 	void handleResponseError(int status);
 	std::string getAllowedMethods() const;
-	bool isAllowed(Method method, const std::string clientHost) const;
+	bool isAllowed(Method method, const std::string &clientHost) const;
 
 	// Get request
-	void handleGetRequest(const std::string &uri, const std::string clientHost);
+	void handleGetRequest(const std::string &uri, const std::string &clientHost);
 	void handleFileServing(const std::string &path);
 	std::string getMimeType(const std::string &fileName);
 	void handleAutoIndex(const std::string &path);
 
 	// Post request
-	void handlePostRequest(const std::string &uri, const std::string clientHost);
+	void handlePostRequest(const std::string &uri, const std::string &clientHost, const std::string &body);
+	void handleUpload(const std::string &uri, const std::string &body);
 
 	// Delete request
-	void handleDeleteRequest(const std::string &uri, const std::string clientHost);
+	void handleDeleteRequest(const std::string &uri, const std::string &clientHost);
 	void handleDeletion(const std::string &path);
 
 	bool _autoIndex;

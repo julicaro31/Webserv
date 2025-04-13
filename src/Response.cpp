@@ -53,7 +53,7 @@ int Response::getStatus() const { return _status; }
 std::string Response::getMsg() const { return _msg; }
 
 // Sets the status code and msg response to a Get, Post or Delete request
-void Response::setStatusAndMsg(Method method, const std::string &uri, const std::string clientHost)
+void Response::setStatusAndMsg(Method method, const std::string &uri, const std::string &clientHost, const std::string &body)
 {
 	if (method == Method::GET)
 	{
@@ -61,7 +61,7 @@ void Response::setStatusAndMsg(Method method, const std::string &uri, const std:
 	}
 	else if (method == Method::POST)
 	{
-		handlePostRequest(uri, clientHost);
+		handlePostRequest(uri, clientHost, body);
 	}
 	else if (method == Method::DELETE)
 	{
@@ -153,7 +153,7 @@ std::string Response::getAllowedMethods() const
 }
 
 // Returns if the method is allowed by checking the limit_except directive
-bool Response::isAllowed(Method method, const std::string clientHost) const
+bool Response::isAllowed(Method method, const std::string &clientHost) const
 {
 	for (std::vector<LimitExceptDirective>::const_iterator it = _limitExcepts.begin(); it != _limitExcepts.end(); it++)
 	{
@@ -171,7 +171,7 @@ bool Response::isAllowed(Method method, const std::string clientHost) const
 	return true;
 }
 
-void Response::handleGetRequest(const std::string &uri, const std::string clientHost)
+void Response::handleGetRequest(const std::string &uri, const std::string &clientHost)
 {
 	if (isAllowed(Method::GET, clientHost) == false)
 	{
@@ -276,10 +276,11 @@ void Response::handleAutoIndex(const std::string &dirPath)
 
 	body += "</ul>\n</body>\n</html>\n";
 
+	_status = 200;
 	_msg = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body;
 }
 
-void Response::handlePostRequest(const std::string &uri, const std::string clientHost)
+void Response::handlePostRequest(const std::string &uri, const std::string &clientHost, const std::string &body)
 {
 	if (!isAllowed(Method::POST, clientHost) || !isFile(uri))
 	{
@@ -292,11 +293,21 @@ void Response::handlePostRequest(const std::string &uri, const std::string clien
 	}
 	else
 	{
-		// Handle upload
+		handleUpload(uri, body);
 	}
 }
 
-void Response::handleDeleteRequest(const std::string &uri, const std::string clientHost)
+void Response::handleUpload(const std::string &uri, const std::string &body)
+{
+	std::ofstream out(getFullPath(_root + uri), std::ios::binary);
+	out.write(body.data(), body.size());
+	out.close();
+
+	_status = 200;
+	_msg = "HTTP/1.1 200 OK\r\nContent-Length: 15\r\n\r\nUpload success\n";
+}
+
+void Response::handleDeleteRequest(const std::string &uri, const std::string &clientHost)
 {
 	if (isAllowed(Method::DELETE, clientHost) == false)
 	{
@@ -331,7 +342,8 @@ void Response::handleDeletion(const std::string &path)
 
 	if (std::filesystem::remove(fullPath))
 	{
-		_msg = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 12\r\n\r\nFile deleted";
+		_status = 200;
+		_msg = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\nFile deleted\n";
 	}
 	else
 	{
@@ -343,7 +355,7 @@ void Response::handleDeletion(const std::string &path)
 void testResponse(const std::string &uri, const Server &server)
 {
 	Response response(uri, server);
-	response.setStatusAndMsg(Method::GET, uri, "clientHost");
+	response.setStatusAndMsg(Method::DELETE, uri, "clientHost", "");
 
 	std::cout << "Status: " << std::to_string(response.getStatus()) << std::endl
 			  << response.getMsg() << std::endl;
