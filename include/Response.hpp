@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <unordered_map>
 #include <string>
-
+// TO DO: HANDLE REDIRECTION AND CREATE GENERIC METHOD FOR RESPONSES
 class Response
 {
 public:

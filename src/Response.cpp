@@ -355,7 +355,7 @@ void Response::handleDeletion(const std::string &path)
 void testResponse(const std::string &uri, const Server &server)
 {
 	Response response(uri, server);
-	response.setStatusAndMsg(Method::DELETE, uri, "clientHost", "");
+	response.setStatusAndMsg(Method::GET, uri, "clientHost", "");
 
 	std::cout << "Status: " << std::to_string(response.getStatus()) << std::endl
 			  << response.getMsg() << std::endl;
