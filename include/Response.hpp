@@ -25,7 +25,7 @@ private:
 	bool isCGI() const;
 	bool isFile(const std::string &uri) const;
 	const std::string getFullPath(const std::string &path);
-	const std::string getFileContent(const std::string &path);
+	const std::string getFileContent(const std::string &fullPath);
 
 	// Error msgs
 	void handleResponseError(int status);

@@ -89,12 +89,12 @@ const std::string Response::getFullPath(const std::string &path)
 }
 
 // Returns the content of a file in a string
-const std::string Response::getFileContent(const std::string &path)
+const std::string Response::getFileContent(const std::string &fullPath)
 {
-	std::ifstream file(path, std::ios::binary);
+	std::ifstream file(fullPath, std::ios::binary);
 	if (!file.is_open())
 	{
-		throw std::runtime_error("Failed to open file: " + path);
+		throw std::runtime_error("Failed to open file: " + fullPath);
 	}
 	std::ostringstream ss;
 	ss << file.rdbuf();
@@ -343,7 +343,7 @@ void Response::handleDeletion(const std::string &path)
 void testResponse(const std::string &uri, const Server &server)
 {
 	Response response(uri, server);
-	response.setStatusAndMsg(Method::DELETE, uri, "clientHost");
+	response.setStatusAndMsg(Method::GET, uri, "clientHost");
 
 	std::cout << "Status: " << std::to_string(response.getStatus()) << std::endl
 			  << response.getMsg() << std::endl;
