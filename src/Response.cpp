@@ -55,6 +55,11 @@ std::string Response::getMsg() const { return _msg; }
 // Sets the status code and msg response to a Get, Post or Delete request
 void Response::setStatusAndMsg(Method method, const std::string &uri, const std::string &clientHost, const std::string &body)
 {
+	if (!_redirection.second.empty())
+	{
+		return handleRedirection();
+	}
+
 	if (method == Method::GET)
 	{
 		handleGetRequest(uri, clientHost);
@@ -122,6 +127,15 @@ void Response::handleResponseError(int status)
 	std::string allowMethods = status == 405 ? +"\r\nAllow: " + getAllowedMethods() : "";
 
 	_msg = "HTTP/1.1 " + std::to_string(status) + " " + defaultErrorMsgs.find(status)->second + "\r\nContent-Length: " + std::to_string(content.size()) + allowMethods + "\r\n\r\n" + content;
+}
+
+void Response::handleRedirection()
+{
+	_status = _redirection.first;
+	std::unordered_map<int, std::string>::const_iterator redirectionIt = redirectionMsgs.find(_redirection.first);
+	std::string msg = redirectionIt != redirectionMsgs.end() ? redirectionIt->second : "";
+	_msg = "HTTP/1.1 " + std::to_string(_status) + " " + msg + "\r\nLocation: " + _redirection.second + "\r\nContent-Length: 0\r\n\r\n";
+	return;
 }
 
 // Gets the allowed methods by checking the limit_except directive

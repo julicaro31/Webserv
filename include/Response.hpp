@@ -7,7 +7,7 @@
 #include <filesystem>
 #include <unordered_map>
 #include <string>
-// TO DO: HANDLE REDIRECTION AND CREATE GENERIC METHOD FOR RESPONSES
+
 class Response
 {
 public:
@@ -31,6 +31,9 @@ private:
 	void handleResponseError(int status);
 	std::string getAllowedMethods() const;
 	bool isAllowed(Method method, const std::string &clientHost) const;
+
+	// Redirection
+	void handleRedirection();
 
 	// Get request
 	void handleGetRequest(const std::string &uri, const std::string &clientHost);
@@ -62,6 +65,15 @@ private:
 			{404, "File Not Found"},
 			{405, "Method Not Allowed"},
 			{500, "Internal Server Error"}};
+
+	const std::unordered_map<int, std::string> redirectionMsgs = 
+	{
+		{301, "Moved Permanently"},
+		{302, "Found"},
+		{303, "See Other"},
+		{307, "Temporary Redirect"},
+		{308, "Permanent Redirect"}
+	};
 
 	const std::unordered_map<std::string, std::string> mimeTypes =
 		{
