@@ -66,14 +66,13 @@ private:
 			{405, "Method Not Allowed"},
 			{500, "Internal Server Error"}};
 
-	const std::unordered_map<int, std::string> redirectionMsgs = 
-	{
-		{301, "Moved Permanently"},
-		{302, "Found"},
-		{303, "See Other"},
-		{307, "Temporary Redirect"},
-		{308, "Permanent Redirect"}
-	};
+	const std::unordered_map<int, std::string> redirectionMsgs =
+		{
+			{301, "Moved Permanently"},
+			{302, "Found"},
+			{303, "See Other"},
+			{307, "Temporary Redirect"},
+			{308, "Permanent Redirect"}};
 
 	const std::unordered_map<std::string, std::string> mimeTypes =
 		{
