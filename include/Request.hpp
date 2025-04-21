@@ -3,17 +3,11 @@
 
 #include "Token.hpp"
 #include <vector>
+#include "Method.hpp"
 
 class Request
 {
 public:
-	enum class Method
-	{
-		NONE,
-		GET,
-		POST,
-		DELETE,
-	};
 	Method getMethod();
 	float getVersion();
 	std::string getUri();
