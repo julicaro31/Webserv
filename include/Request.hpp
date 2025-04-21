@@ -15,6 +15,7 @@ public:
 	std::unordered_map<std::string, std::string> getHeaders() const;
 	std::string getBody() const;
 	static std::string headersToString(std::unordered_map<std::string, std::string>);
+	static std::string requestToString(const Request& request);
 	Request(std::vector<Token>);
 	Request(const Request &);
 	~Request(void);

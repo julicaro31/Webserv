@@ -49,6 +49,18 @@ std::ostream& operator<<(std::ostream& out, const Request& request)
 	out << "---------------" << std::endl;
 	return (out);
 }
+	
+static std::string requestToString(const Request& request)
+{
+	std::string ret("---------------\n");
+	ret.append("Request.method: " + ParsingHelper::methodToStr(request.getMethod()) );
+	ret.append("Request.version: " + std::to_string(request.getVersion()) );
+	ret.append("Request.uri: " + request.getUri() );
+	ret.append("Request.headers \n" + headersToString(request.getHeaders()) );
+	ret.append("Request.body: " + request.getBody() );
+	ret.append("---------------" );
+	return (ret);
+}
 
 Request::Request(std::vector<Token> tokens)
 {
