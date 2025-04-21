@@ -32,7 +32,7 @@ private:
 	{"PATCH", Token::TokenType::METHOD},
 	};
 	std::string source;
-	std::unordered_map<int, std::vector<Token>>  tokens;
+	std::unordered_map<int, std::vector<Token>>  mappedTokens;
 private:
 	void scanToken();
 	void addToken(Token::TokenType);

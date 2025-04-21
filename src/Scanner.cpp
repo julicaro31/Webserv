@@ -24,7 +24,7 @@ std::unordered_map<int, std::vector<Token>> Scanner::scanTokens(void)
 	}
 	start = current;
 	addToken(Token::END_OF_FILE, "", "");
-	return (tokens);
+	return (mappedTokens);
 }
 
 
@@ -117,7 +117,7 @@ void Scanner::scanToken()
 	}
 	if (start == current)
 		advance();
-	if (line > 1 && tokens[line].size() == 1 && tokens[line].back().getType() == Token::CRLF)
+	if (line > 1 && mappedTokens[line].size() == 1 && mappedTokens[line].back().getType() == Token::CRLF)
 		body();
 }
 
@@ -129,12 +129,12 @@ void Scanner::addToken(Token::TokenType type)
 void Scanner::addToken(Token::TokenType type, std::string literal)
 {
 	std::string text = source.substr(start, current - start);
-	tokens[line].push_back(Token(type, text, literal, line));
+	mappedTokens[line].push_back(Token(type, text, literal, line));
 }
 
 void Scanner::addToken(Token::TokenType type, std::string text, std::string literal)
 {
-	tokens[line].push_back(Token(type, text, literal, line));
+	mappedTokens[line].push_back(Token(type, text, literal, line));
 }
 
 bool Scanner::version()
@@ -329,7 +329,7 @@ Scanner::Scanner(const Scanner &scanner)
 	, current {scanner.current}
 	, line {scanner.line}
 	, source {scanner.source}
-	, tokens {scanner.tokens}
+	, mappedTokens {scanner.mappedTokens}
 {
 }
 
