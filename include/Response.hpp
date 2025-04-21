@@ -64,6 +64,7 @@ private:
 			{403, "Forbidden"},
 			{404, "File Not Found"},
 			{405, "Method Not Allowed"},
+			{413, "Content Too Large"},
 			{500, "Internal Server Error"}};
 
 	const std::unordered_map<int, std::string> redirectionMsgs =

@@ -55,6 +55,11 @@ std::string Response::getMsg() const { return _msg; }
 // Sets the status code and msg response to a Get, Post or Delete request
 void Response::setStatusAndMsg(Method method, const std::string &uri, const std::string &clientHost, const std::string &body)
 {
+	if (body.size() > _maxBodySize)
+	{
+		return handleResponseError(413);
+	}
+
 	if (!_redirection.second.empty())
 	{
 		return handleRedirection();
