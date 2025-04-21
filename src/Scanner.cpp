@@ -171,18 +171,12 @@ bool Scanner::uri()
 		while (peek(i) != ' ' && !isAtEnd(i))
 		{
 			if (peek(i) == '\n')
-			{
-				HttpParser::error(line, "Wrong URI origin-form format");
 				return (false);
-			}
 			++i;
 		}
 		DEBUG_PRINT("in peek if statement, after while loop");
 		if (isAtEnd(i))
-		{
-			HttpParser::error(line, "Wrong URI origin-form format");
 			return (false);
-		}
 		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
 		current += i;
@@ -198,17 +192,11 @@ bool Scanner::uri()
 		while (peek(i) != ' ' && !isAtEnd(i))
 		{
 			if (peek(i) == '\n')
-			{
-				HttpParser::error(line, "Wrong URI absolute-form format");
 				return (false);
-			}
 			++i;
 		}
 		if (isAtEnd(i))
-		{
-			HttpParser::error(line, "Wrong URI absolute-form format");
 			return (false);
-		}
 		std::string value = source.substr(start, (current + i) - start);
 		addToken(Token::URI, value);
 		current += i;
@@ -229,17 +217,11 @@ bool Scanner::header()
 	while (peek(i) != ':' && !isAtEnd(i))
 	{
 		if (peek(i) == '\n')
-		{
-			HttpParser::error(line, "Wrong header_name format");
 			return (false);
-		}
 		++i;
 	}
 	if (isAtEnd(i))
-	{
-		HttpParser::error(line, "Wrong header_name format");
 		return (false);
-	}
 	DEBUG_PRINT("before header delim");
 	if (peek(i) != ':' || peek(i + 1) != CR)
 		return (false);
@@ -247,10 +229,7 @@ bool Scanner::header()
 	while (peek(i) != '\n' && !isAtEnd(i))
 		++i;
 	if (isAtEnd(i))
-	{
-		HttpParser::error(line, "Wrong header_value format");
 		return (false);
-	}
 	std::string header = source.substr(start, (current + i) - start);
 	addToken(Token::HEADER, header);
 	current += i;
