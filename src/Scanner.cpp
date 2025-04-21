@@ -19,7 +19,7 @@ std::unordered_map<int, std::vector<Token>> Scanner::scanTokens(void)
 		DEBUG_PRINT("i: " + std::to_string(i));
 		DEBUG_PRINT("start: " + std::to_string(start));
 		DEBUG_PRINT("current: " + std::to_string(current));
-		// std::vector<Token> last = tokens.at(line);
+		// std::vector<Token> last = mappedTokens.at(line);
 		// std::cout << last.back();
 	}
 	start = current;
@@ -184,7 +184,7 @@ bool Scanner::uri()
 		return (true);
 	}
 	DEBUG_PRINT("before http check");
-	if (peek() == 'h' || peek(1) == 't' || peek(2) == 't' || peek(3) == 'p')
+	if (peek() == 'h' && peek(1) == 't' && peek(2) == 't' && peek(3) == 'p')
 	{
 		if (peek(4) != '/') return (false);
 		if (peek(5) != '/') return (false);
