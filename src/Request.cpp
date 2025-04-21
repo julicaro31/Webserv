@@ -48,9 +48,10 @@ Request::Request(std::vector<Token> tokens)
 			case Token::VERSION: 
 				version = std::stof(it.getLiteral());
 				break;
-			case Token::URI: break;
-				uri = it.getLiteral();	
-			case Token::HEADER: break;
+			case Token::URI:
+				uri = it.getLiteral();
+				break;
+			case Token::HEADER:
 				{
 					std::string header = it.getLiteral();
 					std::size_t delimiter = header.find(':');
@@ -58,7 +59,10 @@ Request::Request(std::vector<Token> tokens)
 					std::string header_value = header.substr(delimiter, header.size() - 1);
 					headers.insert({header_name, header_value});
 				}
-			case Token::BODY: break;
+				break;
+			case Token::BODY:
+				body = it.getLiteral();
+				break;
 		default:
 			break;
 		}
