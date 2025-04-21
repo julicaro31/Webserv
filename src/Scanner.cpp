@@ -19,6 +19,8 @@ std::unordered_map<int, std::vector<Token>> Scanner::scanTokens(void)
 		DEBUG_PRINT("i: " + std::to_string(i));
 		DEBUG_PRINT("start: " + std::to_string(start));
 		DEBUG_PRINT("current: " + std::to_string(current));
+		// std::vector<Token> last = tokens.at(line);
+		// std::cout << last.back();
 	}
 	start = current;
 	addToken(Token::END_OF_FILE, "", "");
@@ -274,7 +276,7 @@ void Scanner::body()
 {
 	int i = current;
 
-	while (!peek(i))
+	while (peek(i))
 		i++;
 	std::string body = source.substr(start, (current + i) - start);
 	addToken(Token::BODY, body);
@@ -290,7 +292,7 @@ char Scanner::peek()
 
 char Scanner::peek(int index)
 {
-	if (isAtEnd())
+	if (isAtEnd(index))
 		return ('\0');
 	return (source[current + index]);
 }
