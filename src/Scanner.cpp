@@ -19,6 +19,7 @@ std::unordered_map<int, std::vector<Token>> Scanner::scanTokens(void)
 		DEBUG_PRINT("i: " + std::to_string(i));
 		DEBUG_PRINT("start: " + std::to_string(start));
 		DEBUG_PRINT("current: " + std::to_string(current));
+		// TODO make std::vector<Token> to be able to be printed
 		// std::vector<Token> last = mappedTokens.at(line);
 		// std::cout << last.back();
 	}
