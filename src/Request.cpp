@@ -1,29 +1,53 @@
 #include "Request.hpp"
 #include "Token.hpp"
+#include "ParsingHelper.hpp"
 
-Method Request::getMethod()
+Method Request::getMethod() const
 {
 	return (method);
 }
 
-float Request::getVersion()
+float Request::getVersion() const
 {
 	return (version);
 }
 
-std::string Request::getUri()
+std::string Request::getUri() const
 {
 	return (uri);
 }
 
-std::unordered_map<std::string, std::string>  Request::getHeaders()
+std::unordered_map<std::string, std::string>  Request::getHeaders() const
 {
 	return (headers);
 }
 
-std::string Request::getBody()
+std::string Request::getBody() const
 {
 	return (body);
+}
+
+static std::string headersToString(std::unordered_map<std::string, std::string> map)
+{
+	std::string ret("***************\n");
+	for (auto it:map)
+	{
+		ret.append("key: " + it.first + ", value: " + it.second + "\n");
+	}
+	ret.append("***************\n");
+	return (ret);
+}
+
+std::ostream& operator<<(std::ostream& out, const Request& request)
+{
+	out << "---------------" << std::endl;
+	out << "Request.method: " << ParsingHelper::methodToStr(request.getMethod()) << std::endl;
+	out << "Request.version: " << std::to_string(request.getVersion()) << std::endl; 
+	out	<< "Request.uri: " << request.getUri() << std::endl;
+	out	<< "Request.headers \n" << headersToString(request.getHeaders()) << std::endl;
+	out	<< "Request.body: " << request.getBody() << std::endl;
+	out << "---------------" << std::endl;
+	return (out);
 }
 
 Request::Request(std::vector<Token> tokens)
@@ -56,7 +80,7 @@ Request::Request(std::vector<Token> tokens)
 					std::string header = it.getLiteral();
 					std::size_t delimiter = header.find(':');
 					std::string header_name = header.substr(0, delimiter);
-					std::string header_value = header.substr(delimiter, header.size() - 1);
+					std::string header_value = header.substr(delimiter + 2, header.size() - 1);
 					headers.insert({header_name, header_value});
 				}
 				break;

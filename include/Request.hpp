@@ -9,11 +9,12 @@
 class Request
 {
 public:
-	Method getMethod();
-	float getVersion();
-	std::string getUri();
-	std::unordered_map<std::string, std::string> getHeaders();
-	std::string getBody();
+	Method getMethod() const;
+	float getVersion() const;
+	std::string getUri() const;
+	std::unordered_map<std::string, std::string> getHeaders() const;
+	std::string getBody() const;
+	static std::string headersToString(std::unordered_map<std::string, std::string>);
 	Request(std::vector<Token>);
 	Request(const Request &);
 	~Request(void);
@@ -24,6 +25,8 @@ private:
 	std::unordered_map<std::string, std::string> headers;
 	std::string body;
 };
+
+std::ostream& operator<<(std::ostream& out, const Request& request);
 
 
 #endif
