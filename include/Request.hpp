@@ -12,7 +12,7 @@ public:
 	Method getMethod();
 	float getVersion();
 	std::string getUri();
-	std::vector<std::pair<std::string, std::string>> getHeaders();
+	std::unordered_map<std::string, std::string> getHeaders();
 	std::string getBody();
 	Request(std::vector<Token>);
 	Request(const Request &);

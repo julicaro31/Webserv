@@ -1,6 +1,5 @@
 #include "Request.hpp"
 #include "Token.hpp"
-#include <utility>
 
 Method Request::getMethod()
 {
@@ -17,7 +16,7 @@ std::string Request::getUri()
 	return (uri);
 }
 
-std::vector<std::pair<std::string, std::string>> Request::getHeaders()
+std::unordered_map<std::string, std::string>  Request::getHeaders()
 {
 	return (headers);
 }
