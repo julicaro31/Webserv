@@ -2,6 +2,7 @@
 #define __REQUEST_H__
 
 #include "Token.hpp"
+#include <unordered_map>
 #include <vector>
 #include "Method.hpp"
 
@@ -20,7 +21,7 @@ private:
 	Method method;
 	float version;
 	std::string uri;
-	std::vector<std::pair<std::string, std::string>> headers;
+	std::unordered_map<std::string, std::string> headers;
 	std::string body;
 };
 

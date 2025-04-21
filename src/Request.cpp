@@ -57,7 +57,7 @@ Request::Request(std::vector<Token> tokens)
 					std::size_t delimiter = header.find(':');
 					std::string header_name = header.substr(0, delimiter);
 					std::string header_value = header.substr(delimiter, header.size() - 1);
-					headers.push_back(std::make_pair(header_name, header_value));
+					headers.insert({header_name, header_value});
 				}
 			case Token::BODY: break;
 		default:
