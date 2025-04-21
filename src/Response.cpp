@@ -81,7 +81,12 @@ void Response::handleRequest()
 		return handleResponseError(413);
 	}
 
-	if (_accept != "text/html" || _accept != "*/*") // For now. We could handle more types.
+	if (isCGI())
+	{
+		// Handle CGI request if available
+	}
+
+	if (_accept != "text/html" || _accept != "*/*")
 	{
 		return handleResponseError(406);
 	}
@@ -234,11 +239,7 @@ void Response::handleGetRequest()
 		return handleResponseError(405);
 	}
 
-	if (isCGI())
-	{
-		// Handle CGI request if available
-	}
-	else if (isFile(_request.uri))
+	if (isFile(_request.uri))
 	{
 		handleFileServing(_root + _request.uri);
 	}
@@ -355,14 +356,7 @@ void Response::handlePostRequest()
 		return handleResponseError(400);
 	}
 
-	if (isCGI())
-	{
-		// Handle CGI request if available
-	}
-	else
-	{
-		handleUpload();
-	}
+	handleUpload();
 }
 
 void Response::handleUpload()
@@ -381,14 +375,7 @@ void Response::handleDeleteRequest()
 	{
 		return handleResponseError(405);
 	}
-	if (isCGI())
-	{
-		// Handle CGI request if available
-	}
-	else
-	{
-		return handleDeletion(_root + _request.uri);
-	}
+	return handleDeletion(_root + _request.uri);
 }
 
 void Response::handleDeletion(const std::string &path)
