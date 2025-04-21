@@ -23,6 +23,9 @@ private:
 	std::string _msg;
 	Request _request;
 	std::string _clientHost;
+	std::string _accept;
+
+	void setAccept();
 
 	bool isCGI() const;
 	bool isFile(const std::string &uri) const;
@@ -67,6 +70,7 @@ private:
 			{403, "Forbidden"},
 			{404, "File Not Found"},
 			{405, "Method Not Allowed"},
+			{406, "Not Acceptable"},
 			{413, "Content Too Large"},
 			{415, "Unsupported Media Type"},
 			{500, "Internal Server Error"}};

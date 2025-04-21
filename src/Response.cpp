@@ -2,6 +2,7 @@
 
 Response::Response(const Request &request, const Server &server) : _request(request)
 {
+	setAccept();
 	const std::vector<Location> &locations = server.getLocations();
 	const Location *bestMatch = nullptr;
 	size_t bestMatchLength = 0;
@@ -51,23 +52,38 @@ int Response::getStatus() const { return _status; }
 
 std::string Response::getMsg() const { return _msg; }
 
+void Response::setAccept()
+{
+	try
+	{
+		_accept = getHeaderValue("Accept");
+	}
+	catch (const std::exception &e)
+	{
+		_accept = "*/*";
+	}
+}
+
 // Sets the status code and msg response to a Get, Post or Delete request
 void Response::handleRequest()
 {
 	try
 	{
-		_clientHost = getHeaderValue("Client Host");
+		_clientHost = getHeaderValue("Host");
 	}
 	catch (const std::exception &e)
 	{
 		return handleResponseError(400);
 	}
 
-	// Check also accept
-
 	if (_request.body.size() > _maxBodySize)
 	{
 		return handleResponseError(413);
+	}
+
+	if (_accept != "text/html" || _accept != "*/*") // For now. We could handle more types.
+	{
+		return handleResponseError(406);
 	}
 
 	if (!_redirection.second.empty())
@@ -328,7 +344,8 @@ void Response::handlePostRequest()
 	}
 	try
 	{
-		if (getHeaderValue("Content-Type") != "text/html") // Check which type we are gonna allow
+		std::string contentType = getHeaderValue("Content-Type");
+		if (contentType != "text/html" || contentType != "*/*")
 		{
 			return handleResponseError(415);
 		}
