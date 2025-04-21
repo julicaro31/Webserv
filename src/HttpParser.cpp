@@ -2,24 +2,20 @@
 #include "Request.hpp"
 #include <unordered_map>
 #include <Parser.hpp>
+#include <vector>
 #include "debug.hpp"
 
-void HttpParser::parseRequest(std::string request)
+std::vector<Token> HttpParser::parseRequest(std::string request)
 {
 	Scanner scanner = Scanner(request);
 	std::unordered_map<int, std::vector<Token>> mappedTokens = scanner.scanTokens();
 	std::vector<Token> tokens = HttpParser::vectorizeTokens(mappedTokens);
-	// for (auto it:tokens)
-	// {
-	// 	std::cout << it;
-	// }
 	Parser parser = Parser(tokens);
 	if (parser.httpMessage())
-		std::cerr << "correct message" << std::endl;
+		DEBUG_PRINT("correct message\n");
 	else
-		std::cerr << "wrongly formatted message" << std::endl;
-	Request reqst = Request(tokens);
-	DEBUG_PRINT(Request::requestToString(reqst));
+		DEBUG_PRINT("wrongly formatted message");
+	return (tokens);
 }
 
 std::vector<Token> HttpParser::vectorizeTokens(std::unordered_map<int, std::vector<Token>> tokens)

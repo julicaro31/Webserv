@@ -14,7 +14,7 @@ class ConfigBlock;
 class HttpParser
 {
 public:
-	static void parseRequest(std::string);
+	static std::vector<Token> parseRequest(std::string);
 	static void error(int, std::string);
 private:
 	static std::vector<Token> vectorizeTokens(std::unordered_map<int, std::vector<Token>>);

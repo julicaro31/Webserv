@@ -5,6 +5,8 @@
 #include "Server.hpp"
 #include "ServerManager.hpp"
 #include "Logger.hpp"
+#include "Request.hpp"
+#include "debug.hpp"
 
 int main(int ac, char *argv[])
 {
@@ -17,9 +19,10 @@ int main(int ac, char *argv[])
 	if (ac == 2)
 	{
 		Logger::log(INFO, "Parsing configuration file...");
-
-		std::string line = "GET /path/to/resource HTTP/1.1\r\nHost: example.com\n\r\n\r\n{\n\"param1\": \"value1\",\n\"param2\": \"value2\"\n}";
-		HttpParser::parseRequest(line);
+		std::string line = "GET /index.html HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n";
+		std::vector<Token> tokens = HttpParser::parseRequest(line);
+		Request reqst = Request(tokens);
+		DEBUG_PRINT(Request::requestToString(reqst));
 		try
 		{
 			std::string filePath(argv[1]);
