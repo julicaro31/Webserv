@@ -29,7 +29,7 @@ int main(int ac, char *argv[])
 			{
 				serverManager.addServer(*it);
 			}
-			serverManager.printServers();
+			// serverManager.printServers();
 		}
 		catch (const std::exception &e)
 		{

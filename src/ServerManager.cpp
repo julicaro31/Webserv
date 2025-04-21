@@ -186,13 +186,28 @@ void ServerManager::runPoll()
 			}
 			if (_pollFDs[i].revents & POLLHUP && !(_pollFDs[i].revents & POLLIN))
 			{
+				// Client hung up (closed connection). Clean it up.
 				Logger::log(INFO, "[ServerManager] Detected POLLHUP on FD " + std::to_string(_pollFDs[i].fd));
 				removeClient(_pollFDs[i].fd);
+			}
+
+			else if (_pollFDs[i].revents & POLLOUT)
+			{
+    			// Socket is ready to write. Send data if needed.
+				// For now, we just ignore it until response is implemented.
+
+				Logger::log(INFO, "[ServerManager] Detected POLLOUT on FD " + std::to_string(_pollFDs[i].fd));
 			}
 		}
 	}
 }
 
+/**
+ * @brief Accept a new client connection and add it to the poll list.
+ * and set it to non-blocking mode.
+ * 
+ * @param serverFD The file descriptor of the server socket.
+ */
 void ServerManager::acceptNewClient(int serverFD)
 {
 	struct sockaddr_in address;
@@ -222,9 +237,16 @@ void ServerManager::acceptNewClient(int serverFD)
 	_clientActivity[newClientFD] = time(NULL); // save client activity time
 }
 
+/**
+ * @brief Handle incoming client requests.
+ * This function reads the request from the client, parses it, and sends a response.
+ * It also checks if the request is a CGI request.
+ * If the request is not valid, it sends an error response.
+ * @param clientFD The file descriptor of the client socket.
+ */
 void ServerManager::handleClientRequest(int clientFD)
 {
-	char buffer[1024];
+	char buffer[MAX_BUFFER_SIZE];
 	int r = read(clientFD, buffer, sizeof(buffer) - 1);
 
 	if (r < 0)
@@ -240,7 +262,24 @@ void ServerManager::handleClientRequest(int clientFD)
 		return;
 	}
 	buffer[r] = '\0';
-
+	std::string requestStr(buffer);
+	// Parse the request string into tokens
+	HttpParser::parseRequest(requestStr);
+	// Create a Request object from the tokens
+	
+	// Request requestBody = Request(tokens);
+	
+	//check for CGI request
+	// if (requestBody.isCgiRequest())
+	
+	//find the server for this client
+	if (_clientToServer.find(clientFD) == _clientToServer.end())
+	{
+		Logger::log(ERROR, "[ServerManager] Client FD " + std::to_string(clientFD) + " not found in clientToServer map.");
+		//send response 500!
+		removeClient(clientFD);
+		return;
+	}
 	_clientActivity[clientFD] = time(NULL); // Update activity timestamp
 
 	Logger::log(INFO, "[ServerManager] Received from client FD " + std::to_string(clientFD) + '\n' + buffer);
@@ -287,3 +326,17 @@ void ServerManager::checkTimeouts()
 		}
 	}
 }
+/**
+ * @brief Send an error page to the client.
+ *
+ * @param clientFD The file descriptor of the client socket.
+ * @param errorCode The HTTP error code to send.
+ */
+void ServerManager::sendErrorPage(int clientFD, int errorCode)
+{
+	Server* server = _clientToServer[clientFD];
+	server->getErrorPage(errorCode);
+
+}
+
+
