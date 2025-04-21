@@ -1,7 +1,7 @@
 #include "Token.hpp"
 #include <string>
 
-std::string Token::tokenToString(Token::TokenType tokenType) 
+std::string Token::tokenTypeToString(Token::TokenType tokenType) 
 {
     static const std::unordered_map<Token::TokenType, std::string> tokenMap = 
 	{
@@ -23,7 +23,7 @@ std::string Token::tokenToString(Token::TokenType tokenType)
 
 std::string Token::toString(void)
 {
-	return (tokenToString(type) + " " + lexeme + " " + literal);
+	return (tokenTypeToString(type) + " " + lexeme + " " + literal);
 }
 
 Token::TokenType Token::getType() const
@@ -50,12 +50,23 @@ int Token::getLine() const
 std::ostream& operator<<(std::ostream& out, const Token& token)
 {
 	out << "---------------" << std::endl;
-	out << "TokenType: " << token.tokenToString(token.getType()) << std::endl;
+	out << "TokenType: " << token.tokenTypeToString(token.getType()) << std::endl;
 	out << "Token.lexeme: " << token.getLexeme() << std::endl; 
 	out	<< "Token.literal: " << token.getLiteral() << std::endl;
 	out	<< "Token.line: " << token.getLine() << std::endl;
 	out << "---------------" << std::endl;
 	return (out);
+}
+
+std::string Token::tokenToString(const Token& token)
+{
+	std::string ret("\n***************\n");
+	ret.append("TokenType " + token.tokenTypeToString(token.getType()) + "\n" );
+	ret.append("Token.lexeme: " + token.getLexeme() + "\n" );
+	ret.append("Token.literal: " + token.getLiteral() + "\n" );
+	ret.append("Token.line" + std::to_string(token.getLine()) + "\n" );
+	ret.append("---------------\n" );
+	return (ret);
 }
 
 Token::Token(const Token &token)

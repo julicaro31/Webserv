@@ -30,12 +30,13 @@ public:
 		// end
 		END_OF_FILE,
 	};
-	static std::string tokenToString(Token::TokenType);
+	static std::string tokenTypeToString(Token::TokenType);
 	std::string toString();
 	TokenType getType() const;
 	std::string getLexeme() const;
 	std::string getLiteral() const;
 	int getLine() const;
+	static std::string tokenToString(const Token& token);
 	Token(TokenType, std::string, std::string, int);
 	Token(const Token &);
 	~Token(void);

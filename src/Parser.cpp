@@ -29,8 +29,8 @@ bool Parser::method(void)
 	else
 	{
 		Parser::error(tokens[current].getLine(), 
-		Token::tokenToString(tokens[current].getType()),
-		Token::tokenToString(Token::METHOD));
+		Token::tokenTypeToString(tokens[current].getType()),
+		Token::tokenTypeToString(Token::METHOD));
 		return (false);
 	}
 	return (true);
@@ -43,8 +43,8 @@ bool Parser::space(void)
 	else
 	{
 		Parser::error(tokens[current].getLine(), 
-		Token::tokenToString(tokens[current].getType()),
-		Token::tokenToString(Token::SINGLE_SPACE));
+		Token::tokenTypeToString(tokens[current].getType()),
+		Token::tokenTypeToString(Token::SINGLE_SPACE));
 		return (false);
 	}
 	return (true);
@@ -57,8 +57,8 @@ bool Parser::requestTarget(void)
 	else
 	{
 		Parser::error(tokens[current].getLine(), 
-		Token::tokenToString(tokens[current].getType()),
-		Token::tokenToString(Token::URI));
+		Token::tokenTypeToString(tokens[current].getType()),
+		Token::tokenTypeToString(Token::URI));
 		return (false);
 	}
 	return (true);
@@ -72,8 +72,8 @@ bool Parser::httpVersion(void)
 	else
 	{
 		Parser::error(tokens[current].getLine(), 
-		Token::tokenToString(tokens[current].getType()),
-		Token::tokenToString(Token::VERSION));
+		Token::tokenTypeToString(tokens[current].getType()),
+		Token::tokenTypeToString(Token::VERSION));
 		return (false);
 	}
 	return (true);
@@ -86,8 +86,8 @@ bool Parser::crlf(void)
 	else
 	{
 		Parser::error(tokens[current].getLine(), 
-		Token::tokenToString(tokens[current].getType()),
-		Token::tokenToString(Token::LF));
+		Token::tokenTypeToString(tokens[current].getType()),
+		Token::tokenTypeToString(Token::LF));
 		return (false);
 	}
 	return (true);
@@ -111,8 +111,8 @@ bool Parser::messageBody(void)
 	else
 	{
 		Parser::error(tokens[current].getLine(), 
-		Token::tokenToString(tokens[current].getType()),
-		Token::tokenToString(Token::BODY));
+		Token::tokenTypeToString(tokens[current].getType()),
+		Token::tokenTypeToString(Token::BODY));
 		return (false);
 	}
 	return (true);
@@ -125,8 +125,8 @@ bool Parser::eof(void)
 	else
 	{
 		Parser::error(tokens[current].getLine(), 
-		Token::tokenToString(tokens[current].getType()),
-		Token::tokenToString(Token::END_OF_FILE));
+		Token::tokenTypeToString(tokens[current].getType()),
+		Token::tokenTypeToString(Token::END_OF_FILE));
 		return (false);
 	}
 	return (true);
