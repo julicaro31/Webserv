@@ -199,7 +199,7 @@ void Response::handleGetRequest(const std::string &uri, const std::string &clien
 
 	if (isCGI())
 	{
-		// Handle CGI request
+		// Handle CGI request if available
 	}
 	else if (isFile(uri))
 	{
@@ -306,9 +306,11 @@ void Response::handlePostRequest(const std::string &uri, const std::string &clie
 		return handleResponseError(405);
 	}
 
+	// Check if the content type, otherwise 415 Unsupported Media Type
+
 	if (isCGI())
 	{
-		// Handle CGI request
+		// Handle CGI request if available
 	}
 	else
 	{
@@ -334,7 +336,7 @@ void Response::handleDeleteRequest(const std::string &uri, const std::string &cl
 	}
 	if (isCGI())
 	{
-		// Handle CGI request
+		// Handle CGI request if available
 	}
 	else
 	{
