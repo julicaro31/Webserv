@@ -3,6 +3,7 @@
 
 #include "Server.hpp"
 #include "ParsingHelper.hpp"
+#include "Request.hpp"
 #include <set>
 #include <filesystem>
 #include <unordered_map>
@@ -11,21 +12,23 @@
 class Response
 {
 public:
-	Response(const std::string &uri, const Server &server);
+	Response(const Request &request, const Server &server);
 
-	// Once the Request is merged, this method can have a Request object as paremeter
-	void setStatusAndMsg(Method method, const std::string &uri, const std::string &clientHost, const std::string &body);
+	void handleRequest();
 	int getStatus() const;
 	std::string getMsg() const;
 
 private:
 	int _status;
 	std::string _msg;
+	Request _request;
+	std::string _clientHost;
 
 	bool isCGI() const;
 	bool isFile(const std::string &uri) const;
 	const std::string getFullPath(const std::string &path);
 	const std::string getFileContent(const std::string &fullPath);
+	const std::string &getHeaderValue(const std::string &headerName);
 
 	// Error msgs
 	void handleResponseError(int status);
@@ -36,17 +39,17 @@ private:
 	void handleRedirection();
 
 	// Get request
-	void handleGetRequest(const std::string &uri, const std::string &clientHost);
+	void handleGetRequest();
 	void handleFileServing(const std::string &path);
 	std::string getMimeType(const std::string &fileName);
 	void handleAutoIndex(const std::string &path);
 
 	// Post request
-	void handlePostRequest(const std::string &uri, const std::string &clientHost, const std::string &body);
-	void handleUpload(const std::string &uri, const std::string &body);
+	void handlePostRequest();
+	void handleUpload();
 
 	// Delete request
-	void handleDeleteRequest(const std::string &uri, const std::string &clientHost);
+	void handleDeleteRequest();
 	void handleDeletion(const std::string &path);
 
 	bool _autoIndex;

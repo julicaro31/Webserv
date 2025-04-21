@@ -1,7 +1,6 @@
 #include "Response.hpp"
 
-/// Creates a Response object. Based on the uri, finds the most suitable location in the configuration file.
-Response::Response(const std::string &uri, const Server &server)
+Response::Response(const Request &request, const Server &server) : _request(request)
 {
 	const std::vector<Location> &locations = server.getLocations();
 	const Location *bestMatch = nullptr;
@@ -9,9 +8,9 @@ Response::Response(const std::string &uri, const Server &server)
 
 	for (std::vector<Location>::const_iterator location = locations.begin(); location != locations.end(); location++)
 	{
-		if (uri.find(location->uri) == 0)
+		if (_request.uri.find(location->uri) == 0)
 		{
-			if (location->modifier == "=" && location->uri == uri)
+			if (location->modifier == "=" && location->uri == _request.uri)
 			{
 				bestMatch = &(*location);
 				break;
@@ -53,9 +52,20 @@ int Response::getStatus() const { return _status; }
 std::string Response::getMsg() const { return _msg; }
 
 // Sets the status code and msg response to a Get, Post or Delete request
-void Response::setStatusAndMsg(Method method, const std::string &uri, const std::string &clientHost, const std::string &body)
+void Response::handleRequest()
 {
-	if (body.size() > _maxBodySize)
+	try
+	{
+		_clientHost = getHeaderValue("Client Host");
+	}
+	catch (const std::exception &e)
+	{
+		return handleResponseError(400);
+	}
+
+	// Check also accept
+
+	if (_request.body.size() > _maxBodySize)
 	{
 		return handleResponseError(413);
 	}
@@ -65,17 +75,17 @@ void Response::setStatusAndMsg(Method method, const std::string &uri, const std:
 		return handleRedirection();
 	}
 
-	if (method == Method::GET)
+	if (_request.method == Method::GET)
 	{
-		handleGetRequest(uri, clientHost);
+		handleGetRequest();
 	}
-	else if (method == Method::POST)
+	else if (_request.method == Method::POST)
 	{
-		handlePostRequest(uri, clientHost, body);
+		handlePostRequest();
 	}
-	else if (method == Method::DELETE)
+	else if (_request.method == Method::DELETE)
 	{
-		handleDeleteRequest(uri, clientHost);
+		handleDeleteRequest();
 	}
 	else
 	{
@@ -109,6 +119,17 @@ const std::string Response::getFileContent(const std::string &fullPath)
 	std::ostringstream ss;
 	ss << file.rdbuf();
 	return ss.str();
+}
+
+const std::string &Response::getHeaderValue(const std::string &headerName)
+{
+	std::unordered_map<std::string, std::string>::iterator it = _request.headers.find(headerName);
+
+	if (it == _request.headers.end())
+	{
+		throw std::runtime_error("Missing " + headerName);
+	}
+	return it->second;
 }
 
 // If the error page corresponding to the status, it retrieves it. Otherwise responses the appropriate default msg.
@@ -190,9 +211,9 @@ bool Response::isAllowed(Method method, const std::string &clientHost) const
 	return true;
 }
 
-void Response::handleGetRequest(const std::string &uri, const std::string &clientHost)
+void Response::handleGetRequest()
 {
-	if (isAllowed(Method::GET, clientHost) == false)
+	if (isAllowed(Method::GET, _clientHost) == false)
 	{
 		return handleResponseError(405);
 	}
@@ -201,9 +222,9 @@ void Response::handleGetRequest(const std::string &uri, const std::string &clien
 	{
 		// Handle CGI request if available
 	}
-	else if (isFile(uri))
+	else if (isFile(_request.uri))
 	{
-		handleFileServing(_root + uri);
+		handleFileServing(_root + _request.uri);
 	}
 	else
 	{
@@ -217,7 +238,7 @@ void Response::handleGetRequest(const std::string &uri, const std::string &clien
 		}
 		if (_autoIndex)
 		{
-			handleAutoIndex(uri);
+			handleAutoIndex(_request.uri);
 		}
 		else
 		{
@@ -299,14 +320,23 @@ void Response::handleAutoIndex(const std::string &dirPath)
 	_msg = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: " + std::to_string(body.size()) + "\r\n\r\n" + body;
 }
 
-void Response::handlePostRequest(const std::string &uri, const std::string &clientHost, const std::string &body)
+void Response::handlePostRequest()
 {
-	if (!isAllowed(Method::POST, clientHost) || !isFile(uri))
+	if (!isAllowed(Method::POST, _clientHost) || !isFile(_request.uri))
 	{
 		return handleResponseError(405);
 	}
-
-	// Check if the content type, otherwise 415 Unsupported Media Type
+	try
+	{
+		if (getHeaderValue("Content-Type") != "text/html") // Check which type we are gonna allow
+		{
+			return handleResponseError(415);
+		}
+	}
+	catch (const std::exception &e)
+	{
+		return handleResponseError(400);
+	}
 
 	if (isCGI())
 	{
@@ -314,23 +344,23 @@ void Response::handlePostRequest(const std::string &uri, const std::string &clie
 	}
 	else
 	{
-		handleUpload(uri, body);
+		handleUpload();
 	}
 }
 
-void Response::handleUpload(const std::string &uri, const std::string &body)
+void Response::handleUpload()
 {
-	std::ofstream out(getFullPath(_root + uri), std::ios::binary);
-	out.write(body.data(), body.size());
+	std::ofstream out(getFullPath(_root + _request.uri), std::ios::binary);
+	out.write(_request.body.data(), _request.body.size());
 	out.close();
 
 	_status = 200;
 	_msg = "HTTP/1.1 200 OK\r\nContent-Length: 15\r\n\r\nUpload success\n";
 }
 
-void Response::handleDeleteRequest(const std::string &uri, const std::string &clientHost)
+void Response::handleDeleteRequest()
 {
-	if (isAllowed(Method::DELETE, clientHost) == false)
+	if (isAllowed(Method::DELETE, _clientHost) == false)
 	{
 		return handleResponseError(405);
 	}
@@ -340,7 +370,7 @@ void Response::handleDeleteRequest(const std::string &uri, const std::string &cl
 	}
 	else
 	{
-		return handleDeletion(_root + uri);
+		return handleDeletion(_root + _request.uri);
 	}
 }
 
@@ -375,8 +405,10 @@ void Response::handleDeletion(const std::string &path)
 // A method to test the response, must delete later
 void testResponse(const std::string &uri, const Server &server)
 {
-	Response response(uri, server);
-	response.setStatusAndMsg(Method::GET, uri, "clientHost", "");
+	Request request(Method::GET, 1.1, uri, {{"Client Host", "client_host"}}, "");
+
+	Response response(request, server);
+	response.handleRequest();
 
 	std::cout << "Status: " << std::to_string(response.getStatus()) << std::endl
 			  << response.getMsg() << std::endl;
