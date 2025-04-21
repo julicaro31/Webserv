@@ -4,36 +4,22 @@
 
 bool Parser::httpMessage(void)
 {
-	if (!startLine())
-		return (false);
-	if (!crlf())
-		return (false);
-	if (!fieldLine())
-		return (false);
-	if (!crlf())
-		return (false);
-	if (!messageBody())
-		return (false);
-	if (!eof())
-		return (false);
-	if (current != (int)tokens.size())
-		return (false);
-	return (true);
+	return (startLine() &&
+			crlf() &&
+			fieldLine() &&
+			crlf() &&
+			messageBody() &&
+			eof () &&
+			(current == (int)tokens.size()));
 }
 
 bool Parser::startLine(void)
 {
-	if (!method())
-		return (false);
-	if (!space())
-		return (false);
-	if (!requestTarget())
-		return (false);
-	if (!space())
-		return (false);
-	if (!httpVersion())
-		return (false);
-	return (true);
+	return (method() &&
+			space() &&
+			requestTarget() &&
+			space() &&
+			httpVersion());
 }
 
 bool Parser::method(void)
