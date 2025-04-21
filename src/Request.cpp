@@ -27,7 +27,7 @@ std::string Request::getBody() const
 	return (body);
 }
 
-static std::string headersToString(std::unordered_map<std::string, std::string> map)
+std::string Request::headersToString(std::unordered_map<std::string, std::string> map)
 {
 	std::string ret("***************\n");
 	for (auto it:map)
@@ -44,21 +44,21 @@ std::ostream& operator<<(std::ostream& out, const Request& request)
 	out << "Request.method: " << ParsingHelper::methodToStr(request.getMethod()) << std::endl;
 	out << "Request.version: " << std::to_string(request.getVersion()) << std::endl; 
 	out	<< "Request.uri: " << request.getUri() << std::endl;
-	out	<< "Request.headers \n" << headersToString(request.getHeaders()) << std::endl;
+	out	<< "Request.headers \n" << Request::headersToString(request.getHeaders()) << std::endl;
 	out	<< "Request.body: " << request.getBody() << std::endl;
 	out << "---------------" << std::endl;
 	return (out);
 }
 	
-static std::string requestToString(const Request& request)
+std::string Request::requestToString(const Request& request)
 {
-	std::string ret("---------------\n");
-	ret.append("Request.method: " + ParsingHelper::methodToStr(request.getMethod()) );
-	ret.append("Request.version: " + std::to_string(request.getVersion()) );
-	ret.append("Request.uri: " + request.getUri() );
-	ret.append("Request.headers \n" + headersToString(request.getHeaders()) );
-	ret.append("Request.body: " + request.getBody() );
-	ret.append("---------------" );
+	std::string ret("\n***************\n");
+	ret.append("Request.method: " + ParsingHelper::methodToStr(request.getMethod()) + "\n" );
+	ret.append("Request.version: " + std::to_string(request.getVersion()) + "\n" );
+	ret.append("Request.uri: " + request.getUri() + "\n" );
+	ret.append("Request.headers \n" + headersToString(request.getHeaders()) + "\n" );
+	ret.append("Request.body: " + request.getBody() + "\n" );
+	ret.append("---------------\n" );
 	return (ret);
 }
 

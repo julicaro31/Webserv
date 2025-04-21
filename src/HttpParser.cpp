@@ -2,7 +2,7 @@
 #include "Request.hpp"
 #include <unordered_map>
 #include <Parser.hpp>
-
+#include "debug.hpp"
 
 void HttpParser::parseRequest(std::string request)
 {
@@ -15,11 +15,11 @@ void HttpParser::parseRequest(std::string request)
 	// }
 	Parser parser = Parser(tokens);
 	if (parser.httpMessage())
-		std::cout << "correct message" << std::endl;
+		std::cerr << "correct message" << std::endl;
 	else
-		std::cout << "wrongly formatted message" << std::endl;
+		std::cerr << "wrongly formatted message" << std::endl;
 	Request reqst = Request(tokens);
-	std::cout << reqst;
+	DEBUG_PRINT(Request::requestToString(reqst));
 }
 
 std::vector<Token> HttpParser::vectorizeTokens(std::unordered_map<int, std::vector<Token>> tokens)
