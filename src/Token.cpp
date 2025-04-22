@@ -64,8 +64,8 @@ std::string Token::tokenToString(const Token& token)
 	ret.append("TokenType " + token.tokenTypeToString(token.getType()) + "\n" );
 	ret.append("Token.lexeme: " + token.getLexeme() + "\n" );
 	ret.append("Token.literal: " + token.getLiteral() + "\n" );
-	ret.append("Token.line" + std::to_string(token.getLine()) + "\n" );
-	ret.append("---------------\n" );
+	ret.append("Token.line: " + std::to_string(token.getLine()) + "\n" );
+	ret.append("***************\n" );
 	return (ret);
 }
 
