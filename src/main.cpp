@@ -20,7 +20,7 @@ int main(int ac, char *argv[])
 	if (ac == 2)
 	{
 		Logger::log(INFO, "Parsing configuration file...");
-		std::string line = "GET /index.html HTTP/1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n";
+		std::string line = "GET /index.html HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n";
 		try
 		{
 			 tokens = HttpParser::parseRequest(line);
@@ -50,6 +50,18 @@ int main(int ac, char *argv[])
 		{
 			std::cerr << e.what() << '\n';
 		}
+	}
+	else if (ac == 3)
+	{
+		std::ifstream file(argv[2]);
+		if (!file.is_open()) {
+			std::cerr << "Error opening file: " << argv[2] << std::endl;
+			return -1;
+		}
+		std::stringstream buffer;
+		buffer << file.rdbuf();
+		std::string content = buffer.str();
+		HttpParser::parseRequest(content);
 	}
 	else
 	{
