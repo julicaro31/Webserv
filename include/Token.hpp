@@ -11,6 +11,7 @@ class Token
 public:
 	enum TokenType
 	{
+		NONE, 
 		// single-char tokens
 		SINGLE_SPACE, CR, LF,
 
