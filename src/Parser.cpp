@@ -67,13 +67,23 @@ bool Parser::requestTarget(void)
 
 bool Parser::httpVersion(void)
 {
-	if (tokens[current].getType() == Token::VERSION)
+	if (tokens[current].getType() == Token::VERSION &&
+		tokens[current].getLiteral() == "1.1")
 		current++;
 	else
 	{
-		Parser::error(tokens[current].getLine(), 
-		Token::tokenTypeToString(tokens[current].getType()),
-		Token::tokenTypeToString(Token::VERSION));
+		if (tokens[current].getLiteral() != "1.1")
+		{
+			Parser::error(tokens[current].getLine(), 
+			"WRONG_VERSION", 
+			Token::tokenTypeToString(Token::VERSION));
+		}
+		else
+		{
+			Parser::error(tokens[current].getLine(), 
+			Token::tokenTypeToString(tokens[current].getType()),
+			Token::tokenTypeToString(Token::VERSION));
+		}
 		return (false);
 	}
 	return (true);
