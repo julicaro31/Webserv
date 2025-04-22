@@ -10,6 +10,7 @@
 
 int main(int ac, char *argv[])
 {
+	std::vector<Token> tokens;
 	Logger::init("logs.log");
 	if (ac < 2)
 	{
@@ -19,8 +20,19 @@ int main(int ac, char *argv[])
 	if (ac == 2)
 	{
 		Logger::log(INFO, "Parsing configuration file...");
-		std::string line = "GET /index.html HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n";
-		std::vector<Token> tokens = HttpParser::parseRequest(line);
+		std::string line = "GET /index.html HTTP/1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n";
+		try
+		{
+			 tokens = HttpParser::parseRequest(line);
+		} 
+		catch (const char* exception)
+		{
+			std::cerr << "Error: " << exception << std::endl;
+		}
+		catch (...)
+		{
+			std::cerr << "Unknown error" << std::endl;
+		}
 		Request reqst = Request(tokens);
 		DEBUG_PRINT(Request::requestToString(reqst));
 		try

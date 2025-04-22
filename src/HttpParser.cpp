@@ -14,7 +14,10 @@ std::vector<Token> HttpParser::parseRequest(std::string request)
 	if (parser.httpMessage())
 		DEBUG_PRINT("correct message\n");
 	else
+	{ 
 		DEBUG_PRINT("wrongly formatted message");
+		throw "HTTP Request not correctly formated";
+	}
 	return (tokens);
 }
 
