@@ -196,7 +196,6 @@ void ServerManager::runPoll()
     			// Socket is ready to write. Send data if needed.
 				// For now, we just ignore it until response is implemented.
 
-				Logger::log(INFO, "[ServerManager] Detected POLLOUT on FD " + std::to_string(_pollFDs[i].fd));
 			}
 		}
 	}
@@ -206,7 +205,7 @@ void ServerManager::runPoll()
  * @brief Accept a new client connection and add it to the poll list.
  * and set it to non-blocking mode.
  * 
- * @param serverFD The file descriptor of the server socket.
+ * @param serverFD The file descriptor of the incoming server connection.
  */
 void ServerManager::acceptNewClient(int serverFD)
 {
@@ -237,6 +236,15 @@ void ServerManager::acceptNewClient(int serverFD)
 	_clientActivity[newClientFD] = time(NULL); // save client activity time
 }
 
+//!TODO:
+/*Distinguish between FD's for server and client and CGI!
+
+
+
+
+*/
+
+
 /**
  * @brief Handle incoming client requests.
  * This function reads the request from the client, parses it, and sends a response.
@@ -263,14 +271,16 @@ void ServerManager::handleClientRequest(int clientFD)
 	}
 	buffer[r] = '\0';
 	std::string requestStr(buffer);
+
 	// Parse the request string into tokens
-	HttpParser::parseRequest(requestStr);
+	// HttpParser::parseRequest(requestStr);
 	// Create a Request object from the tokens
 	
 	// Request requestBody = Request(tokens);
 	
 	//check for CGI request
 	// if (requestBody.isCgiRequest())
+
 	
 	//find the server for this client
 	if (_clientToServer.find(clientFD) == _clientToServer.end())
