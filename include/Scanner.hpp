@@ -34,21 +34,22 @@ private:
 	std::string source;
 	std::unordered_map<int, std::vector<Token>>  mappedTokens;
 private:
-	void scanToken();
+	void scanToken(void);
 	void addToken(Token::TokenType);
 	void addToken(Token::TokenType, std::string);
 	void addToken(Token::TokenType, std::string, std::string);
-	bool version();
-	bool uri();
-	bool header();
-	void identifier();
-	void body();
-	char peek();
+	bool version(void);
+	bool uri(void);
+	bool header(void);
+	void identifier(void);
+	void body(void);
+	char peek(void);
 	char peek(int);
-	char peekNext();
+	char peekNext(void);
 	bool isAtEnd(void);
 	bool isAtEnd(int);
-	char advance();
+	bool isBody(void);
+	char advance(void);
 };
 
 #endif

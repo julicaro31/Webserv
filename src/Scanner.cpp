@@ -19,14 +19,46 @@ std::unordered_map<int, std::vector<Token>> Scanner::scanTokens(void)
 		DEBUG_PRINT("i: " + std::to_string(i));
 		DEBUG_PRINT("start: " + std::to_string(start));
 		DEBUG_PRINT("current: " + std::to_string(current));
-		std::vector<Token> last = mappedTokens.at(line);
-		DEBUG_PRINT(Token::tokenToString(last.back()));
+		std::vector<Token> last = mappedTokens[line];
+		if (!last.empty())
+			DEBUG_PRINT(Token::tokenToString(last.back()));
 	}
 	start = current;
 	addToken(Token::END_OF_FILE, "", "");
 	return (mappedTokens);
 }
 
+
+bool Scanner::isBody()
+{
+	std::vector<Token> previousLine;
+	std::vector<Token> penultimateLine;
+	int previousLineSize;
+
+	DEBUG_PRINT("in isBody()");
+	if (line == 2)
+	{
+		DEBUG_PRINT("in isBody() line == 2");
+		previousLine = mappedTokens[line - 1];
+	
+		if (previousLine.back().getType() == Token::LF && !header())
+			return (true);
+	}
+	if (line > 2)
+	{
+		DEBUG_PRINT("in isBody() line > 2");
+		previousLine = mappedTokens[line - 1];
+		penultimateLine = mappedTokens[line - 2];
+		previousLineSize = previousLine.size();
+
+
+		if (previousLineSize == 1 && 
+			previousLine.back().getType() == Token::LF &&
+			penultimateLine.back().getType() == Token::LF)
+			return (true);
+	}
+	return (false);
+}
 
 void Scanner::scanToken()
 {
@@ -64,14 +96,8 @@ void Scanner::scanToken()
 			break;
 		case '\r': 
 			DEBUG_PRINT("CR case");
-			if (peekNext() == '\n')
-			{
-				line++;
-				addToken(Token::CRLF);
-				current += 2;
-			}
-			else
-				addToken(Token::WHITESPACE); 
+			addToken(Token::WHITESPACE); 
+			advance(); 
 			break;
 		case '\t': 
 			DEBUG_PRINT("tab case"); 
@@ -90,8 +116,10 @@ void Scanner::scanToken()
 			break;
 		case '\n': 
 			DEBUG_PRINT("LF case"); 
-			line++; 
 			addToken(Token::LF); 
+			advance(); 
+			line++; 
+			DEBUG_PRINT("LF after case"); 
 			break;
 		case 'H': 
 			DEBUG_PRINT("version case"); 
@@ -117,7 +145,7 @@ void Scanner::scanToken()
 	}
 	if (start == current)
 		advance();
-	if (line > 1 && mappedTokens[line].size() == 1 && mappedTokens[line].back().getType() == Token::CRLF)
+	if (isBody())
 		body();
 }
 
@@ -129,12 +157,16 @@ void Scanner::addToken(Token::TokenType type)
 void Scanner::addToken(Token::TokenType type, std::string literal)
 {
 	std::string text = source.substr(start, current - start);
+	DEBUG_PRINT("here1");
 	mappedTokens[line].push_back(Token(type, text, literal, line));
+	DEBUG_PRINT("here2");
 }
 
 void Scanner::addToken(Token::TokenType type, std::string text, std::string literal)
 {
+	DEBUG_PRINT("here3");
 	mappedTokens[line].push_back(Token(type, text, literal, line));
+	DEBUG_PRINT("here4");
 }
 
 bool Scanner::version()
@@ -151,12 +183,8 @@ bool Scanner::version()
 		return (false);
 	if (!std::isdigit(peek(7))) 
 		return (false);
-	if (peek(8) == SPACE || peek(8) == CR)
-		;
-	else 
-		return (false);
-	current += 9;
-	std::string value = source.substr(start + 5, (current - 1) - start);
+	current += 8;
+	std::string value = source.substr(start + 5, 3);
 	addToken(Token::VERSION, value);
 	return (true);
 }
