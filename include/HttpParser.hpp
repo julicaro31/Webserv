@@ -10,6 +10,7 @@ class ConfigBlock;
 #include "Scanner.hpp"
 #include <ostream>
 #include <iostream>
+#include <Logger.hpp>
 
 class HttpParser
 {

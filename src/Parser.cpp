@@ -144,7 +144,7 @@ bool Parser::eof(void)
 
 void Parser::error(int line, std::string found, std::string expected)
 {
-	std::cerr << "On line: " << line << " found \"" << found << "\" token, expected \"" << expected << "\"" << std::endl;
+	Logger::log(ERROR, "On line: " + std::to_string(line) + " found \"" + found + "\" token, expected \"" + expected + "\"");
 }
 
 Parser::Parser(std::vector<Token> tokens)

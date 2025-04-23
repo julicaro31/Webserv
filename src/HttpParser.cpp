@@ -1,4 +1,5 @@
 #include "HttpParser.hpp"
+#include "Logger.hpp"
 #include "Request.hpp"
 #include <unordered_map>
 #include <Parser.hpp>
@@ -12,10 +13,10 @@ std::vector<Token> HttpParser::parseRequest(std::string request)
 	std::vector<Token> tokens = HttpParser::vectorizeTokens(mappedTokens);
 	Parser parser = Parser(tokens);
 	if (parser.httpMessage())
-		DEBUG_PRINT("correct message\n");
+		Logger::log(INFO, "correct HTTP request received");
 	else
 	{ 
-		DEBUG_PRINT("wrongly formatted message");
+		Logger::log(ERROR, "wrongly formatted HTTP request received");
 		throw "HTTP Request not correctly formated";
 	}
 	return (tokens);
@@ -44,5 +45,5 @@ void HttpParser::error(int line, std::string message)
 
 void HttpParser::report(int line, std::string location, std::string message)
 {
-	std::cerr << "Line: " << line << " Error:" << location << ":" << message << std::endl;
+	Logger::log(ERROR, "Line: " + std::to_string(line) + " Error: " + location + ":" + message);
 }

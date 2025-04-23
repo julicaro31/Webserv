@@ -3,6 +3,7 @@
 
 #include "Token.hpp"
 #include <vector>
+#include "Logger.hpp"
 
 class Parser {
 public:
