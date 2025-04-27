@@ -86,7 +86,7 @@ void Response::handleRequest()
 		// Handle CGI request if available
 	}
 
-	if (_accept != "text/html" || _accept != "*/*")
+	if (_accept != "text/html" && _accept != "*/*")
 	{
 		return handleResponseError(406);
 	}
@@ -144,7 +144,8 @@ const std::string Response::getFileContent(const std::string &fullPath)
 
 const std::string &Response::getHeaderValue(const std::string &headerName)
 {
-	std::unordered_map<std::string, std::string>::iterator it = _request.getHeaders().find(headerName);
+	std::unordered_map<std::string, std::string> headers = _request.getHeaders();
+	std::unordered_map<std::string, std::string>::iterator it = headers.find(headerName);
 
 	if (it == _request.getHeaders().end())
 	{
@@ -409,7 +410,7 @@ void Response::handleDeletion(const std::string &path)
 // A method to test the response, must delete later
 void testResponse(const std::string &uri, const Server &server)
 {
-	Request request(Method::GET, 1.1, uri, {{"Client Host", "client_host"}}, "");
+	Request request(Method::GET, 1.1, uri, {{"Host", "client_host"}}, "");
 
 	Response response(request, server);
 	response.handleRequest();
