@@ -24,6 +24,8 @@ std::unordered_map<int, std::vector<Token>> Scanner::scanTokens(void)
 		std::vector<Token> last = mappedTokens[line];
 		if (!last.empty())
 			DEBUG_PRINT(Token::tokenToString(last.back()));
+		else 
+			DEBUG_PRINT("\n\nlast token is empty!\n\n");
 	}
 	start = current;
 	addToken(Token::END_OF_FILE, "", "");
@@ -46,7 +48,7 @@ bool Scanner::isBody()
 		DEBUG_PRINT("in isBody() line == 2");
 		previousLine = mappedTokens[line - 1];
 		previousType = previousLine.back().getType();
-		if ((previousType == Token::LF || previousType == Token::CRLF) && !header())
+		if ((previousType == Token::LF || previousType == Token::CRLF))
 			return (true);
 	}
 	if (line > 2)
@@ -146,17 +148,12 @@ void Scanner::scanToken()
 			[[fallthrough]];
 	default:
 	DEBUG_PRINT("default case");
-		if (isBody())
+		if (header()) 
+			break;
+		else if (isBody())
 			body();
-		else if (std::isalpha(c))
-		{
-			if (header()) 
-				break;
-			else
-				identifier();
-		}
 		else
-			HttpParser::error(line, "Unexpected character.");
+			identifier();
 	}
 	if (start == current)
 		advance();
