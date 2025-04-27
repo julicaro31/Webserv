@@ -18,6 +18,7 @@ FILES	:=	parsing_helper/ParsingHelper \
 			Token \
 			debug \
 			Logger \
+			Response \
 			Request \
 			Parser \
 			main
