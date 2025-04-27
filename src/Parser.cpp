@@ -91,7 +91,9 @@ bool Parser::httpVersion(void)
 
 bool Parser::crlf(void)
 {
-	if (tokens[current].getType() == Token::LF || tokens[current].getType() == Token::CRLF)
+	Token::TokenType type = tokens[current].getType();
+
+	if (type == Token::LF || type == Token::CRLF)
 		current++;
 	else
 	{
@@ -116,8 +118,17 @@ bool Parser::fieldLine(void)
 
 bool Parser::messageBody(void)
 {
-	if (tokens[current].getType() == Token::BODY)
+	Token::TokenType type = tokens[current].getType();
+
+	while (type == Token::CRLF || type == Token::LF)
+	{
 		current++;
+		type = tokens[current].getType();
+	}
+	if (type == Token::BODY)
+		current++;
+	else if (type == Token::END_OF_FILE)
+		return (true);
 	else
 	{
 		Parser::error(tokens[current].getLine(), 
@@ -130,7 +141,14 @@ bool Parser::messageBody(void)
 
 bool Parser::eof(void)
 {
-	if (tokens[current].getType() == Token::END_OF_FILE)
+	Token::TokenType type = tokens[current].getType();
+
+	while (type == Token::CRLF || type == Token::LF)
+	{
+		current++;
+		type = tokens[current].getType();
+	}
+	if (type == Token::END_OF_FILE)
 		current++;
 	else
 	{

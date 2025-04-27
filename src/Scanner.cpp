@@ -99,8 +99,14 @@ void Scanner::scanToken()
 			break;
 		case '\r': 
 			DEBUG_PRINT("CR case");
-			addToken(Token::WHITESPACE); 
-			advance(); 
+			advance();
+			if (peek() == '\n')
+			{
+				addToken(Token::CRLF);
+				advance();
+			}
+			else
+				addToken(Token::WHITESPACE);
 			break;
 		case '\t': 
 			DEBUG_PRINT("tab case"); 
@@ -257,7 +263,7 @@ bool Scanner::header()
 	if (peek(i) != ':' || peek(i + 1) != CR)
 		return (false);
 	else ++i;
-	while (peek(i) != '\n' && !isAtEnd(i))
+	while (peek(i) != '\n' && peek(i) != '\r' && !isAtEnd(i))
 		++i;
 	if (isAtEnd(i))
 		return (false);

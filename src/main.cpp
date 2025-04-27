@@ -20,7 +20,7 @@ int main(int ac, char *argv[])
 	if (ac == 2)
 	{
 		Logger::log(INFO, "Parsing configuration file...");
-		std::string line = "GET /index.html HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n";
+		std::string line = "GET /index.html HTTP/1.0\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n";
 		try
 		{
 			 tokens = HttpParser::parseRequest(line);

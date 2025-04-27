@@ -8,7 +8,7 @@ std::string Token::tokenTypeToString(Token::TokenType tokenType)
         {Token::SINGLE_SPACE, "SINGLE_SPACE"},
         {Token::CR, "CR"},
         {Token::LF, "LF"},
-        {Token::CRLF, "CRLF"},
+        {Token::CRLF, "CCRLF"},
         {Token::IDENTIFIER, "IDENTIFIER"},
         {Token::WHITESPACE, "WHITESPACE"},
         {Token::BODY, "BODY"},
