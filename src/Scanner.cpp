@@ -36,6 +36,8 @@ bool Scanner::isBody()
 {
 	std::vector<Token> previousLine;
 	std::vector<Token> penultimateLine;
+	Token::TokenType previousType;
+	Token::TokenType penultimateType;
 	int previousLineSize;
 
 	DEBUG_PRINT("in isBody()");
@@ -43,8 +45,8 @@ bool Scanner::isBody()
 	{
 		DEBUG_PRINT("in isBody() line == 2");
 		previousLine = mappedTokens[line - 1];
-	
-		if (previousLine.back().getType() == Token::LF && !header())
+		previousType = previousLine.back().getType();
+		if ((previousType == Token::LF || previousType == Token::CRLF) && !header())
 			return (true);
 	}
 	if (line > 2)
@@ -54,12 +56,14 @@ bool Scanner::isBody()
 		penultimateLine = mappedTokens[line - 2];
 		previousLineSize = previousLine.size();
 
-
+		previousType = previousLine.back().getType();
+		penultimateType = penultimateLine.back().getType();
 		if (previousLineSize == 1 && 
-			previousLine.back().getType() == Token::LF &&
-			penultimateLine.back().getType() == Token::LF)
+			(previousType == Token::LF || previousType == Token::CRLF) &&
+			(penultimateType == Token::LF || penultimateType == Token::CRLF))
 			return (true);
 	}
+	DEBUG_PRINT("isBody() == false");
 	return (false);
 }
 
@@ -67,8 +71,7 @@ void Scanner::scanToken()
 {
 	char c = peek();
 
-	DEBUG_PRINT("current token: " + std::to_string(c));
-	DEBUG_PRINT("peek() == " + std::to_string(peek()));
+	DEBUG_PRINT("peek() == " + std::string(1, peek()));
 	DEBUG_PRINT("int(peek()) == " + std::to_string(int(peek())));
 	switch (c){
 		case '*': 
@@ -104,6 +107,7 @@ void Scanner::scanToken()
 			{
 				addToken(Token::CRLF);
 				advance();
+				line++;
 			}
 			else
 				addToken(Token::WHITESPACE);
@@ -142,7 +146,9 @@ void Scanner::scanToken()
 			[[fallthrough]];
 	default:
 	DEBUG_PRINT("default case");
-		if (std::isalpha(c))
+		if (isBody())
+			body();
+		else if (std::isalpha(c))
 		{
 			if (header()) 
 				break;
@@ -154,8 +160,6 @@ void Scanner::scanToken()
 	}
 	if (start == current)
 		advance();
-	if (isBody())
-		body();
 }
 
 void Scanner::addToken(Token::TokenType type)
@@ -166,16 +170,12 @@ void Scanner::addToken(Token::TokenType type)
 void Scanner::addToken(Token::TokenType type, std::string literal)
 {
 	std::string text = source.substr(start, current - start);
-	DEBUG_PRINT("here1");
 	mappedTokens[line].push_back(Token(type, text, literal, line));
-	DEBUG_PRINT("here2");
 }
 
 void Scanner::addToken(Token::TokenType type, std::string text, std::string literal)
 {
-	DEBUG_PRINT("here3");
 	mappedTokens[line].push_back(Token(type, text, literal, line));
-	DEBUG_PRINT("here4");
 }
 
 bool Scanner::version()

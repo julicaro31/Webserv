@@ -12,6 +12,10 @@ std::vector<Token> HttpParser::parseRequest(std::string request)
 	std::unordered_map<int, std::vector<Token>> mappedTokens = scanner.scanTokens();
 	std::vector<Token> tokens = HttpParser::vectorizeTokens(mappedTokens);
 	Parser parser = Parser(tokens);
+	for (auto token:tokens)
+	{
+		std::cout << token.toString() << std::endl;
+	}
 	if (parser.httpMessage())
 		Logger::log(INFO, "correct HTTP request received");
 	else
