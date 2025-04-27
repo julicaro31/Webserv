@@ -4,10 +4,10 @@
 /// @brief Request's methods.
 enum class Method
 {
+	NONE,
 	GET,
 	POST,
 	DELETE,
-	NONE
 };
 
 #endif
