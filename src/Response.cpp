@@ -64,6 +64,8 @@ void Response::setAccept()
 	}
 }
 
+Response::~Response(){}
+
 // Sets the status code and msg response to a Get, Post or Delete request
 void Response::handleRequest()
 {

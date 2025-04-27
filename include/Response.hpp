@@ -13,6 +13,7 @@ class Response
 {
 public:
 	Response(const Request &request, const Server &server);
+	~Response();
 
 	void handleRequest();
 	int getStatus() const;
@@ -92,6 +93,9 @@ private:
 			{".jpeg", "image/jpeg"},
 			{".png", "image/png"},
 	};
+
+	Response(const Response &response) = delete;
+	const Response &operator=(const Response &response) = delete;
 };
 
 void testResponse(Request request, const Server &server);
