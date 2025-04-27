@@ -1,0 +1,5 @@
+GET /search?q=chatgpt&lang=en HTTP/1.1
+Host: example.com
+User-Agent: Mozilla/5.0
+Accept: application/json
+

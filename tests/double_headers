@@ -1,0 +1,6 @@
+GET /index.html HTTP/1.1
+Host: example.com
+Host: test.com
+User-Agent: Mozilla/5.0
+Accept: text/html
+

@@ -1,12 +1,16 @@
 #include <iostream>
+#include "HttpParser.hpp"
 #include "ParsingHelper.hpp"
 #include "ConfigBlock.hpp"
 #include "Server.hpp"
 #include "ServerManager.hpp"
 #include "Logger.hpp"
+#include "Request.hpp"
+#include "debug.hpp"
 
 int main(int ac, char *argv[])
 {
+	std::vector<Token> tokens;
 	Logger::init("logs.log");
 	if (ac < 2)
 	{
@@ -16,7 +20,21 @@ int main(int ac, char *argv[])
 	if (ac == 2)
 	{
 		Logger::log(INFO, "Parsing configuration file...");
-		// Parse and print the configuration file.
+		std::string line = "POST /api/login HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n{ \"username\": \"user123\", \"password\": \"pass123\"}\r\n";
+		try
+		{
+			 tokens = HttpParser::parseRequest(line);
+		} 
+		catch (const char* exception)
+		{
+			std::cerr << "Error: " << exception << std::endl;
+		}
+		catch (...)
+		{
+			std::cerr << "Unknown error" << std::endl;
+		}
+		Request reqst = Request(tokens);
+		DEBUG_PRINT(Request::requestToString(reqst));
 		try
 		{
 			std::string filePath(argv[1]);
@@ -32,6 +50,18 @@ int main(int ac, char *argv[])
 		{
 			std::cerr << e.what() << '\n';
 		}
+	}
+	else if (ac == 3)
+	{
+		std::ifstream file(argv[2]);
+		if (!file.is_open()) {
+			std::cerr << "Error opening file: " << argv[2] << std::endl;
+			return -1;
+		}
+		std::stringstream buffer;
+		buffer << file.rdbuf();
+		std::string content = buffer.str();
+		HttpParser::parseRequest(content);
 	}
 	else
 	{
