@@ -1,3 +1,5 @@
 webserv
+cmake
+cmake/*
 obj
 *.log

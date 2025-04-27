@@ -13,8 +13,14 @@ FILES	:=	parsing_helper/ParsingHelper \
 			configuration_file/ConfigBlock \
 			configuration_file/Directives \
 			Server ServerManager \
+			HttpParser \
+			Scanner \
+			Token \
+			debug \
 			Logger \
 			Response \
+			Request \
+			Parser \
 			main
 
 SRCS	:= $(addprefix ${SRC_DIR}/,$(FILES:=.cpp))
@@ -23,6 +29,9 @@ OBJS	:= $(addprefix $(OBJ_DIR)/,$(FILES:=.o))
 
 
 all: $(NAME)
+
+debug: FLAGS += -DDEBUG_MACRO -g
+debug: fclean $(NAME)
 
 $(NAME): $(OBJ_DIR) $(OBJS) $(HDRS)
 	$(CC) $(OBJS) $(FLAGS) -o $(NAME)
