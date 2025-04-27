@@ -347,7 +347,7 @@ void Response::handlePostRequest()
 	try
 	{
 		std::string contentType = getHeaderValue("Content-Type");
-		if (contentType != "text/html" || contentType != "*/*")
+		if (contentType != "text/html" && contentType != "*/*")
 		{
 			return handleResponseError(415);
 		}
