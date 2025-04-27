@@ -94,6 +94,6 @@ private:
 	};
 };
 
-void testResponse(const std::string &uri, const Server &server);
+void testResponse(Request request, const Server &server);
 
 #endif

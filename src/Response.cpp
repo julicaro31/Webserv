@@ -346,7 +346,7 @@ void Response::handlePostRequest()
 	}
 	try
 	{
-		std::string contentType = getHeaderValue("Content-Type");
+		std::string contentType = getHeaderValue("Accept");
 		if (contentType != "text/html" && contentType != "*/*")
 		{
 			return handleResponseError(415);
@@ -408,10 +408,8 @@ void Response::handleDeletion(const std::string &path)
 }
 
 // A method to test the response, must delete later
-void testResponse(const std::string &uri, const Server &server)
+void testResponse(Request request, const Server &server)
 {
-	Request request(Method::GET, 1.1, uri, {{"Host", "client_host"}}, "");
-
 	Response response(request, server);
 	response.handleRequest();
 

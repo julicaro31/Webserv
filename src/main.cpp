@@ -7,6 +7,7 @@
 #include "Logger.hpp"
 #include "Request.hpp"
 #include "debug.hpp"
+#include "Response.hpp"
 
 int main(int ac, char *argv[])
 {
@@ -20,7 +21,7 @@ int main(int ac, char *argv[])
 	if (ac == 2)
 	{
 		Logger::log(INFO, "Parsing configuration file...");
-		std::string line = "POST /api/login HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n{ \"username\": \"user123\", \"password\": \"pass123\"}\r\n";
+		std::string line = "DELETE /hello.txt HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n{ \"username\": \"user123\", \"password\": \"pass123\"}\r\n";
 		try
 		{
 			tokens = HttpParser::parseRequest(line);
@@ -45,6 +46,13 @@ int main(int ac, char *argv[])
 				serverManager.addServer(*it);
 			}
 			serverManager.printServers();
+
+			if (serverManager.getServers().size() > 0)
+			{
+				// TEST RESPONSE WITH FIRST SERVER (example)
+				Request r(tokens);
+				testResponse(r, *serverManager.getServers()[0]);
+			}
 		}
 		catch (const std::exception &e)
 		{
