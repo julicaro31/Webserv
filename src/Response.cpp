@@ -9,9 +9,9 @@ Response::Response(const Request &request, const Server &server) : _request(requ
 
 	for (std::vector<Location>::const_iterator location = locations.begin(); location != locations.end(); location++)
 	{
-		if (_request.uri.find(location->uri) == 0)
+		if (_request.getUri().find(location->uri) == 0)
 		{
-			if (location->modifier == "=" && location->uri == _request.uri)
+			if (location->modifier == "=" && location->uri == _request.getUri())
 			{
 				bestMatch = &(*location);
 				break;
@@ -76,7 +76,7 @@ void Response::handleRequest()
 		return handleResponseError(400);
 	}
 
-	if (_request.body.size() > _maxBodySize)
+	if (_request.getBody().size() > _maxBodySize)
 	{
 		return handleResponseError(413);
 	}
@@ -96,15 +96,15 @@ void Response::handleRequest()
 		return handleRedirection();
 	}
 
-	if (_request.method == Method::GET)
+	if (_request.getMethod() == Method::GET)
 	{
 		handleGetRequest();
 	}
-	else if (_request.method == Method::POST)
+	else if (_request.getMethod() == Method::POST)
 	{
 		handlePostRequest();
 	}
-	else if (_request.method == Method::DELETE)
+	else if (_request.getMethod() == Method::DELETE)
 	{
 		handleDeleteRequest();
 	}
@@ -144,9 +144,9 @@ const std::string Response::getFileContent(const std::string &fullPath)
 
 const std::string &Response::getHeaderValue(const std::string &headerName)
 {
-	std::unordered_map<std::string, std::string>::iterator it = _request.headers.find(headerName);
+	std::unordered_map<std::string, std::string>::iterator it = _request.getHeaders().find(headerName);
 
-	if (it == _request.headers.end())
+	if (it == _request.getHeaders().end())
 	{
 		throw std::runtime_error("Missing " + headerName);
 	}
@@ -239,9 +239,9 @@ void Response::handleGetRequest()
 		return handleResponseError(405);
 	}
 
-	if (isFile(_request.uri))
+	if (isFile(_request.getUri()))
 	{
-		handleFileServing(_root + _request.uri);
+		handleFileServing(_root + _request.getUri());
 	}
 	else
 	{
@@ -255,7 +255,7 @@ void Response::handleGetRequest()
 		}
 		if (_autoIndex)
 		{
-			handleAutoIndex(_request.uri);
+			handleAutoIndex(_request.getUri());
 		}
 		else
 		{
@@ -339,7 +339,7 @@ void Response::handleAutoIndex(const std::string &dirPath)
 
 void Response::handlePostRequest()
 {
-	if (!isAllowed(Method::POST, _clientHost) || !isFile(_request.uri))
+	if (!isAllowed(Method::POST, _clientHost) || !isFile(_request.getUri()))
 	{
 		return handleResponseError(405);
 	}
@@ -361,8 +361,8 @@ void Response::handlePostRequest()
 
 void Response::handleUpload()
 {
-	std::ofstream out(getFullPath(_root + _request.uri), std::ios::binary);
-	out.write(_request.body.data(), _request.body.size());
+	std::ofstream out(getFullPath(_root + _request.getUri()), std::ios::binary);
+	out.write(_request.getBody().data(), _request.getBody().size());
 	out.close();
 
 	_status = 200;
@@ -375,7 +375,7 @@ void Response::handleDeleteRequest()
 	{
 		return handleResponseError(405);
 	}
-	return handleDeletion(_root + _request.uri);
+	return handleDeletion(_root + _request.getUri());
 }
 
 void Response::handleDeletion(const std::string &path)
