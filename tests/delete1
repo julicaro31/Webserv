@@ -1,5 +1,0 @@
-DELETE /api/user/123 HTTP/1.1
-Host: example.com
-Authorization: Bearer abc123xyz
-Accept: application/json
-

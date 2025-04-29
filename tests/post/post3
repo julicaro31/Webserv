@@ -1,5 +1,6 @@
 POST /upload HTTP/1.1
-Host: example.com
+Host: lol.com
+Accept: text/html
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary
 Content-Length: 138
 
