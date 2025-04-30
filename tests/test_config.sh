@@ -1,0 +1,51 @@
+#!/bin/bash
+
+
+
+exe="./../webserv"
+
+incorrect_folder="configs/incorrect"
+correct_folder="configs/correct"
+incorrects=($incorrect_folder/*)
+corrects=($correct_folder/*)
+extra_arg="start"
+test_exit_code=0
+
+#prepare executable
+echo "preparing executable for testing"
+(cd ../ && make)
+echo 
+
+counter=0
+for i in "${incorrects[@]}"
+do
+    echo -n "$counter: $(basename $i)"
+
+    args="${extra_arg} ${i}"
+    timeout 1 $exe $args &> /dev/null
+    exit_code=$(echo $?)
+    
+    if [ $exit_code == 124 ]; then
+        echo " ❌"
+        test_exit_code=1
+    else
+        echo " ✅" 
+    fi
+    counter=$((counter+1))
+done
+
+# for i in "${corrects[@]}"
+# do
+#     echo "$i"
+# done
+
+
+
+echo
+if [ $test_exit_code == 1 ]; then
+    echo "Not all tests passed!"
+else
+    echo "All tests passed!" 
+fi
+
+exit $test_exit_code
