@@ -1,7 +1,11 @@
 #include <memory>
+#include "Response.hpp"
+#include "HttpParser.hpp"
+#include <Token.hpp>
 #include "ServerManager.hpp"
 #include <algorithm>
 #include "Logger.hpp"
+#include "Request.hpp"
 
 ServerManager::ServerManager()
 {
@@ -244,15 +248,39 @@ void ServerManager::handleClientRequest(int clientFD)
 	_clientActivity[clientFD] = time(NULL); // Update activity timestamp
 
 	Logger::log(INFO, "[ServerManager] Received from client FD " + std::to_string(clientFD) + '\n' + buffer);
-
-	// Respond with a simple "Hello, World!" message
-	const char *body = "Hello, World!";
-	std::string response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(strlen(body)) + "\r\n" + "Connection: keep-alive" + "\r\n\r\n" + body;
-	if (send(clientFD, response.c_str(), response.length(), 0) < 0)
+	
+	std::vector<Token> tokens;
+	try
 	{
-		perror("[ServerManager] Failed to send response");
-		Logger::log(ERROR, "[ServerManager] Failed to send response");
-		removeClient(clientFD);
+		tokens = HttpParser::parseRequest(buffer);
+	}
+	catch (const char *exception)
+	{
+		std::cerr << "Error: " << exception << std::endl;
+	}
+	catch (...)
+	{
+		std::cerr << "Unknown error" << std::endl;
+	}
+
+	Request request = Request(tokens);
+	try
+	{
+		Response response(request, *getServers()[0]);
+		response.handleRequest();
+
+		if (send(clientFD, response.getMsg().c_str(), response.getMsg().length(), 0) < 0)
+		{
+			perror("[ServerManager] Failed to send response");
+			Logger::log(ERROR, "[ServerManager] Failed to send response");
+			removeClient(clientFD);
+		}
+		else
+			Logger::log(INFO, "[ServerManager] succesfuly send response");
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << e.what() << '\n';
 	}
 }
 
