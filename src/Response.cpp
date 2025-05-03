@@ -48,6 +48,9 @@ Response::Response(const Request &request, const Server &server) : _request(requ
 		_limitExcepts = bestMatch->limitExcepts;
 	}
 }
+
+Response::~Response() {}
+
 int Response::getStatus() const { return _status; }
 
 std::string Response::getMsg() const { return _msg; }
@@ -56,15 +59,27 @@ void Response::setAccept()
 {
 	try
 	{
-		_accept = getHeaderValue("Accept");
+		std::string accept = getHeaderValue("Accept");
+		_accept = ParsingHelper::split(accept, ',');
 	}
 	catch (const std::exception &e)
 	{
-		_accept = "*/*";
+		_accept = {"*/*"};
 	}
 }
 
-Response::~Response(){}
+bool Response::isAccepted()
+{
+	for (std::vector<std::string>::iterator it = _accept.begin(); it != _accept.end(); it++)
+	{
+		std::vector<std::string> contentTypeInfo = ParsingHelper::split(*it, ';');
+		if (!contentTypeInfo.empty() && (contentTypeInfo[0] == "text/html" || contentTypeInfo[0] == "*/*"))
+		{
+			return true;
+		}
+	}
+	return false;
+}
 
 // Sets the status code and msg response to a Get, Post or Delete request
 void Response::handleRequest()
@@ -88,7 +103,7 @@ void Response::handleRequest()
 		// Handle CGI request if available
 	}
 
-	if (_accept != "text/html" && _accept != "*/*")
+	if (!isAccepted())
 	{
 		return handleResponseError(406);
 	}
@@ -144,7 +159,7 @@ const std::string Response::getFileContent(const std::string &fullPath)
 	return ss.str();
 }
 
-const std::string &Response::getHeaderValue(const std::string &headerName)
+const std::string Response::getHeaderValue(const std::string &headerName)
 {
 	std::unordered_map<std::string, std::string> headers = _request.getHeaders();
 	std::unordered_map<std::string, std::string>::iterator it = headers.find(headerName);
@@ -407,14 +422,4 @@ void Response::handleDeletion(const std::string &path)
 	{
 		handleResponseError(500);
 	}
-}
-
-// A method to test the response, must delete later
-void testResponse(Request request, const Server &server)
-{
-	Response response(request, server);
-	response.handleRequest();
-
-	std::cout << "Status: " << std::to_string(response.getStatus()) << std::endl
-			  << response.getMsg() << std::endl;
 }

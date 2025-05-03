@@ -37,7 +37,6 @@ int main(int ac, char *argv[])
 		{
 			serverManager.addServer(*it);
 		}
-		serverManager.printServers();
 		
 		Logger::log(INFO, "finished configuration");
 		if (serverManager.getServers().size() > 0)

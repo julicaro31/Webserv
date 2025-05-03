@@ -24,15 +24,16 @@ private:
 	std::string _msg;
 	Request _request;
 	std::string _clientHost;
-	std::string _accept;
+	std::vector<std::string> _accept;
 
 	void setAccept();
+	bool isAccepted();
 
 	bool isCGI() const;
 	bool isFile(const std::string &uri) const;
 	const std::string getFullPath(const std::string &path);
 	const std::string getFileContent(const std::string &fullPath);
-	const std::string &getHeaderValue(const std::string &headerName);
+	const std::string getHeaderValue(const std::string &headerName);
 
 	// Error msgs
 	void handleResponseError(int status);
@@ -97,7 +98,5 @@ private:
 	Response(const Response &response) = delete;
 	const Response &operator=(const Response &response) = delete;
 };
-
-void testResponse(Request request, const Server &server);
 
 #endif
