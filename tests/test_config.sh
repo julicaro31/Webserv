@@ -1,7 +1,5 @@
 #!/bin/bash
 
-
-
 exe="./../webserv"
 
 incorrect_folder="configs/incorrect"
@@ -12,10 +10,10 @@ extra_arg="start"
 test_exit_code=0
 
 #prepare executable
-echo "preparing executable for testing"
+echo -e "preparing executable for testing\n"
 (cd ../ && make)
-echo 
 
+echo -e "\nincorrect config file tests\n"
 counter=0
 for i in "${incorrects[@]}"
 do
@@ -34,10 +32,24 @@ do
     counter=$((counter+1))
 done
 
-# for i in "${corrects[@]}"
-# do
-#     echo "$i"
-# done
+echo -e "\ncorrect config file tests\n"
+counter=0
+for i in "${corrects[@]}"
+do
+    echo -n "$counter: $(basename $i)"
+
+    args="${extra_arg} ${i}"
+    timeout 1 $exe $args &> /dev/null
+    exit_code=$(echo $?)
+    
+    if [ $exit_code != 124 ]; then
+        echo " ❌"
+        test_exit_code=1
+    else
+        echo " ✅" 
+    fi
+    counter=$((counter+1))
+done
 
 
 
