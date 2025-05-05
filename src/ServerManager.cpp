@@ -266,7 +266,8 @@ void ServerManager::handleClientRequest(int clientFD)
 	Request request = Request(tokens);
 	try
 	{
-		Response response(request, *getServers()[0]);
+		int serverFD = _clientToServer[clientFD]->getSocketFD();
+		Response response(request, *getServerByFileDescriptor(serverFD));
 		response.handleRequest();
 
 		if (send(clientFD, response.getMsg().c_str(), response.getMsg().length(), 0) < 0)
