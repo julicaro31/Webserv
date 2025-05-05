@@ -1,4 +1,5 @@
 #include "ServerManager.hpp"
+#include "debug.hpp"
 
 int main(int ac, char *argv[])
 {
@@ -9,8 +10,8 @@ int main(int ac, char *argv[])
 		return -1;
 	}
 
-	std::string filePath = ac == 1 ? "configs/correct/default.conf" : argv[1];
-	
+	std::string filePath = ac == 1 ? "config_files/default.conf" : argv[1];
+
 	std::vector<ServerConfig> serversConfiguration;
 	Logger::log(INFO, "Starting server...");
 	Logger::log(INFO, "Setting up configuration");
