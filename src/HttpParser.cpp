@@ -12,14 +12,14 @@ std::vector<Token> HttpParser::parseRequest(std::string request)
 	std::unordered_map<int, std::vector<Token>> mappedTokens = scanner.scanTokens();
 	std::vector<Token> tokens = HttpParser::vectorizeTokens(mappedTokens);
 	Parser parser = Parser(tokens);
-	for (auto token:tokens)
-	{
-		std::cout << token.toString() << std::endl;
-	}
+	// for (auto token:tokens)
+	// {
+	// 	std::cout << token.toString() << std::endl;
+	// }
 	if (parser.httpMessage())
 		Logger::log(INFO, "correct HTTP request received");
 	else
-	{ 
+	{
 		Logger::log(ERROR, "wrongly formatted HTTP request received");
 		throw "HTTP Request not correctly formated";
 	}
@@ -34,7 +34,7 @@ std::vector<Token> HttpParser::vectorizeTokens(std::unordered_map<int, std::vect
 	for (int i = 0; i <= size; ++i)
 	{
 		std::vector<Token> temp = tokens[i];
-		for (auto it:temp)
+		for (auto it : temp)
 		{
 			tokenVector.push_back(it);
 		}
