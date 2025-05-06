@@ -1,2 +1,4 @@
-http://localhost:7000
+http://localhost:8080/test_stress POST < utils/hello.html
+http://localhost:8080/test_stress POST < utils/hello.txt
+http://localhost:8080/test_stress POST < utils/hello.json
 
