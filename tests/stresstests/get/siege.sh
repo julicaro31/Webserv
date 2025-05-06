@@ -24,3 +24,10 @@ for conc in ${conditions[@]}; do
     done
 done
 
+if [[ $test_exit_code != 0 ]]; then
+    echo "Not all tests passed! ❌"
+else
+    echo "All tests passed! ✅"
+fi
+
+exit $test_exit_code
