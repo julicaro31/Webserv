@@ -20,7 +20,7 @@
 
 class CgiHandler {
 public:
-    static std::string execute(const Request& request, const Server& server);
+    static std::string execute(std::string& scriptPath);
 };
 
 #endif

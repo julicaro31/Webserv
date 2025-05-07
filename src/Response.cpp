@@ -1,4 +1,6 @@
 #include "Response.hpp"
+#include "CgiHandler.hpp"
+#include "Logger.hpp"
 
 Response::Response(const Request &request, const Server &server) : _request(request)
 {
@@ -98,10 +100,6 @@ void Response::handleRequest()
 		return handleResponseError(413);
 	}
 
-	if (isCGI())
-	{
-		// Handle CGI request if available
-	}
 
 	if (!isAccepted())
 	{
@@ -113,7 +111,23 @@ void Response::handleRequest()
 		return handleRedirection();
 	}
 
-	if (_request.getMethod() == Method::GET)
+	if (isCGI())
+	{
+		std::string scriptPath = getFullPath(_root + _request.getUri());
+		std::string cgi_content = CgiHandler::execute(scriptPath);
+		Logger::log(INFO, "executing CGI script at " + scriptPath);
+
+		try
+		{
+			_status = 200;
+			_msg = "HTTP/1.1 200 OK\r\nContent-Type: " + getMimeType(_root + _request.getUri()) + "\r\nContent-Length: " + std::to_string(cgi_content.size()) + "\r\n\r\n" + cgi_content;
+		}
+		catch (const std::runtime_error &e)
+		{
+			handleResponseError(500);
+		}
+	}
+	else if (_request.getMethod() == Method::GET)
 	{
 		handleGetRequest();
 	}

@@ -16,8 +16,7 @@
 #include <sys/wait.h>
 
 
-std::string CgiHandler::execute(const Request& request, const Server& server) {
-    std::string scriptPath = server.getRoot();// + request.getPath();
+std::string CgiHandler::execute(std::string &scriptPath) {
     std::string output;
 
     if (access(scriptPath.c_str(), X_OK) != 0) {
