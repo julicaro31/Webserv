@@ -10,9 +10,11 @@
 #include <memory>
 #include <ServerConfig.hpp>
 #include "ParsingHelper.hpp"
+#include <HttpParser.hpp>
 
 #define MAX_CONNECTION 10 // is exceeded, new connections wait in a queue (until accept() is called).
 #define CLIENT_TIMEOUT 15 // disconnect clients that have been inactive, in seconds
+#define MAX_BUFFER_SIZE 4096
 
 class ServerManager
 {
@@ -45,6 +47,7 @@ public:
 	void handleClientRequest(int clientFD);
 	void removeClient(int clientFD);
 	void checkTimeouts();
+	void sendErrorPage(int clientFD, int errorCode);
 };
 
 #endif
