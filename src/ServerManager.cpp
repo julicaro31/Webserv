@@ -169,6 +169,10 @@ void ServerManager::runPoll()
 		int ready = poll(_pollFDs.data(), _pollFDs.size(), 500);
 		if (ready < 0)
 		{
+			if (g_terminate)
+			{
+				return;
+			}
 			perror("poll error");
 			Logger::log(ERROR, "[ServerManager] Poll error");
 			closeFDs();
