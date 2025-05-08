@@ -7,6 +7,8 @@
 #include "Logger.hpp"
 #include "Request.hpp"
 
+volatile sig_atomic_t g_terminate = 0;
+
 ServerManager::ServerManager()
 {
 }
@@ -158,8 +160,10 @@ Server *ServerManager::getServerByFileDescriptor(int fd) const
 void ServerManager::runPoll()
 {
 	Logger::log(INFO, "[ServerManager] Running " + std::to_string(_servers.size()) + " servers...");
-	while (true)
+	while (!g_terminate)
 	{
+		signal(SIGINT, handleSigint);
+
 		checkTimeouts();
 		// Call poll() with a timeout of 500 milliseconds
 		int ready = poll(_pollFDs.data(), _pollFDs.size(), 500);
@@ -167,7 +171,7 @@ void ServerManager::runPoll()
 		{
 			perror("poll error");
 			Logger::log(ERROR, "[ServerManager] Poll error");
-			// need to close all sockets
+			closeFDs();
 			continue;
 		}
 
@@ -248,7 +252,7 @@ void ServerManager::handleClientRequest(int clientFD)
 	_clientActivity[clientFD] = time(NULL); // Update activity timestamp
 
 	Logger::log(INFO, "[ServerManager] Received from client FD " + std::to_string(clientFD) + '\n' + buffer);
-	
+
 	std::vector<Token> tokens;
 	try
 	{
@@ -315,4 +319,31 @@ void ServerManager::checkTimeouts()
 			removeClient(clientFD);
 		}
 	}
+}
+
+void ServerManager::handleSigint(int sig)
+{
+	g_terminate = sig;
+	std::cout << "\nBye!" << std::endl;
+}
+
+void ServerManager::closeFDs()
+{
+	Logger::log(INFO, "[ServerManager] Caught SIGINT. Cleaning up...");
+
+	for (std::map<int, Server *>::iterator it = _clientToServer.begin(); it != _clientToServer.end(); ++it)
+	{
+		int clientFD = it->first;
+		close(clientFD);
+		Logger::log(INFO, "[ServerManager] Closed client FD " + std::to_string(clientFD));
+	}
+
+	for (std::vector<std::unique_ptr<Server>>::iterator it = _servers.begin(); it != _servers.end(); ++it)
+	{
+		int serverFD = (*it)->getSocketFD();
+		close(serverFD);
+		Logger::log(INFO, "[ServerManager] Closed server FD " + std::to_string(serverFD));
+	}
+
+	Logger::log(INFO, "[ServerManager] Shutdown complete.");
 }
