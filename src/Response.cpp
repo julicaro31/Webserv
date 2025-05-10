@@ -256,10 +256,13 @@ void Response::handleGetRequest()
 	{
 		return handleResponseError(405);
 	}
+	
+	std::filesystem::path relativeToRootPath = _request.getUri() != "/" ? std::filesystem::relative(_request.getUri(), _root) : "";
+	std::string path = _root + "/" + relativeToRootPath.string();
 
-	if (isFile(_request.getUri()))
+	if (std::filesystem::is_regular_file(getFullPath(path)))
 	{
-		handleFileServing(_root + _request.getUri());
+		handleFileServing(path);
 	}
 	else
 	{
@@ -273,7 +276,7 @@ void Response::handleGetRequest()
 		}
 		if (_autoIndex)
 		{
-			handleAutoIndex(_request.getUri());
+			handleAutoIndex(path);
 		}
 		else
 		{
@@ -337,10 +340,24 @@ void Response::handleAutoIndex(const std::string &dirPath)
 	std::string fullPath = std::filesystem::current_path().c_str() + dirPath;
 	try
 	{
-		for (const auto &entry : std::filesystem::directory_iterator(fullPath))
+		for (std::filesystem::directory_iterator it(fullPath); it != std::filesystem::directory_iterator(); ++it)
 		{
-			std::string name = entry.path().filename().string();
-			body += "  <li><a href=\"" + name + "\">" + name + "</a></li>\n";
+			std::filesystem::path entryPath = it->path();
+			std::string name = entryPath.filename().string();
+
+			if (std::filesystem::is_directory(entryPath))
+			{
+				name += "/";
+			}
+
+			std::string basePath = dirPath;
+			if (!basePath.empty() && basePath.back() != '/')
+			{
+				basePath += '/';
+			}
+
+			std::string href = basePath + name;
+			body += "  <li><a href=\"" + href + "\">" + name + "</a></li>\n";
 		}
 	}
 	catch (const std::filesystem::filesystem_error &e)
