@@ -256,8 +256,8 @@ void Response::handleGetRequest()
 	{
 		return handleResponseError(405);
 	}
-
-	std::filesystem::path relativeToRootPath = std::filesystem::relative(_request.getUri(), _root);
+	
+	std::filesystem::path relativeToRootPath = _request.getUri() != "/" ? std::filesystem::relative(_request.getUri(), _root) : "";
 	std::string path = _root + "/" + relativeToRootPath.string();
 
 	if (std::filesystem::is_regular_file(getFullPath(path)))
@@ -276,7 +276,7 @@ void Response::handleGetRequest()
 		}
 		if (_autoIndex)
 		{
-			handleAutoIndex(_request.getUri());
+			handleAutoIndex(path);
 		}
 		else
 		{
