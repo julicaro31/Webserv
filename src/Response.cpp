@@ -260,7 +260,12 @@ void Response::handleGetRequest()
 	std::filesystem::path relativeToRootPath = _request.getUri() != "/" ? std::filesystem::relative(_request.getUri(), _root) : "";
 	std::string path = _root + "/" + relativeToRootPath.string();
 
-	if (std::filesystem::is_regular_file(getFullPath(path)))
+	// Check if the path exists
+	if (!std::filesystem::exists(getFullPath(path)))
+	{
+		return handleResponseError(404);
+	}
+	else if (std::filesystem::is_regular_file(getFullPath(path)))
 	{
 		handleFileServing(path);
 	}
