@@ -145,6 +145,16 @@ bool Server::setupSocket()
 		Logger::log(ERROR, "[Server] Socket creation failed");
 		return false;
 	}
+
+	int opt = 1;
+	if (setsockopt(_socketFD, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
+	{
+		perror("[Server] Failed to setsocketopt");
+		Logger::log(ERROR, "[Server] Failed to setsocketopt");
+		close(_socketFD);
+		return false;
+	}
+
 	if (setNonBlocking(_socketFD) == -1)
 	{
 		perror("[Server] Failed to set socket to non-blocking");
@@ -156,7 +166,7 @@ bool Server::setupSocket()
 	struct sockaddr_in _serverAddr;
 	memset(&_serverAddr, 0, sizeof(_serverAddr));
 	_serverAddr.sin_family = AF_INET;
-	_serverAddr.sin_addr.s_addr = INADDR_ANY;
+	_serverAddr.sin_addr.s_addr = inet_addr(_host.c_str());
 	_serverAddr.sin_port = htons(_port);
 
 	if (bind(_socketFD, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) < 0)
@@ -166,7 +176,8 @@ bool Server::setupSocket()
 		close(_socketFD);
 		return false;
 	}
-	if (listen(_socketFD, MAX_CONNECTION) < 0)
+	// The exact value of SOMAXCONN is determined by the system and may vary between Mac and Linux.
+	if (listen(_socketFD, SOMAXCONN) < 0)
 	{
 		perror("[Server] Listen failed");
 		Logger::log(ERROR, "[Server] Listen failed");
