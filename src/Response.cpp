@@ -113,7 +113,15 @@ void Response::handleRequest()
 
 	if (isCGI())
 	{
+        std::cout << "here\n" << std::endl;
 		std::string scriptPath = getFullPath(_root + _request.getUri());
+
+        if (!CgiHandler::isFile(scriptPath))
+            return (handleResponseError(404));
+
+        if (!CgiHandler::isExecutable(scriptPath))
+            return (handleResponseError(403));
+
 		std::string cgi_content = CgiHandler::execute(scriptPath);
 		Logger::log(INFO, "executing CGI script at " + scriptPath);
 

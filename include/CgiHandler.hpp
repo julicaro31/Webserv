@@ -20,6 +20,8 @@
 
 class CgiHandler {
 public:
+    static bool isFile(std::string& scriptPath);
+    static bool isExecutable(std::string& scriptPath);
     static std::string execute(std::string& scriptPath);
 };
 

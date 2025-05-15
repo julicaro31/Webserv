@@ -15,13 +15,18 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 
+bool CgiHandler::isFile(std::string &scriptPath)
+{
+    return (access(scriptPath.c_str(), F_OK) != -1);
+}
+
+bool CgiHandler::isExecutable(std::string &scriptPath)
+{
+    return (access(scriptPath.c_str(), X_OK) != -1);
+}
 
 std::string CgiHandler::execute(std::string &scriptPath) {
     std::string output;
-
-    if (access(scriptPath.c_str(), X_OK) != 0) {
-        return "Status: 404 Not Found\r\n\r\n<h1>404 Not Found</h1>";
-    }
 
     int pipefd[2];
     if (pipe(pipefd) == -1) {
