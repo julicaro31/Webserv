@@ -20,9 +20,18 @@
 
 class CgiHandler {
 public:
-    static bool isFile(std::string& scriptPath);
-    static bool isExecutable(std::string& scriptPath);
     static std::string execute(std::string& scriptPath);
+private:
+    bool isFile(std::string& scriptPath);
+    bool isExecutable(std::string& scriptPath);
+    bool createPipe(void);
+    bool createChild(void);
+    void prepareHandler(std::string& scriptPath);
+    void runChild();
+    void runParent();
+    int pipefd[2];
+    pid_t pid;
+    std::string output
 };
 
 #endif

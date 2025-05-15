@@ -25,20 +25,33 @@ bool CgiHandler::isExecutable(std::string &scriptPath)
     return (access(scriptPath.c_str(), X_OK) != -1);
 }
 
-std::string CgiHandler::execute(std::string &scriptPath) {
-    std::string output;
+bool CgiHandler::createPipe(void)
+{
+    return (pipe(pipefd) == -1)
+}
 
-    int pipefd[2];
-    if (pipe(pipefd) == -1) {
-        return "Status: 500 Internal Server Error\r\n\r\n<h1>500 Internal Server Error</h1>";
-    }
+bool CgiHandler::createChild(void)
+{
+    pid = fork();
+    return (pid != 0 ? false : true);
+}
 
-    pid_t pid = fork();
-    if (pid == -1) {
-        return "Status: 500 Internal Server Error\r\n\r\n<h1>500 Internal Server Error</h1>";
-    }
+void CgiHandler::prepareHandler(std::string &scriptPath)
+{
+    if (!isFile(scriptPath))
+        throw std::filesystem::filesystem_error("file not found");
+    if (!isExecutable(scriptPath))
+        throw std::system_error("file is not executable");
+    if (!createPipe))
+        throw std::runtime_error("failure creating pipe");
+    if (!createChild))
+        throw std::runtime_error("failure creating child");
+}
 
-    if (pid == 0) {
+void CgiHandler::runChild()
+{
+    if (pid == 0)
+    {
         // Child process
         dup2(pipefd[1], STDOUT_FILENO);
         close(pipefd[0]);
@@ -57,8 +70,13 @@ std::string CgiHandler::execute(std::string &scriptPath) {
         execve(scriptPath.c_str(), argv, envp);
 
         exit(1); // if execve fails
-    } else {
-        // Parent process
+    } 
+}
+
+void runParent(void)
+{
+    if (pid != 0) 
+    {
         close(pipefd[1]);
 
         char buffer[4096];
@@ -69,6 +87,12 @@ std::string CgiHandler::execute(std::string &scriptPath) {
         close(pipefd[0]);
         waitpid(pid, NULL, 0);
     }
+}
 
-    return output;
+std::string CgiHandler::execute(std::string &scriptPath)
+{
+    prepareHandler(scriptPath);
+    runChild();
+    runParent();
+    return (output);
 }

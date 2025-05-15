@@ -115,15 +115,27 @@ void Response::handleRequest()
 	{
         std::cout << "here\n" << std::endl;
 		std::string scriptPath = getFullPath(_root + _request.getUri());
-
-        if (!CgiHandler::isFile(scriptPath))
-            return (handleResponseError(404));
-
-        if (!CgiHandler::isExecutable(scriptPath))
-            return (handleResponseError(403));
-
-		std::string cgi_content = CgiHandler::execute(scriptPath);
 		Logger::log(INFO, "executing CGI script at " + scriptPath);
+
+        try
+        {
+            std::string cgi_content = CgiHandler::execute(scriptPath);
+        }
+        catch (std::filesystem::filesystem_error& e)
+        {
+            Logger::log(ERROR, e.what());
+            return (handleResponseError(404));
+        }
+        catch (std::system_error& e)
+        {
+            Logger::log(ERROR, e.what());
+            return (handleResponseError(403));
+        }
+        catch (std::runtime_error &e)
+        {
+            Logger::log(ERROR, e.what());
+            return (handleResponseError(500));
+        }
 
 		try
 		{
