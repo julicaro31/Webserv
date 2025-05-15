@@ -125,6 +125,10 @@ void Response::handleRequest()
 	{
 		handleDeleteRequest();
 	}
+    else if (_request.getMethod() == Method::NONE)
+    {
+        handleResponseError(405);
+    }
 	else
 	{
 		handleResponseError(400);
