@@ -1,6 +1,7 @@
 #include "Response.hpp"
 #include "CgiHandler.hpp"
 #include "Logger.hpp"
+#include <stdexcept>
 
 Response::Response(const Request &request, const Server &server) : _request(request)
 {
@@ -121,12 +122,12 @@ void Response::handleRequest()
         {
             std::string cgi_content = CgiHandler::execute(scriptPath);
         }
-        catch (std::filesystem::filesystem_error& e)
+        catch (std::invalid_argument& e)
         {
             Logger::log(ERROR, e.what());
             return (handleResponseError(404));
         }
-        catch (std::system_error& e)
+        catch (std::logic_error& e)
         {
             Logger::log(ERROR, e.what());
             return (handleResponseError(403));

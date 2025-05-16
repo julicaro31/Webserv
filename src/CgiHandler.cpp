@@ -11,41 +11,49 @@
 /* ************************************************************************** */
 
 #include "CgiHandler.hpp"
+#include <stdexcept>
+#include <string>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <filesystem>
 
-bool CgiHandler::isFile(std::string &scriptPath)
+CgiHandler::CgiHandler(std::string &scriptPath)
 {
-    return (access(scriptPath.c_str(), F_OK) != -1);
+    path = scriptPath;
+    if (!isFile())
+        throw std::invalid_argument("file does not exist");
+    if (!isExecutable())
+        throw std::logic_error("file is not executable");
+    if (!createPipe())
+        throw std::runtime_error("failure creating pipe");
+    if (!createChild())
+        throw std::runtime_error("failure creating child");
 }
 
-bool CgiHandler::isExecutable(std::string &scriptPath)
+CgiHandler::~CgiHandler()
 {
-    return (access(scriptPath.c_str(), X_OK) != -1);
+}
+
+bool CgiHandler::isFile()
+{
+    return (access(path.c_str(), F_OK) != -1);
+}
+
+bool CgiHandler::isExecutable()
+{
+    return (access(path.c_str(), X_OK) != -1);
 }
 
 bool CgiHandler::createPipe(void)
 {
-    return (pipe(pipefd) == -1)
+    return (pipe(pipefd) == -1);
 }
 
 bool CgiHandler::createChild(void)
 {
     pid = fork();
     return (pid != 0 ? false : true);
-}
-
-void CgiHandler::prepareHandler(std::string &scriptPath)
-{
-    if (!isFile(scriptPath))
-        throw std::filesystem::filesystem_error("file not found");
-    if (!isExecutable(scriptPath))
-        throw std::system_error("file is not executable");
-    if (!createPipe))
-        throw std::runtime_error("failure creating pipe");
-    if (!createChild))
-        throw std::runtime_error("failure creating child");
 }
 
 void CgiHandler::runChild()
@@ -66,14 +74,14 @@ void CgiHandler::runChild()
             NULL
         };
 
-        char* argv[] = { (char*)scriptPath.c_str(), NULL };
-        execve(scriptPath.c_str(), argv, envp);
+        char* argv[] = { (char*)path.c_str(), NULL };
+        execve(path.c_str(), argv, envp);
 
         exit(1); // if execve fails
     } 
 }
 
-void runParent(void)
+void CgiHandler::runParent(void)
 {
     if (pid != 0) 
     {
@@ -89,10 +97,15 @@ void runParent(void)
     }
 }
 
+std::string CgiHandler::getOutput() const
+{
+    return (output);
+}
+
 std::string CgiHandler::execute(std::string &scriptPath)
 {
-    prepareHandler(scriptPath);
-    runChild();
-    runParent();
-    return (output);
+    CgiHandler cgiHandler(scriptPath);
+    cgiHandler.runChild();
+    cgiHandler.runParent();
+    return (cgiHandler.getOutput());
 }
