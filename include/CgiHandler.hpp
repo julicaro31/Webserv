@@ -24,14 +24,15 @@ public:
 private:
     CgiHandler(std::string& scriptPath);
     ~CgiHandler();
-    bool isFile();
-    bool isExecutable();
-    bool createPipe(void);
-    bool createChild(void);
-    void prepareHandler();
+    void cleanup();
+    std::string getOutput() const;
+    void isFile();
+    void isExecutable();
+    void createPipe(void);
+    void createChild(void);
+    void run();
     void runChild();
     void runParent();
-    std::string getOutput() const;
     int pipefd[2];
     pid_t pid;
     std::string output;

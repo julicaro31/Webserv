@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "CgiHandler.hpp"
+#include <csignal>
+#include <exception>
 #include <stdexcept>
 #include <string>
 #include <unistd.h>
@@ -18,83 +20,44 @@
 #include <sys/wait.h>
 #include <filesystem>
 
+std::string CgiHandler::execute(std::string &scriptPath)
+{
+    CgiHandler cgiHandler(scriptPath);
+    cgiHandler.run();
+    return (cgiHandler.getOutput());
+}
+
 CgiHandler::CgiHandler(std::string &scriptPath)
 {
     path = scriptPath;
-    if (!isFile())
-        throw std::invalid_argument("file does not exist");
-    if (!isExecutable())
-        throw std::logic_error("file is not executable");
-    if (!createPipe())
-        throw std::runtime_error("failure creating pipe");
-    if (!createChild())
-        throw std::runtime_error("failure creating child");
+    try {
+        isFile();
+        isExecutable();
+        createPipe();
+        createChild();
+    } catch (const std::exception& e) {
+        cleanup();
+        throw;
+    }
 }
 
 CgiHandler::~CgiHandler()
 {
 }
 
-bool CgiHandler::isFile()
+void CgiHandler::cleanup()
 {
-    return (access(path.c_str(), F_OK) != -1);
-}
+    int status;
 
-bool CgiHandler::isExecutable()
-{
-    return (access(path.c_str(), X_OK) != -1);
-}
-
-bool CgiHandler::createPipe(void)
-{
-    return (pipe(pipefd) == -1);
-}
-
-bool CgiHandler::createChild(void)
-{
-    pid = fork();
-    return (pid != 0 ? false : true);
-}
-
-void CgiHandler::runChild()
-{
-    if (pid == 0)
+    close(pipefd[0]);
+    close(pipefd[1]);
+    if (pid != 0)
     {
-        // Child process
-        dup2(pipefd[1], STDOUT_FILENO);
-        close(pipefd[0]);
-        close(pipefd[1]);
-
-        // Basic environment
-		// needs to add more env variables PATH_INFO, SCRIPT_NAME, CONTENT_TYPE maybe!
-        char* envp[] = {
-            (char*)"GATEWAY_INTERFACE=CGI/1.1",
-            (char*)"SERVER_PROTOCOL=HTTP/1.1",
-            (char*)"REQUEST_METHOD=GET",
-            NULL
-        };
-
-        char* argv[] = { (char*)path.c_str(), NULL };
-        execve(path.c_str(), argv, envp);
-
-        exit(1); // if execve fails
-    } 
-}
-
-void CgiHandler::runParent(void)
-{
-    if (pid != 0) 
-    {
-        close(pipefd[1]);
-
-        char buffer[4096];
-        ssize_t n;
-        while ((n = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
-            output.append(buffer, n);
-        }
-        close(pipefd[0]);
-        waitpid(pid, NULL, 0);
+        if (kill(pid, 0) == 0)
+            kill(pid, SIGKILL);
     }
+
+    waitpid(pid, &status, 0);
 }
 
 std::string CgiHandler::getOutput() const
@@ -102,10 +65,82 @@ std::string CgiHandler::getOutput() const
     return (output);
 }
 
-std::string CgiHandler::execute(std::string &scriptPath)
+void CgiHandler::isFile()
 {
-    CgiHandler cgiHandler(scriptPath);
-    cgiHandler.runChild();
-    cgiHandler.runParent();
-    return (cgiHandler.getOutput());
+    if (access(path.c_str(), F_OK) != -1)
+        throw std::invalid_argument("file does not exist");
 }
+
+void CgiHandler::isExecutable()
+{
+    if (access(path.c_str(), X_OK) != -1)
+        throw std::logic_error("file is not executable");
+}
+
+void CgiHandler::createPipe(void)
+{
+    if (pipe(pipefd) == -1)
+        throw std::runtime_error("failure creating pipe");
+}
+
+void CgiHandler::createChild(void)
+{
+    pid = fork();
+    if (pid != 0 ? false : true)
+        throw std::runtime_error("failure creating child");
+}
+
+void CgiHandler::run()
+{
+    try {
+        runChild();
+        runParent();
+    } catch (std::exception& e) {
+        cleanup();
+        throw;
+    }
+}
+
+void CgiHandler::runChild()
+{
+    if (pid == 0)
+    {
+        if (dup2(pipefd[1], STDOUT_FILENO) == -1)
+            exit(1);
+        if (close(pipefd[0]) == -1 || close(pipefd[1] == -1))
+            exit(1);
+
+        char* envp[] = {
+            (char*)"GATEWAY_INTERFACE=CGI/1.1",
+            (char*)"SERVER_PROTOCOL=HTTP/1.1",
+            (char*)"REQUEST_METHOD=GET",
+            NULL
+        };
+        char* argv[] = { (char*)path.c_str(), NULL };
+
+        execve(path.c_str(), argv, envp);
+        exit(1); 
+    } 
+}
+
+void CgiHandler::runParent(void)
+{
+    if (pid != 0) 
+    {
+        if (close(pipefd[1]) == -1)
+            throw std::runtime_error("failure closing pipe");
+
+        char buffer[4096];
+        ssize_t n;
+        while ((n = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
+            output.append(buffer, n);
+        }
+        if (n == -1)
+            throw std::runtime_error("reading error");
+        if (close(pipefd[0]) == -1)
+            throw std::runtime_error("failure closing pipe");
+        waitpid(pid, NULL, 0);
+    }
+}
+
+
