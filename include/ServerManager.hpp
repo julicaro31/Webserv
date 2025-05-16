@@ -12,8 +12,9 @@
 #include "ParsingHelper.hpp"
 #include <signal.h>
 
-#define MAX_CONNECTION 10 // is exceeded, new connections wait in a queue (until accept() is called).
 #define CLIENT_TIMEOUT 15 // disconnect clients that have been inactive, in seconds
+#define ReadChunkSize 4096
+#define WriteChunkSize 4096
 
 class ServerManager
 {
@@ -22,6 +23,9 @@ private:
 	std::vector<pollfd> _pollFDs;
 	std::map<int, Server *> _clientToServer;
 	std::map<int, time_t> _clientActivity;
+	std::map<int, std::string> _clientResponses;
+	std::map<int, std::string> _clientBuffers;
+
 
 	static void handleSigint(int sig);
 
@@ -48,6 +52,9 @@ public:
 	void handleClientRequest(int clientFD);
 	void removeClient(int clientFD);
 	void checkTimeouts();
+	void enablePollout(int clientFD);
+	void disablePollout(int clientFD);
+	bool isRequestComplete(const std::string &buffer);
 
 	void closeFDs();
 };
