@@ -114,39 +114,7 @@ void Response::handleRequest()
 
 	if (isCGI())
 	{
-        std::cout << "here\n" << std::endl;
-		std::string scriptPath = getFullPath(_root + _request.getUri());
-		Logger::log(INFO, "executing CGI script at " + scriptPath);
-
-        try
-        {
-            std::string cgi_content = CgiHandler::execute(scriptPath);
-        }
-        catch (std::invalid_argument& e)
-        {
-            Logger::log(ERROR, e.what());
-            return (handleResponseError(404));
-        }
-        catch (std::logic_error& e)
-        {
-            Logger::log(ERROR, e.what());
-            return (handleResponseError(403));
-        }
-        catch (std::runtime_error &e)
-        {
-            Logger::log(ERROR, e.what());
-            return (handleResponseError(500));
-        }
-
-		try
-		{
-			_status = 200;
-			_msg = "HTTP/1.1 200 OK\r\nContent-Type: " + getMimeType(_root + _request.getUri()) + "\r\nContent-Length: " + std::to_string(cgi_content.size()) + "\r\n\r\n" + cgi_content;
-		}
-		catch (const std::runtime_error &e)
-		{
-			handleResponseError(500);
-		}
+        handleCgiRequest();
 	}
 	else if (_request.getMethod() == Method::GET)
 	{
@@ -457,4 +425,40 @@ void Response::handleDeletion(const std::string &path)
 	{
 		handleResponseError(500);
 	}
+}
+
+void Response::handleCgiRequest()
+{
+    std::string cgi_content;
+    std::string scriptPath = getFullPath(_root + _request.getUri());
+    Logger::log(INFO, "executing CGI script at " + scriptPath);
+
+    try
+    {
+        cgi_content = CgiHandler::execute(scriptPath);
+    }
+    catch (std::invalid_argument& e)
+    {
+        Logger::log(ERROR, e.what());
+        return (handleResponseError(404));
+    }
+    catch (std::logic_error& e)
+    {
+        Logger::log(ERROR, e.what());
+        return (handleResponseError(403));
+    }
+    catch (std::runtime_error &e)
+    {
+        Logger::log(ERROR, e.what());
+        return (handleResponseError(500));
+    }
+    try
+    {
+        _status = 200;
+        _msg = "HTTP/1.1 200 OK\r\nContent-Type: " + getMimeType(_root + _request.getUri()) + "\r\nContent-Length: " + std::to_string(cgi_content.size()) + "\r\n\r\n" + cgi_content;
+    }
+    catch (const std::runtime_error &e)
+    {
+        handleResponseError(500);
+    }
 }
