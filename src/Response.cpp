@@ -262,10 +262,13 @@ void Response::handleGetRequest()
 	}
 
 	std::string uri = _request.getUri();
+
+	// Checks if the root is already in the path
 	if (uri.compare(0, _root.size(), _root) == 0)
 	{
 		uri = uri.substr(_root.size());
 	}
+
 	std::string path = _root + uri;
 
 	// Check if the path exists
