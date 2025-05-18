@@ -203,7 +203,7 @@ void ServerManager::runPoll()
 				{
 					std::string &response = _clientResponses[clientFD];
 					size_t responseBufferSize = WriteChunkSize;
-					Logger::log(INFO, "[ServerManager] Sending response to client FD " + std::to_string(clientFD) + " ResMsg: \n" + response);
+					// Logger::log(INFO, "[ServerManager] Sending response to client FD " + std::to_string(clientFD) + " ResMsg: \n" + response);
 
 					ssize_t sBytes = send(clientFD, response.c_str(), std::min(responseBufferSize, response.size()), 0);
 					if (sBytes > 0)
@@ -314,7 +314,7 @@ void ServerManager::handleClientRequest(int clientFD)
 
 			// store the response in the map
 			_clientResponses[clientFD] = response.getMsg();
-			Logger::log(INFO, "[ServerManager] Response for client FD " + std::to_string(clientFD) + " ResMsg: \n" + response.getMsg());
+			// Logger::log(INFO, "[ServerManager] Response for client FD " + std::to_string(clientFD) + " ResMsg: \n" + response.getMsg());
 
 			// Set the events to POLLOUT for sending response
 			enablePollout(clientFD);
