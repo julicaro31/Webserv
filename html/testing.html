@@ -73,7 +73,7 @@
 	</div>
 	<div class="input-delete">
 		<input type="text" id="delete-input" placeholder="file name...">
-		<button class="styled-button">Delete</button>
+		<button class="styled-button" onclick="deleteResource()">Delete</button>
 	</div>
 
 	<div class="input-delete">
@@ -123,7 +123,7 @@
 				return;
 			}
 
-			fetch(`http://localhost:8080/html/${text}`, {
+			fetch(`http://localhost:8080/${text}`, {
 				method: "DELETE",
 			})
 				.then((response) => response.text())

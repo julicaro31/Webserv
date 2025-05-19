@@ -459,3 +459,14 @@ void ServerManager::closeFDs()
 
 	Logger::log(INFO, "[ServerManager] Shutdown complete.");
 }
+
+void ServerManager::availableServers()
+{
+	std::cout << "Available servers:" << std::endl;
+	for (size_t i = 0; i < _servers.size(); i++)
+	{
+		std::cout << "Server #" << i + 1 <<  std::endl;
+		std::cout << "http://localhost:"  << _servers[i]->getPort() << std::endl;
+		std::cout << "===========================================" << std::endl;
+	}
+}
