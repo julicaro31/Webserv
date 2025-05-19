@@ -403,7 +403,7 @@ bool ServerManager::isRequestComplete(const std::string &buffer)
 	{
 		return false;
 	}
-	if (buffer.find("GET") == 0 || buffer.find("HEAD") == 0)
+	if (buffer.find("GET") == 0 || buffer.find("HEAD") == 0 || buffer.find("DELETE") == 0)
 	{
 		return true;
 	}
@@ -417,7 +417,13 @@ bool ServerManager::isRequestComplete(const std::string &buffer)
 	}
 
 	std::string valueStr = buffer.substr(start, end - start);
-	int contentLength = std::stoi(valueStr);
+	int contentLength = 0;
+
+	try {
+		contentLength = std::stoi(valueStr);
+	} catch (const std::exception &e) {
+		Logger::log(ERROR, "[ServerManager] Error parsing Content-Length: " + valueStr);
+	}
 
 	size_t totalSize = headerEnd + 4 + contentLength;
 	if (buffer.size() >= totalSize)
