@@ -16,9 +16,11 @@
 #include <fcntl.h>
 #include "Logger.hpp"
 #include "Location.hpp"
+#include <arpa/inet.h>
+#include <netdb.h>
 
-#define MAX_CONNECTION 10
-// If MAX_CONNECTION	 is exceeded, new connections wait in a queue (until accept() is called).
+
+
 
 class Server
 {
