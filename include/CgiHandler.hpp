@@ -14,9 +14,19 @@
 #ifndef CGI_HANDLER_HPP
 #define CGI_HANDLER_HPP
 
-#include <string>
 #include "Request.hpp"
 #include "Server.hpp"
+#include <csignal>
+#include <exception>
+#include <stdexcept>
+#include <string>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/wait.h>
+#include <filesystem>
+#include <poll.h>
+#include "Timeout.hpp"
+
 
 class CgiHandler {
 public:

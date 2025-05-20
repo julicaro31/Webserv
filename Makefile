@@ -22,6 +22,7 @@ FILES	:=	parsing_helper/ParsingHelper \
 			Request \
 			Parser \
 			CgiHandler \
+			Timeout \
 			main
 
 SRCS	:= $(addprefix ${SRC_DIR}/,$(FILES:=.cpp))

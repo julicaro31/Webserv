@@ -437,6 +437,11 @@ void Response::handleCgiRequest()
     {
         cgi_content = CgiHandler::execute(scriptPath);
     }
+    catch (timeout_exception& e)
+    {
+        Logger::log(ERROR, e.what());
+        return (handleResponseError(408));
+    }
     catch (std::invalid_argument& e)
     {
         Logger::log(ERROR, e.what());

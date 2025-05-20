@@ -11,14 +11,7 @@
 /* ************************************************************************** */
 
 #include "CgiHandler.hpp"
-#include <csignal>
-#include <exception>
-#include <stdexcept>
-#include <string>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/wait.h>
-#include <filesystem>
+
 
 std::string CgiHandler::execute(std::string &scriptPath)
 {
@@ -67,13 +60,13 @@ std::string CgiHandler::getOutput() const
 
 void CgiHandler::isFile()
 {
-    if (access(path.c_str(), F_OK) != -1)
+    if (access(path.c_str(), F_OK) == -1)
         throw std::invalid_argument("file does not exist");
 }
 
 void CgiHandler::isExecutable()
 {
-    if (access(path.c_str(), X_OK) != -1)
+    if (access(path.c_str(), X_OK) == -1)
         throw std::logic_error("file is not executable");
 }
 
@@ -86,7 +79,7 @@ void CgiHandler::createPipe(void)
 void CgiHandler::createChild(void)
 {
     pid = fork();
-    if (pid != 0 ? false : true)
+    if (pid == -1)
         throw std::runtime_error("failure creating child");
 }
 
@@ -127,14 +120,27 @@ void CgiHandler::runParent(void)
 {
     if (pid != 0) 
     {
-        if (close(pipefd[1]) == -1)
-            throw std::runtime_error("failure closing pipe");
-
         char buffer[4096];
         ssize_t n;
-        while ((n = read(pipefd[0], buffer, sizeof(buffer))) > 0) {
-            output.append(buffer, n);
+        struct pollfd poll_fd = {
+            .fd = pipefd[0],
+            .events = POLL_IN,
+        };
+        uint32_t wait_ms = 1000;
+        int poll_ret;
+
+        if (close(pipefd[1]) == -1)
+            throw std::runtime_error("failure closing pipe");
+        poll_ret = poll(&poll_fd, 1, (int)wait_ms);
+        if (poll_ret == 0)
+        {
+            throw timeout_exception("cgi timed out");
+            kill(pid, SIGKILL);
         }
+        else if (poll_ret == -1)
+            throw std::runtime_error("poll error");
+        while ((n = read(pipefd[0], buffer, sizeof(buffer))) > 0)
+            output.append(buffer, n);
         if (n == -1)
             throw std::runtime_error("reading error");
         if (close(pipefd[0]) == -1)
