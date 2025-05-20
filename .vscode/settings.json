@@ -80,6 +80,9 @@
     },
     "[cpp]": {
         "editor.defaultFormatter": "ms-vscode.cpptools"
+    },
+    "[html]": {
+        "editor.defaultFormatter": "vscode.html-language-features"
     }
 }
 /*
