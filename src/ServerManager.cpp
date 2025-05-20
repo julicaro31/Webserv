@@ -295,13 +295,8 @@ void ServerManager::acceptNewClient(int serverFD)
  */
 void ServerManager::handleClientRequest(int clientFD)
 {
-<<<<<<< HEAD
-	char buffer[MAX_BUFFER_SIZE];
-	int r = read(clientFD, buffer, sizeof(buffer) - 1);
-=======
 	char buffer[ReadChunkSize];
 	int rBytes = read(clientFD, buffer, sizeof(buffer) - 1);
->>>>>>> 27a2728277a71790ee6bf7dadc9a6852cd13d6ab
 
 	if (rBytes < 0)
 	{
@@ -315,33 +310,7 @@ void ServerManager::handleClientRequest(int clientFD)
 		removeClient(clientFD);
 		return;
 	}
-<<<<<<< HEAD
-	buffer[r] = '\0';
-	std::string requestStr(buffer);
-
-	// Parse the request string into tokens
-	// HttpParser::parseRequest(requestStr);
-	// Create a Request object from the tokens
-	
-	// Request requestBody = Request(tokens);
-	
-	//check for CGI request
-	// if (requestBody.isCgiRequest())
-
-	
-	//find the server for this client
-	if (_clientToServer.find(clientFD) == _clientToServer.end())
-	{
-		Logger::log(ERROR, "[ServerManager] Client FD " + std::to_string(clientFD) + " not found in clientToServer map.");
-		//send response 500!
-		removeClient(clientFD);
-		return;
-	}
-	_clientActivity[clientFD] = time(NULL); // Update activity timestamp
-
-=======
 	buffer[rBytes] = '\0';
->>>>>>> 27a2728277a71790ee6bf7dadc9a6852cd13d6ab
 	Logger::log(INFO, "[ServerManager] Received from client FD " + std::to_string(clientFD) + '\n' + buffer);
 	_clientActivity[clientFD] = time(NULL);
 	_clientBuffers[clientFD].append(buffer, rBytes);
@@ -448,22 +417,6 @@ void ServerManager::checkTimeouts()
 		}
 	}
 }
-<<<<<<< HEAD
-/**
- * @brief Send an error page to the client.
- *
- * @param clientFD The file descriptor of the client socket.
- * @param errorCode The HTTP error code to send.
- */
-void ServerManager::sendErrorPage(int clientFD, int errorCode)
-{
-	Server* server = _clientToServer[clientFD];
-	server->getErrorPage(errorCode);
-
-}
-
-
-=======
 
 /**
  * @brief Check if the request is complete
@@ -530,4 +483,3 @@ void ServerManager::closeFDs()
 
 	Logger::log(INFO, "[ServerManager] Shutdown complete.");
 }
->>>>>>> 27a2728277a71790ee6bf7dadc9a6852cd13d6ab
