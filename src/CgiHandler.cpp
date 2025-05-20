@@ -125,6 +125,7 @@ void CgiHandler::runParent(void)
         struct pollfd poll_fd = {
             .fd = pipefd[0],
             .events = POLL_IN,
+            .revents = 0, 
         };
         uint32_t wait_ms = 1000;
         int poll_ret;
