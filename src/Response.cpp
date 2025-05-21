@@ -125,10 +125,10 @@ void Response::handleRequest()
 	{
 		handleDeleteRequest();
 	}
-    else if (_request.getMethod() == Method::NONE)
-    {
-        handleResponseError(405);
-    }
+	else if (_request.getMethod() == Method::NONE)
+	{
+		handleResponseError(405);
+	}
 	else
 	{
 		handleResponseError(400);
@@ -260,9 +260,16 @@ void Response::handleGetRequest()
 	{
 		return handleResponseError(405);
 	}
-	
-	std::filesystem::path relativeToRootPath = _request.getUri() != "/" ? std::filesystem::relative(_request.getUri(), _root) : "";
-	std::string path = _root + "/" + relativeToRootPath.string();
+
+	std::string uri = _request.getUri();
+
+	// Checks if the root is already in the path
+	if (uri.compare(0, _root.size(), _root) == 0)
+	{
+		uri = uri.substr(_root.size());
+	}
+
+	std::string path = _root + uri;
 
 	// Check if the path exists
 	if (!std::filesystem::exists(getFullPath(path)))
