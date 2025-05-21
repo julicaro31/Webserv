@@ -267,6 +267,11 @@ void ParsingHelper::parseLocation(ConfigBlock &serverBlock, ServerConfig &server
 				Location locationConfig;
 				locationConfig.uri = uri;
 				locationConfig.modifier = modifier;
+				locationConfig.root = serverConfig.root;
+				locationConfig.errorPages = serverConfig.errorPages;
+				locationConfig.maxBodySize = serverConfig.maxBodySize;
+				locationConfig.index = serverConfig.index;
+				locationConfig.autoIndex = serverConfig.autoIndex;
 				parseDirectives(locationBlock->getDirectives(), locationConfig);
 				locationConfig.limitExcepts = parseLimitExcepts(*locationBlock);
 				locationBlocks.push_back(locationConfig);
@@ -407,7 +412,6 @@ void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::strin
 /// @param locationConfig Location to add the directives.
 void ParsingHelper::parseDirectives(std::map<std::string, std::vector<std::string>> &directives, Location &locationConfig)
 {
-	setDefaultValues(locationConfig);
 	std::vector<std::string> directivesSet;
 
 	for (std::map<std::string, std::vector<std::string>>::iterator directive = directives.begin(); directive != directives.end(); directive++)
@@ -453,7 +457,7 @@ void ParsingHelper::setDefaultValues(T &config)
 {
 	config.autoIndex = false;
 	config.index = {};
-	config.maxBodySize = 1;
+	config.maxBodySize = 1000000;
 	config.redirection = {0, ""};
 	config.errorPages = {{404, "/404.html"}, {403, "/403.html"}, {500, "/50x.html"}, {502, "/50x.html"}, {503, "/50x.html"}, {504, "/50x.html"}};
 }

@@ -7,6 +7,8 @@
 #include "Logger.hpp"
 #include "Request.hpp"
 
+volatile sig_atomic_t g_terminate = 0;
+
 ServerManager::ServerManager()
 {
 }
@@ -158,16 +160,21 @@ Server *ServerManager::getServerByFileDescriptor(int fd) const
 void ServerManager::runPoll()
 {
 	Logger::log(INFO, "[ServerManager] Running " + std::to_string(_servers.size()) + " servers...");
-	while (true)
+	while (!g_terminate)
 	{
+		signal(SIGINT, handleSigint);
+
 		checkTimeouts();
-		// Call poll() with a timeout of 500 milliseconds
-		int ready = poll(_pollFDs.data(), _pollFDs.size(), 500);
+		int ready = poll(_pollFDs.data(), _pollFDs.size(), -1);
 		if (ready < 0)
 		{
+			if (g_terminate)
+			{
+				return;
+			}
 			perror("poll error");
 			Logger::log(ERROR, "[ServerManager] Poll error");
-			// need to close all sockets
+			closeFDs();
 			continue;
 		}
 
@@ -186,6 +193,35 @@ void ServerManager::runPoll()
 				{
 					// If it's a client socket, read data
 					handleClientRequest(_pollFDs[i].fd);
+				}
+			}
+			if (_pollFDs[i].revents & POLLOUT)
+			{
+				int clientFD = _pollFDs[i].fd;
+				// Check if we have a response to this client to send
+				if (_clientResponses.find(clientFD) != _clientResponses.end())
+				{
+					std::string &response = _clientResponses[clientFD];
+					size_t responseBufferSize = WriteChunkSize;
+					// Logger::log(INFO, "[ServerManager] Sending response to client FD " + std::to_string(clientFD) + " ResMsg: \n" + response);
+
+					ssize_t sBytes = send(clientFD, response.c_str(), std::min(responseBufferSize, response.size()), 0);
+					if (sBytes > 0)
+					{
+						response.erase(0, sBytes);
+					}
+					else if (response.empty())
+					{
+						disablePollout(clientFD);
+						_clientResponses.erase(clientFD);
+					}
+					else
+					{
+						perror("Failed to send response to client");
+						Logger::log(ERROR, "[ServerManager] Failed to send response to client");
+						_clientResponses.erase(clientFD);
+						removeClient(clientFD);
+					}
 				}
 			}
 			if (_pollFDs[i].revents & POLLHUP && !(_pollFDs[i].revents & POLLIN))
@@ -220,7 +256,8 @@ void ServerManager::acceptNewClient(int serverFD)
 	// Add new client socket to poll list, and map client FD to server
 	pollfd pfd;
 	pfd.fd = newClientFD;
-	pfd.events = POLLIN | POLLOUT;
+	// Set the events to POLLIN for reading only, we will set POLLOUT when we have a response to send
+	pfd.events = POLLIN;
 	_pollFDs.push_back(pfd);
 	_clientToServer[newClientFD] = getServerByFileDescriptor(serverFD);
 	_clientActivity[newClientFD] = time(NULL); // save client activity time
@@ -228,60 +265,94 @@ void ServerManager::acceptNewClient(int serverFD)
 
 void ServerManager::handleClientRequest(int clientFD)
 {
-	char buffer[1024];
-	int r = read(clientFD, buffer, sizeof(buffer) - 1);
+	char buffer[ReadChunkSize];
+	int rBytes = read(clientFD, buffer, sizeof(buffer) - 1);
 
-	if (r < 0)
+	if (rBytes < 0)
 	{
 		perror("Failed to read from client");
 		Logger::log(ERROR, "[ServerManager] Failed to read from client");
 		removeClient(clientFD);
 		return;
 	}
-	else if (r == 0)
+	else if (rBytes == 0)
 	{
 		removeClient(clientFD);
 		return;
 	}
-	buffer[r] = '\0';
-
-	_clientActivity[clientFD] = time(NULL); // Update activity timestamp
-
+	buffer[rBytes] = '\0';
 	Logger::log(INFO, "[ServerManager] Received from client FD " + std::to_string(clientFD) + '\n' + buffer);
-	
-	std::vector<Token> tokens;
-	try
-	{
-		tokens = HttpParser::parseRequest(buffer);
-	}
-	catch (const char *exception)
-	{
-		std::cerr << "Error: " << exception << std::endl;
-	}
-	catch (...)
-	{
-		std::cerr << "Unknown error" << std::endl;
-	}
+	_clientActivity[clientFD] = time(NULL);
+	_clientBuffers[clientFD].append(buffer, rBytes);
+	memset(buffer, 0, sizeof(buffer));
 
-	Request request = Request(tokens);
-	try
+	// Check if the request is complete
+	if (isRequestComplete(_clientBuffers[clientFD]))
 	{
-		int serverFD = _clientToServer[clientFD]->getSocketFD();
-		Response response(request, *getServerByFileDescriptor(serverFD));
-		response.handleRequest();
-
-		if (send(clientFD, response.getMsg().c_str(), response.getMsg().length(), 0) < 0)
+		Logger::log(INFO, "[ServerManager] Request complete for client FD " + std::to_string(clientFD));
+		std::vector<Token> tokens;
+		try
 		{
-			perror("[ServerManager] Failed to send response");
-			Logger::log(ERROR, "[ServerManager] Failed to send response");
-			removeClient(clientFD);
+			tokens = HttpParser::parseRequest(_clientBuffers[clientFD]);
 		}
-		else
-			Logger::log(INFO, "[ServerManager] succesfuly send response");
+		catch (const char *exception)
+		{
+			std::cerr << "Error: " << exception << std::endl;
+		}
+		catch (...)
+		{
+			std::cerr << "Unknown error" << std::endl;
+		}
+
+		_clientBuffers[clientFD].clear();
+		Request request = Request(tokens);
+		try
+		{
+			int serverFD = _clientToServer[clientFD]->getSocketFD();
+			Response response(request, *getServerByFileDescriptor(serverFD));
+			response.handleRequest();
+
+			// store the response in the map
+			_clientResponses[clientFD] = response.getMsg();
+			// Logger::log(INFO, "[ServerManager] Response for client FD " + std::to_string(clientFD) + " ResMsg: \n" + response.getMsg());
+
+			// Set the events to POLLOUT for sending response
+			enablePollout(clientFD);
+		}
+		catch (const std::exception &e)
+		{
+			std::cerr << e.what() << '\n';
+		}
 	}
-	catch (const std::exception &e)
+	else
 	{
-		std::cerr << e.what() << '\n';
+		Logger::log(INFO, "[ServerManager] Request not complete for client FD " + std::to_string(clientFD));
+		return;
+	}
+}
+
+void ServerManager::enablePollout(int clientFD)
+{
+	for (auto &pfd : _pollFDs)
+	{
+		if (pfd.fd == clientFD)
+		{
+			pfd.events |= POLLOUT;
+			return;
+		}
+	}
+}
+
+void ServerManager::disablePollout(int clientFD)
+{
+	for (auto &pfd : _pollFDs)
+	{
+		if (pfd.fd == clientFD)
+		{
+			pfd.events &= ~POLLOUT;
+			Logger::log(INFO, "[ServerManager] Disabled POLLOUT for client FD " + std::to_string(clientFD));
+			return;
+		}
 	}
 }
 
@@ -314,5 +385,88 @@ void ServerManager::checkTimeouts()
 			Logger::log(INFO, "[ServerManager] Client FD " + std::to_string(clientFD) + " timed out.");
 			removeClient(clientFD);
 		}
+	}
+}
+
+/**
+ * @brief Check if the request is complete
+ * @param buffer The HTTP request buffer
+ * GET, HEAD does not have a body,
+ * for the rest check if the Content-Length header is present and if the body is complete
+ */
+
+bool ServerManager::isRequestComplete(const std::string &buffer)
+{
+
+	size_t headerEnd = buffer.find("\r\n\r\n");
+	if (headerEnd == std::string::npos)
+	{
+		return false;
+	}
+	if (buffer.find("GET") == 0 || buffer.find("HEAD") == 0 || buffer.find("DELETE") == 0)
+	{
+		return true;
+	}
+
+	size_t pos = buffer.find("Content-Length:");
+	size_t start = buffer.find(":", pos) + 1;
+	size_t end = buffer.find("\r\n", start);
+	if (end == std::string::npos)
+	{
+		return false;
+	}
+
+	std::string valueStr = buffer.substr(start, end - start);
+	int contentLength = 0;
+
+	try {
+		contentLength = std::stoi(valueStr);
+	} catch (const std::exception &e) {
+		Logger::log(ERROR, "[ServerManager] Error parsing Content-Length: " + valueStr);
+	}
+
+	size_t totalSize = headerEnd + 4 + contentLength;
+	if (buffer.size() >= totalSize)
+	{
+		return true;
+	}
+	return false;
+}
+
+void ServerManager::handleSigint(int sig)
+{
+	g_terminate = sig;
+	std::cout << "\nBye!" << std::endl;
+}
+
+void ServerManager::closeFDs()
+{
+	Logger::log(INFO, "[ServerManager] Caught SIGINT. Cleaning up...");
+
+	for (std::map<int, Server *>::iterator it = _clientToServer.begin(); it != _clientToServer.end(); ++it)
+	{
+		int clientFD = it->first;
+		close(clientFD);
+		Logger::log(INFO, "[ServerManager] Closed client FD " + std::to_string(clientFD));
+	}
+
+	for (std::vector<std::unique_ptr<Server>>::iterator it = _servers.begin(); it != _servers.end(); ++it)
+	{
+		int serverFD = (*it)->getSocketFD();
+		close(serverFD);
+		Logger::log(INFO, "[ServerManager] Closed server FD " + std::to_string(serverFD));
+	}
+
+	Logger::log(INFO, "[ServerManager] Shutdown complete.");
+}
+
+void ServerManager::availableServers()
+{
+	std::cout << "Available servers:" << std::endl;
+	for (size_t i = 0; i < _servers.size(); i++)
+	{
+		std::cout << "Server #" << i + 1 <<  std::endl;
+		std::cout << "http://localhost:"  << _servers[i]->getPort() << std::endl;
+		std::cout << "===========================================" << std::endl;
 	}
 }

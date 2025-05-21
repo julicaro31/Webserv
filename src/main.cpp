@@ -37,6 +37,8 @@ int main(int ac, char *argv[])
 	{
 		Logger::log(INFO, "serverManager setting up poll");
 		serverManager.runPoll();
+		serverManager.closeFDs();
+		serverManager.availableServers();
 	}
 	else
 	{
