@@ -55,6 +55,7 @@ public:
 	void enablePollout(int clientFD);
 	void disablePollout(int clientFD);
 	bool isRequestComplete(const std::string &buffer);
+	void availableServers();
 
 	void closeFDs();
 };

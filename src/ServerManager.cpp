@@ -203,7 +203,7 @@ void ServerManager::runPoll()
 				{
 					std::string &response = _clientResponses[clientFD];
 					size_t responseBufferSize = WriteChunkSize;
-					Logger::log(INFO, "[ServerManager] Sending response to client FD " + std::to_string(clientFD) + " ResMsg: \n" + response);
+					// Logger::log(INFO, "[ServerManager] Sending response to client FD " + std::to_string(clientFD) + " ResMsg: \n" + response);
 
 					ssize_t sBytes = send(clientFD, response.c_str(), std::min(responseBufferSize, response.size()), 0);
 					if (sBytes > 0)
@@ -314,7 +314,7 @@ void ServerManager::handleClientRequest(int clientFD)
 
 			// store the response in the map
 			_clientResponses[clientFD] = response.getMsg();
-			Logger::log(INFO, "[ServerManager] Response for client FD " + std::to_string(clientFD) + " ResMsg: \n" + response.getMsg());
+			// Logger::log(INFO, "[ServerManager] Response for client FD " + std::to_string(clientFD) + " ResMsg: \n" + response.getMsg());
 
 			// Set the events to POLLOUT for sending response
 			enablePollout(clientFD);
@@ -403,7 +403,7 @@ bool ServerManager::isRequestComplete(const std::string &buffer)
 	{
 		return false;
 	}
-	if (buffer.find("GET") == 0 || buffer.find("HEAD") == 0)
+	if (buffer.find("GET") == 0 || buffer.find("HEAD") == 0 || buffer.find("DELETE") == 0)
 	{
 		return true;
 	}
@@ -417,7 +417,13 @@ bool ServerManager::isRequestComplete(const std::string &buffer)
 	}
 
 	std::string valueStr = buffer.substr(start, end - start);
-	int contentLength = std::stoi(valueStr);
+	int contentLength = 0;
+
+	try {
+		contentLength = std::stoi(valueStr);
+	} catch (const std::exception &e) {
+		Logger::log(ERROR, "[ServerManager] Error parsing Content-Length: " + valueStr);
+	}
 
 	size_t totalSize = headerEnd + 4 + contentLength;
 	if (buffer.size() >= totalSize)
@@ -452,4 +458,15 @@ void ServerManager::closeFDs()
 	}
 
 	Logger::log(INFO, "[ServerManager] Shutdown complete.");
+}
+
+void ServerManager::availableServers()
+{
+	std::cout << "Available servers:" << std::endl;
+	for (size_t i = 0; i < _servers.size(); i++)
+	{
+		std::cout << "Server #" << i + 1 <<  std::endl;
+		std::cout << "http://localhost:"  << _servers[i]->getPort() << std::endl;
+		std::cout << "===========================================" << std::endl;
+	}
 }
