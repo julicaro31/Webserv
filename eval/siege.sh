@@ -1,1 +1,3 @@
-# add siege commands to tests
+#!/bin/bash
+
+siege http://localhost:8080
