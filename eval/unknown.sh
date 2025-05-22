@@ -1,1 +1,3 @@
-# add curl with unknown method
+#!/bin/bash
+
+curl -X UNKNOWN --data "but wait?" http://localhost:8080/test_unknown
