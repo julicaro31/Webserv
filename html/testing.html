@@ -109,12 +109,9 @@
 
 			if (!file) return;
 
-			const formData = new FormData();
-			formData.append(file.name, file);
-
 			fetch(`http://localhost:8080/${file.name}`, {
 				method: "POST",
-				body: formData,
+				body: file,
 			})
 				.then((response) => {
 					if (response.ok) {
