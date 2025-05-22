@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cp get1.txt ../html/
-cp get2.txt ../html/
+echo "testing delete" > ../html/delete_test
 
-curl -X DELETE http://localhost:8080/get1.txt
-curl -X DELETE http://localhost:8080/get2.txt
+curl -X DELETE http://localhost:8080/delete_test
