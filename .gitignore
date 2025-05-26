@@ -3,3 +3,4 @@ cmake
 cmake/*
 obj
 *.log
+test_stress

@@ -57,6 +57,9 @@ private:
 	void handleDeleteRequest();
 	void handleDeletion(const std::string &path);
 
+    // Cgi Request
+    void handleCgiRequest();
+
 	bool _autoIndex;
 	size_t _maxBodySize;
 	std::string _root;
