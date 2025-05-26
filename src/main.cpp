@@ -34,15 +34,12 @@ int main(int ac, char *argv[])
 
 	std::cout << "Welcome to webserv!" << std::endl;
 
-	// To get the ports for testing purposes, need to have smaller function that just prints ports
-	serverManager.printServers();
-
 	if (serverManager.getServers().size() > 0)
 	{
 		Logger::log(INFO, "serverManager setting up poll");
+		serverManager.availableServers();
 		serverManager.runPoll();
 		serverManager.closeFDs();
-		serverManager.availableServers();
 	}
 	else
 	{
