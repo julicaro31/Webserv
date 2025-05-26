@@ -486,21 +486,27 @@ bool ParsingHelper::parseAutoIndex(std::string &value)
 /// @throw std::invalid_argument if the string is not a positive number.
 size_t ParsingHelper::parseMaxBodySize(std::string &value)
 {
+    long long int maxBodySize;
 	try
 	{
-		int maxBodySize = std::stoll(value);
-		if (maxBodySize >= 0)
+        if (value.size() > 8)
+        {
+            Logger::log(ERROR, "client_max_body_size: size too big");
+            throw std::invalid_argument("Error: client_max_body_size size too big");
+        }
+		maxBodySize = std::stoi(value);
+		if (maxBodySize <= 0)
 		{
-			return maxBodySize;
+            Logger::log(ERROR, "client_max_body_size should be a positive integer.");
+            throw std::invalid_argument("Error: client_max_body_size should be a positive integer.");
 		}
-		Logger::log(ERROR, "client_max_body_size should be a positive integer.");
-		throw std::invalid_argument("Error: client_max_body_size should be a positive integer.");
 	}
 	catch (const std::exception &e)
 	{
-		Logger::log(ERROR, "client_max_body_size should be a positive integer.");
-		throw std::invalid_argument("Error: client_max_body_size should be a positive integer.");
+		Logger::log(ERROR, std::string("client_max_body_size: ") + e.what());
+        throw ;
 	}
+    return maxBodySize;
 }
 
 /// @brief Parses the information realated to the directive 'listen'.
