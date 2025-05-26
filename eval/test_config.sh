@@ -6,7 +6,6 @@ incorrect_folder="configs/incorrect"
 correct_folder="configs/correct"
 incorrects=($incorrect_folder/*)
 corrects=($correct_folder/*)
-extra_arg="start"
 test_exit_code=0
 
 #prepare executable
@@ -19,8 +18,7 @@ for i in "${incorrects[@]}"
 do
     echo -n "$counter: $(basename $i)"
 
-    args="${extra_arg} ${i}"
-    timeout 1 $exe $args &> /dev/null
+    timeout 1s $exe $i &> /dev/null
     exit_code=$(echo $?)
     
     if [ $exit_code == 124 ]; then
@@ -38,10 +36,9 @@ for i in "${corrects[@]}"
 do
     echo -n "$counter: $(basename $i)"
 
-    args="${extra_arg} ${i}"
-    timeout 1 $exe $args &> /dev/null
+    timeout 1s $exe $i &> /dev/null
     exit_code=$(echo $?)
-    
+
     if [ $exit_code != 124 ]; then
         echo " ❌"
         test_exit_code=1
