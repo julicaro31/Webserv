@@ -19,7 +19,7 @@
 			display: flex;
 			justify-content: center;
 			align-items: center;
-			height: 30vh;
+			height: 20vh;
 			display: grid;
 			grid-template-columns: repeat(3, 150px);
 			grid-template-rows: repeat(2, 60px);
@@ -62,14 +62,23 @@
 			onclick="window.location.href='/old-path/'">Redirection</button>
 		<label class="styled-button" for="file-upload">Upload File </label>
 		<input type="file" id="file-upload" style="display:none;" onchange="uploadFile()">
-
-		<button class="styled-button" onclick="window.location.href='/cgi-bin/'">CGI</button>
 		<button class="styled-button" onclick="window.open('http://localhost:7000', '_blank')">Server 7000
 			(indexing)</button>
 		<button class="styled-button" title="http://localhost:8080/not-exist/"
 			onclick="window.location.href='not-exist/'">not exist</button>
 		<button class="styled-button" title="http://localhost"
 			onclick="window.location.href='http://localhost:8080'">Home Page</button>
+	</div>
+	
+	<h1>CGI</h1>
+
+	<div class="button-grid">
+		<button class="styled-button" onclick="window.location.href='/cgi-bin/index.py'">index.py</button>
+		<button class="styled-button" onclick="window.location.href='/cgi-bin/hello.py'">hello.py</button>
+		<button class="styled-button" onclick="window.location.href='/cgi-bin/infinite.py'">infinite.py</button>
+		<button class="styled-button" onclick="window.location.href='/cgi-bin/norights.py'">norights.py</button>
+
+
 	</div>
 	<div class="input-delete">
 		<input type="text" id="delete-input" placeholder="file name...">
