@@ -60,4 +60,6 @@ else
     echo "All tests passed!" 
 fi
 
+rm -rf logs.log
+
 exit $test_exit_code

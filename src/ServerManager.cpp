@@ -226,13 +226,27 @@ void ServerManager::runPoll()
 			}
 			if (_pollFDs[i].revents & POLLHUP && !(_pollFDs[i].revents & POLLIN))
 			{
+				// Client hung up (closed connection). Clean it up.
 				Logger::log(INFO, "[ServerManager] Detected POLLHUP on FD " + std::to_string(_pollFDs[i].fd));
 				removeClient(_pollFDs[i].fd);
+			}
+
+			else if (_pollFDs[i].revents & POLLOUT)
+			{
+    			// Socket is ready to write. Send data if needed.
+				// For now, we just ignore it until response is implemented.
+
 			}
 		}
 	}
 }
 
+/**
+ * @brief Accept a new client connection and add it to the poll list.
+ * and set it to non-blocking mode.
+ * 
+ * @param serverFD The file descriptor of the incoming server connection.
+ */
 void ServerManager::acceptNewClient(int serverFD)
 {
 	struct sockaddr_in address;
@@ -263,6 +277,22 @@ void ServerManager::acceptNewClient(int serverFD)
 	_clientActivity[newClientFD] = time(NULL); // save client activity time
 }
 
+//!TODO:
+/*Distinguish between FD's for server and client and CGI!
+
+
+
+
+*/
+
+
+/**
+ * @brief Handle incoming client requests.
+ * This function reads the request from the client, parses it, and sends a response.
+ * It also checks if the request is a CGI request.
+ * If the request is not valid, it sends an error response.
+ * @param clientFD The file descriptor of the client socket.
+ */
 void ServerManager::handleClientRequest(int clientFD)
 {
 	char buffer[ReadChunkSize];

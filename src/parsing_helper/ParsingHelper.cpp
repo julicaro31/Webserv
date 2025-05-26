@@ -488,7 +488,7 @@ size_t ParsingHelper::parseMaxBodySize(std::string &value)
 {
 	try
 	{
-		int maxBodySize = std::stoi(value);
+		int maxBodySize = std::stoll(value);
 		if (maxBodySize >= 0)
 		{
 			return maxBodySize;
