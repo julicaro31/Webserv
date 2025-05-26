@@ -10,7 +10,7 @@ fortunes = [
 
 fortune = random.choice(fortunes)
 
-print("Content-Type: text/html\r\n")
+
 print(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
