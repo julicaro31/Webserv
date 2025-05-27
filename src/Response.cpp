@@ -183,8 +183,20 @@ void Response::handleResponseError(int status)
 {
 	_status = status;
 	std::map<int, std::string>::const_iterator it = _errorPages.find(status);
-
 	std::string content = "";
+    auto searchMsg = defaultErrorMsgs.find(status);
+    std::string errorMsg;
+	std::string allowMethods = status == 405 ? +"\r\nAllow: " + getAllowedMethods() : "";
+
+    if (searchMsg == defaultErrorMsgs.end())
+    {
+        _msg = "HTTP/1.1 " + std::to_string(500) + " " + "Internal Server Error" + "\r\nContent-Length: " + std::to_string(content.size()) + allowMethods + "\r\n\r\n" + content;
+        return ;
+    }
+    else
+    {
+        errorMsg = searchMsg->second;
+    }
 	if (it != _errorPages.end())
 	{
 		try
@@ -193,12 +205,11 @@ void Response::handleResponseError(int status)
 		}
 		catch (const std::exception &e)
 		{
+	        _msg = "HTTP/1.1 " + std::to_string(500) + " " + errorMsg + "\r\nContent-Length: " + std::to_string(content.size()) + allowMethods + "\r\n\r\n" + content;
+            return ;
 		}
 	}
-
-	std::string allowMethods = status == 405 ? +"\r\nAllow: " + getAllowedMethods() : "";
-
-	_msg = "HTTP/1.1 " + std::to_string(status) + " " + defaultErrorMsgs.find(status)->second + "\r\nContent-Length: " + std::to_string(content.size()) + allowMethods + "\r\n\r\n" + content;
+	_msg = "HTTP/1.1 " + std::to_string(status) + " " + errorMsg + "\r\nContent-Length: " + std::to_string(content.size()) + allowMethods + "\r\n\r\n" + content;
 }
 
 void Response::handleRedirection()
