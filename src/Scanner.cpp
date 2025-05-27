@@ -10,7 +10,7 @@
 
 std::unordered_map<int, std::vector<Token>> Scanner::scanTokens(void)
 {
-	DEBUG_PRINT("\nsource: \n" + source);
+    DEBUG_PRINT("\nsource: \n" + source);
 	int i = 0;
 	Logger::log(INFO, "Start scanning http request.... ");
 	while (!isAtEnd())
@@ -289,7 +289,7 @@ void Scanner::body()
 {
 	int i = current;
 
-	while (peek(i))
+	while (!isAtEnd(i))
 		i++;
 	std::string body = source.substr(start, (current + i) - start);
 	addToken(Token::BODY, body);
