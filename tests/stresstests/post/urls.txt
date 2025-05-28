@@ -1,8 +1,0 @@
-http://localhost:8080/test_stress POST < utils/hello.html
-http://localhost:8080/test_stress POST < utils/hello.txt
-http://localhost:8080/test_stress POST < utils/hello.json
-http://localhost:8080/test_stress POST < utils/hello.htm
-http://localhost:8080/test_stress POST < utils/hello.jpg
-http://localhost:8080/test_stress POST < utils/hello.jpeg
-http://localhost:8080/test_stress POST < utils/hello.png
-

@@ -489,7 +489,7 @@ size_t ParsingHelper::parseMaxBodySize(std::string &value)
     long long int maxBodySize;
 	try
 	{
-        if (value.size() > 8)
+        if (value.size() > 10)
         {
             Logger::log(ERROR, "client_max_body_size: size too big");
             throw std::invalid_argument("Error: client_max_body_size size too big");

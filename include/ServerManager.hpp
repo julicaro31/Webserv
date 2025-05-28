@@ -13,8 +13,8 @@
 #include <signal.h>
 
 #define CLIENT_TIMEOUT 15 // disconnect clients that have been inactive, in seconds
-#define ReadChunkSize 4096
-#define WriteChunkSize 4096
+#define ReadChunkSize  80000
+#define WriteChunkSize 80000
 
 class ServerManager
 {

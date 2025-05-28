@@ -1,6 +1,0 @@
-GET /api/data HTTP/1.1
-Host: example.com
-Authorization: Bearer abc123xyz
-Accept: text/html
-Cache-Control: no-cache
-

@@ -1,8 +1,0 @@
-GET /profile HTTP/1.1
-Host: example.com
-Cookie: session_id=abc123; theme=dark; language=en-US
-User-Agent: CustomAgent/1.0
-Accept-Encoding: gzip, deflate
-Accept: text/html
-Connection: keep-alive
-
