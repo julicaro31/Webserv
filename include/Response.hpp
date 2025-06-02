@@ -75,7 +75,8 @@ private:
 			{403, "Forbidden"},
 			{404, "File Not Found"},
 			{405, "Method Not Allowed"},
-			{406, "Not Acceptable"},
+            {406, "Not Acceptable"},
+			{408, "Request Timeout"},
 			{413, "Content Too Large"},
 			{415, "Unsupported Media Type"},
 			{500, "Internal Server Error"}};
