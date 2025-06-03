@@ -1,161 +1,212 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Websurfers(testing)</title>
+    <link rel="stylesheet" href="styles.css" />
 
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Websurfers(testing)</title>
-	<link rel="stylesheet" href="styles.css">
+    <style>
+      body {
+        text-align: center;
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f9;
+      }
 
-	<style>
-		body {
-			text-align: center;
-			margin: 0;
-			font-family: Arial, sans-serif;
-			background-color: #f4f4f9;
-		}
+      .button-grid {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 20vh;
+        display: grid;
+        grid-template-columns: repeat(3, 150px);
+        grid-template-rows: repeat(2, 60px);
+        gap: 15px;
+      }
 
-		.button-grid {
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			height: 20vh;
-			display: grid;
-			grid-template-columns: repeat(3, 150px);
-			grid-template-rows: repeat(2, 60px);
-			gap: 15px;
-		}
+      .styled-button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
 
-		.styled-button {
-			background-color: #007bff;
-			color: white;
-			border: none;
-			padding: 10px;
-			font-size: 1rem;
-			cursor: pointer;
-			transition: background-color 0.3s;
-		}
+      button:hover {
+        background-color: #0056b3;
+      }
 
-		button:hover {
-			background-color: #0056b3;
-		}
+      .input-delete {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin: 20px auto;
+        justify-content: center;
+      }
 
-		.input-delete {
-			display: flex;
-			align-items: center;
-			gap: 15px;
-			margin: 20px auto;
-			justify-content: center;
-		}
+      .input-delete input {
+        padding: 8px;
+        font-size: 1rem;
+      }
+    </style>
+  </head>
 
-		.input-delete input {
-			padding: 8px;
-			font-size: 1rem;
-		}
-	</style>
-</head>
+  <body>
+    <h1>Let's test the webserver!</h1>
+    <div class="button-grid">
+      <button
+        class="styled-button"
+        title="http://localhost/old-path/"
+        onclick="window.location.href='/old-path/'"
+      >
+        Redirection
+      </button>
+      <label class="styled-button" for="file-upload">Upload File </label>
+      <input
+        type="file"
+        id="file-upload"
+        style="display: none"
+        onchange="uploadFile()"
+      />
+      <button
+        class="styled-button"
+        onclick="window.open('http://localhost:7000', '_blank')"
+      >
+        Server 7000 (indexing)
+      </button>
+      <button
+        class="styled-button"
+        title="http://localhost:8080/not-exist/"
+        onclick="window.location.href='not-exist/'"
+      >
+        not exist
+      </button>
+      <button
+        class="styled-button"
+        title="http://localhost"
+        onclick="window.location.href='http://localhost:8080'"
+      >
+        Home Page
+      </button>
+    </div>
 
-<body>
-	<h1>Let's test the webserver!</h1>
-	<div class="button-grid">
-		<button class="styled-button" title="http://localhost/old-path/"
-			onclick="window.location.href='/old-path/'">Redirection</button>
-		<label class="styled-button" for="file-upload">Upload File </label>
-		<input type="file" id="file-upload" style="display:none;" onchange="uploadFile()">
-		<button class="styled-button" onclick="window.open('http://localhost:7000', '_blank')">Server 7000
-			(indexing)</button>
-		<button class="styled-button" title="http://localhost:8080/not-exist/"
-			onclick="window.location.href='not-exist/'">not exist</button>
-		<button class="styled-button" title="http://localhost"
-			onclick="window.location.href='http://localhost:8080'">Home Page</button>
-	</div>
-	
-	<h1>CGI</h1>
+    <h1>CGI</h1>
 
-	<div class="button-grid">
-		<button class="styled-button" onclick="window.location.href='/cgi-bin/index.py'">index.py</button>
-		<button class="styled-button" onclick="window.location.href='/cgi-bin/hello.py'">hello.py</button>
-		<button class="styled-button" onclick="window.location.href='/cgi-bin/infinite.py'">infinite.py</button>
-		<button class="styled-button" onclick="window.location.href='/cgi-bin/norights.py'">norights.py</button>
+    <div class="button-grid">
+      <button
+        class="styled-button"
+        onclick="window.location.href='/cgi-bin/index.py'"
+      >
+        index.py
+      </button>
+      <button
+        class="styled-button"
+        onclick="window.location.href='/cgi-bin/hello.py'"
+      >
+        hello.py
+      </button>
+      <button
+        class="styled-button"
+        onclick="window.location.href='/cgi-bin/infinite.py'"
+      >
+        infinite.py
+      </button>
+      <button
+        class="styled-button"
+        onclick="window.location.href='/cgi-bin/norights.py'"
+      >
+        norights.py
+      </button>
+    </div>
+    <div class="input-delete">
+      <input type="text" id="delete-input" placeholder="file name..." />
+      <button class="styled-button" onclick="deleteResource()">Delete</button>
+    </div>
 
+    <div class="input-delete">
+      <input type="text" id="post-input" placeholder="Enter text..." />
+      <button class="styled-button" onclick="postText()">Post</button>
+    </div>
 
-	</div>
-	<div class="input-delete">
-		<input type="text" id="delete-input" placeholder="file name...">
-		<button class="styled-button" onclick="deleteResource()">Delete</button>
-	</div>
+    <script>
+      function postText() {
+        const text = document.getElementById("post-input").value;
+        const location = window.location.host;
+        const post = "/post";
+        const http = "http://";
+        const url = http + location + post;
+        console.log(url);
 
-	<div class="input-delete">
-		<input type="text" id="post-input" placeholder="Enter text...">
-		<button class="styled-button" onclick="postText()"> Post </button>
-	</div>
+        fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: JSON.stringify({ text: text }),
+        })
+          .then((response) => {
+            if (response.ok) {
+              return response.text();
+            } else {
+              throw new Error(response + status);
+            }
+          })
+          .then((data) => alert("Response: " + data))
+          .catch((error) => alert("Error: " + error));
+      }
 
-	<script>
-		function postText() {
-			const text = document.getElementById("post-input").value;
+      function uploadFile() {
+        const fileInput = document.getElementById("file-upload");
+        const file = fileInput.files[0];
+        const location = window.location.host;
 
-			fetch("http://localhost:8080/post", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded",
-				},
-				body: JSON.stringify({ text: text }),
-			})
-				.then((response) => {
-					if (response.ok) {
-						return response.text()
-					} else {
-						throw new Error(response + status)
-					}
-				})
-				.then((data) => alert("Response: " + data))
-				.catch((error) => alert("Error: " + error));
-		}
+        if (!file) return;
 
-		function uploadFile() {
-			const fileInput = document.getElementById("file-upload");
-			const file = fileInput.files[0];
+        const http = "http://";
+        const url = http + location + "/" + file.name;
+        console.log(url);
+        fetch(url, {
+          method: "POST",
+          body: file,
+        })
+          .then((response) => {
+            if (response.ok) {
+              return response.text();
+            } else {
+              throw new Error("Upload failed: " + response.status);
+            }
+          })
+          .then((data) => alert("Uploading File: " + data))
+          .catch((error) => alert("Uploading File: " + error));
+      }
 
-			if (!file) return;
+      function deleteResource() {
+        const text = document.getElementById("delete-input").value;
+        const location = window.location.host;
 
-			fetch(`http://localhost:8080/${file.name}`, {
-				method: "POST",
-				body: file,
-			})
-				.then((response) => {
-					if (response.ok) {
-						return response.text()
-					} else {
-						throw new Error('Upload failed: ' + response.status);
-					}
-				})
-				.then((data) => alert("Uploading File: " + data))
-				.catch((error) => alert("Uploading File: " + error));
-		}
+        if (!text) {
+          alert("Please enter a resource name to delete.");
+          return;
+        }
+        const http = "http://";
+        const url = http + location + "/" + text;
+        console.log(url);
 
-		function deleteResource() {
-			const text = document.getElementById("delete-input").value;
-
-			if (!text) {
-				alert("Please enter a resource name to delete.");
-				return;
-			}
-
-			fetch(`http://localhost:8080/${text}`, {
-				method: "DELETE",
-			})
-				.then((response) => {
-					if (response.ok) {
-						return response.text();
-					}
-					throw new Error('Delete failed: ' + response.status);
-				})
-				.then((data) => alert("Deleting File: " + data))
-				.catch((error) => alert("Deleting File: "+ error));
-		}
-
-	</script>
-
-</body>
-
+        fetch(url, {
+          method: "DELETE",
+        })
+          .then((response) => {
+            if (response.ok) {
+              return response.text();
+            }
+            throw new Error("Delete failed: " + response.status);
+          })
+          .then((data) => alert("Deleting File: " + data))
+          .catch((error) => alert("Deleting File: " + error));
+      }
+    </script>
+  </body>
 </html>
