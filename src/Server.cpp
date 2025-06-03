@@ -125,17 +125,28 @@ bool Server::setupSocket() {
     return false;
   }
 
-  if (setNonBlocking(_socketFD) == -1) {
-    Logger::log(ERROR, "[Server] Failed to set socket to non-blocking");
-    close(_socketFD);
-    return false;
-  }
-  // bint socket to Port
-  struct sockaddr_in _serverAddr;
-  memset(&_serverAddr, 0, sizeof(_serverAddr));
-  _serverAddr.sin_family = AF_INET;
-  _serverAddr.sin_addr.s_addr = inet_addr(_host.c_str());
-  _serverAddr.sin_port = htons(_port);
+	if (setNonBlocking(_socketFD) == -1)
+	{
+		Logger::log(ERROR, "[Server] Failed to set socket to non-blocking");
+		close(_socketFD);
+		return false;
+	}
+
+	struct addrinfo hints{}, *res;
+
+    hints.ai_family = AF_INET;
+    hints.ai_socktype = SOCK_STREAM;
+	std::string portStr = std::to_string(_port);
+    int status = getaddrinfo(_host.c_str(), portStr.c_str(), &hints, &res);
+	if (status != 0) {
+		Logger::log(ERROR, "getaddrinfo error");
+        return false;
+    }
+
+	struct sockaddr_in _serverAddr;
+
+	memset(&_serverAddr, 0, sizeof(_serverAddr));
+	_serverAddr= *(struct sockaddr_in*)res->ai_addr;
 
   if (bind(_socketFD, (struct sockaddr *)&_serverAddr, sizeof(_serverAddr)) <
       0) {
