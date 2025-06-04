@@ -79,7 +79,8 @@ private:
 			{408, "Request Timeout"},
 			{413, "Content Too Large"},
 			{415, "Unsupported Media Type"},
-			{500, "Internal Server Error"}};
+			{500, "Internal Server Error"},
+			{504, "Gateway Timeout"}};
 
 	const std::unordered_map<int, std::string> redirectionMsgs =
 		{

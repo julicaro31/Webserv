@@ -484,7 +484,7 @@ void Response::handleCgiRequest()
     catch (timeout_exception& e)
     {
         Logger::log(ERROR, e.what());
-        return (handleResponseError(408));
+        return (handleResponseError(504));
     }
     catch (std::invalid_argument& e)
     {
