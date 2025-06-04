@@ -12,6 +12,7 @@
 
 #include "CgiHandler.hpp"
 #include <cstdlib>
+#include <cstring>
 #include <stdexcept>
 
 
@@ -25,6 +26,8 @@ std::string CgiHandler::execute(std::string &scriptPath)
 CgiHandler::CgiHandler(std::string &scriptPath)
 {
     path = scriptPath;
+    pid = 0;
+    memset(&pipefd, 0, sizeof(pipefd));
     try {
         isFile();
         isExecutable();
@@ -42,10 +45,12 @@ CgiHandler::~CgiHandler()
 
 void CgiHandler::cleanup()
 {
-    int status;
+    int status = 0;
 
-    close(pipefd[0]);
-    close(pipefd[1]);
+    if (pipefd[0])
+        close(pipefd[0]);
+    if (pipefd[1])
+        close(pipefd[1]);
     if (pid != 0)
     {
         if (kill(pid, 0) == 0)
