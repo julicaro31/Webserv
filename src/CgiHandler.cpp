@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "CgiHandler.hpp"
+#include <cstdlib>
+#include <stdexcept>
 
 
 std::string CgiHandler::execute(std::string &scriptPath)
@@ -122,6 +124,8 @@ void CgiHandler::runParent(void)
     {
         char buffer[4096];
         ssize_t n;
+        int status;
+        int got_pid = 0;
         struct pollfd poll_fd = {
             .fd = pipefd[0],
             .events = POLL_IN,
@@ -146,7 +150,18 @@ void CgiHandler::runParent(void)
             throw std::runtime_error("reading error");
         if (close(pipefd[0]) == -1)
             throw std::runtime_error("failure closing pipe");
-        waitpid(pid, NULL, 0);
+        while (got_pid == waitpid(pid, &status, 0))
+        {
+            if ((got_pid != -1) || (errno != EINTR))
+                break;
+        }
+        if (got_pid == -1)
+            throw std::runtime_error("waitpid error");
+        if (WIFEXITED(status))
+        {
+            if (WEXITSTATUS(status) == 1)
+                throw std::runtime_error("execve failed");
+        }
     }
 }
 
