@@ -247,7 +247,7 @@ void ServerManager::acceptNewClient(int serverFD) {
     return;
   }
   // Add new client socket to poll list, and map client FD to server
-  pollfd pfd;
+  pollfd pfd = {};
   pfd.fd = newClientFD;
   // Set the events to POLLIN for reading only, we will set POLLOUT when we have
   // a response to send
@@ -257,13 +257,6 @@ void ServerManager::acceptNewClient(int serverFD) {
   _clientActivity[newClientFD] = time(NULL); // save client activity time
 }
 
-//! TODO:
-/*Distinguish between FD's for server and client and CGI!
-
-
-
-
-*/
 
 /**
  * @brief Handle incoming client requests.
@@ -446,11 +439,13 @@ void ServerManager::closeFDs() {
   Logger::log(INFO, "[ServerManager] Shutdown complete.");
 }
 
-void ServerManager::availableServers() {
-  std::cout << "Available servers:" << std::endl;
-  for (size_t i = 0; i < _servers.size(); i++) {
-    std::cout << "Server #" << i + 1 << std::endl;
-    std::cout << "http://localhost:" << _servers[i]->getPort() << std::endl;
-    std::cout << "===========================================" << std::endl;
-  }
+void ServerManager::availableServers()
+{
+	std::cout << "Available servers:" << std::endl;
+	for (size_t i = 0; i < _servers.size(); i++)
+	{
+		std::cout << "Server #" << i + 1 <<  std::endl;
+		std::cout << "http://" << _servers[i]->getHost() << ":" << _servers[i]->getPort() << std::endl;
+		std::cout << "===========================================" << std::endl;
+	}
 }
