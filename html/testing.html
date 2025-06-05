@@ -130,7 +130,15 @@
       <input type="text" id="post-input" placeholder="Enter text..." />
       <button class="styled-button" onclick="postText()">Post</button>
     </div>
+    
+    <div class="input-delete">
 
+    <form method="POST" action="/cgi-bin/index.py">
+      <p for="fortune">Enter your fortune:</p>
+      <input type="text" id="fortune" name="input">
+      <button class="styled-button" type="submit">Send</button>
+    </form>
+    </div>
     <script>
       function postText() {
         const text = document.getElementById("post-input").value;

@@ -27,13 +27,19 @@
 #include <poll.h>
 #include "Timeout.hpp"
 
-
-class CgiHandler {
+class CgiHandler
+{
 public:
-    static std::string execute(std::string& scriptPath);
-private:
-    CgiHandler(std::string& scriptPath);
+    CgiHandler(std::string &scriptPath, const Request &req, std::string &method);
+    std::string execute();
     ~CgiHandler();
+
+private:
+    std::string _path;
+    std::string _method;
+    std::string _body;
+    std::unordered_map<std::string, std::string> _headers;
+
     void cleanup();
     std::string getOutput() const;
     void isFile();
@@ -43,7 +49,8 @@ private:
     void run();
     void runChild();
     void runParent();
-    int pipefd[2];
+    int pipefdIn[2];
+    int pipefdOut[2];
     pid_t pid;
     std::string output;
     std::string path;
