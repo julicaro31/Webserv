@@ -18,45 +18,55 @@ ServerManager::~ServerManager() {}
  *
  * @param config struct containing the server configuration
  */
-void ServerManager::addServer(const ServerConfig &config) {
-  std::unique_ptr<Server> server = std::make_unique<Server>();
+void ServerManager::addServer(const ServerConfig &config)
+{
+  std::pair<std::string, int> key = std::make_pair(config.host, config.port);
 
-  server->setHost(config.host);
-  server->setPort(config.port);
-  server->setAutoIndex(config.autoIndex);
-  server->setDefaultServer(config.defaultServer);
-  server->setMaxBodySize(config.maxBodySize);
-  server->setRoot(config.root);
-  server->setServerName(config.serverName);
-  server->setRedirection(config.redirection);
-  server->setErrorPages(config.errorPages);
-  server->setIndex(config.index);
-  server->setLocations(config.locations);
+  if (_hostPortToFD.find(key) == _hostPortToFD.end())
+  {
+    std::unique_ptr<Server> server = std::make_unique<Server>();
+    server->setConfiguration(config);
 
-  if (server->setupSocket()) {
-    int serverFD = server->getSocketFD();
-    // Add the server's file descriptor to the poll list and move it to _servers
-    _pollFDs.push_back({serverFD, POLLIN, 0});
+    if (server->setupSocket())
+    {
+      int serverFD = server->getSocketFD();
+      _pollFDs.push_back({serverFD, POLLIN, 0});
+      _hostPortToFD[key] = serverFD;
+      _fdToVirtualHosts[serverFD].push_back(server.get());
+      _servers.push_back(std::move(server));
+      Logger::log(INFO, "New socket for " + config.host + ":" + std::to_string(config.port));
+    }
+    else
+    {
+      Logger::log(ERROR, "Failed to setup socket for " + config.host + ":" + std::to_string(config.port));
+    }
+  }
+  else
+  {
+    int existingFD = _hostPortToFD[key];
+    std::unique_ptr<Server> server = std::make_unique<Server>();
+    server->setConfiguration(config);
+    server->setSocketFD(existingFD);
+    _fdToVirtualHosts[existingFD].push_back(server.get());
     _servers.push_back(std::move(server));
-    Logger::log(INFO, "[ServerManager] Server added: " + config.host + ":" +
-                          std::to_string(config.port));
-  } else {
-    Logger::log(ERROR, "[ServerManager] Error setting up server: " +
-                           config.host + ":" + std::to_string(config.port));
+    Logger::log(INFO, "Reusing socket for " + config.host + ":" + std::to_string(config.port));
   }
 }
 
-const std::vector<std::unique_ptr<Server>> &ServerManager::getServers() const {
+const std::vector<std::unique_ptr<Server>> &ServerManager::getServers() const
+{
   return _servers;
 }
 
 // for testing purposes, no need to move it to logger
-void ServerManager::printServers() const {
+void ServerManager::printServers() const
+{
   std::cout << "ServerManager contains " << _servers.size() << " servers."
             << std::endl;
   Logger::log(INFO, "[ServerManager] ServerManager contains " +
                         std::to_string(_servers.size()) + " servers.");
-  for (size_t i = 0; i < _servers.size(); i++) {
+  for (size_t i = 0; i < _servers.size(); i++)
+  {
     std::cout << "Server #" << i + 1
               << " Name: " << _servers[i]->getServerName() << ":" << std::endl;
     std::cout << "Host: " << _servers[i]->getHost() << std::endl;
@@ -73,13 +83,15 @@ void ServerManager::printServers() const {
 
     std::cout << "Error pages:" << std::endl;
     for (const std::pair<const int, std::string> &errorPage :
-         _servers[i]->getErrorPages()) {
+         _servers[i]->getErrorPages())
+    {
       std::cout << "-" << errorPage.first << ": " << errorPage.second
                 << std::endl;
     }
 
     std::cout << "Index: ";
-    for (const std::string &element : _servers[i]->getIndex()) {
+    for (const std::string &element : _servers[i]->getIndex())
+    {
       std::cout << element << " ";
     }
     std::cout << std::endl;
@@ -90,9 +102,11 @@ void ServerManager::printServers() const {
   }
 }
 
-void ServerManager::printLocations(std::vector<Location> locations) const {
+void ServerManager::printLocations(std::vector<Location> locations) const
+{
   for (std::vector<Location>::iterator it = locations.begin();
-       it != locations.end(); it++) {
+       it != locations.end(); it++)
+  {
     std::cout << std::endl;
     std::cout << "Location " << it->modifier << " " << it->uri << std::endl;
     std::cout << "	AutoIndex: " << it->autoIndex << std::endl;
@@ -103,7 +117,8 @@ void ServerManager::printLocations(std::vector<Location> locations) const {
               << it->redirection.second << std::endl;
 
     std::cout << "	Error pages:" << std::endl;
-    for (const std::pair<const int, std::string> &errorPage : it->errorPages) {
+    for (const std::pair<const int, std::string> &errorPage : it->errorPages)
+    {
       std::cout << "	-" << errorPage.first << ": " << errorPage.second
                 << std::endl;
     }
@@ -111,7 +126,8 @@ void ServerManager::printLocations(std::vector<Location> locations) const {
     std::cout << "	CGI: " << it->cgiPass << std::endl;
 
     std::cout << "	Index: ";
-    for (const std::string &element : it->index) {
+    for (const std::string &element : it->index)
+    {
       std::cout << "	" << element << " ";
     }
     std::cout << std::endl;
@@ -119,10 +135,12 @@ void ServerManager::printLocations(std::vector<Location> locations) const {
     std::cout << "	Limit except: " << std::endl;
     for (std::vector<LimitExceptDirective>::iterator led =
              it->limitExcepts.begin();
-         led != it->limitExcepts.end(); led++) {
+         led != it->limitExcepts.end(); led++)
+    {
       std::cout << "	-Mehods: ";
       for (std::vector<Method>::iterator method = led->methods.begin();
-           method != led->methods.end(); method++) {
+           method != led->methods.end(); method++)
+      {
         std::cout << ParsingHelper::methodToStr(*method) << " ";
       }
 
@@ -141,28 +159,67 @@ void ServerManager::printLocations(std::vector<Location> locations) const {
  * @param fd
  * @return Server*
  */
-Server *ServerManager::getServerByFileDescriptor(int fd) const {
-  for (const auto &server : _servers) {
+Server *ServerManager::getServerByFileDescriptor(int fd) const
+{
+  for (const auto &server : _servers)
+  {
     if (server->getSocketFD() == fd)
       return server.get();
   }
   return nullptr;
 }
 
+Server *ServerManager::getVirtualHost(const std::string &hostHeader, int serverFD) const
+{
+  std::string requestedHost;
+  size_t colonPos = hostHeader.find(':');
+  if (colonPos != std::string::npos)
+  {
+    requestedHost = hostHeader.substr(0, colonPos);
+  }
+  else
+  {
+    requestedHost = hostHeader;
+  }
+
+  const std::vector<Server *> &candidates = _fdToVirtualHosts.at(serverFD);
+  for (Server *server : candidates)
+  {
+    if (server->getServerName() == requestedHost)
+    {
+      return server;
+    }
+  }
+
+  for (Server *server : candidates)
+  {
+    if (server->isDefaultServer())
+    {
+      return server;
+    }
+  }
+
+  return candidates.empty() ? nullptr : candidates[0];
+}
+
 /**
  * @brief Run the poll loop to handle incoming connections and client requests.
  *
  */
-void ServerManager::runPoll() {
+void ServerManager::runPoll()
+{
   Logger::log(INFO, "[ServerManager] Running " +
                         std::to_string(_servers.size()) + " servers...");
-  while (!g_terminate) {
+  while (!g_terminate)
+  {
     signal(SIGINT, handleSigint);
 
     checkTimeouts();
     int ready = poll(_pollFDs.data(), _pollFDs.size(), -1);
-    if (ready < 0) {
-      if (g_terminate) {
+    if (ready < 0)
+    {
+      if (g_terminate)
+      {
         return;
       }
       Logger::log(ERROR, "[ServerManager] Poll error");
@@ -171,21 +228,28 @@ void ServerManager::runPoll() {
     }
 
     // Loop through poll_fds to handle each socket
-    for (size_t i = 0; i < _pollFDs.size(); i++) {
+    for (size_t i = 0; i < _pollFDs.size(); i++)
+    {
       // Check if there's an event on this socket
-      if (_pollFDs[i].revents & POLLIN) {
+      if (_pollFDs[i].revents & POLLIN)
+      {
         // Check if it's a server FD (new connection)
-        if (getServerByFileDescriptor(_pollFDs[i].fd) != nullptr) {
+        if (getServerByFileDescriptor(_pollFDs[i].fd) != nullptr)
+        {
           acceptNewClient(_pollFDs[i].fd);
-        } else {
+        }
+        else
+        {
           // If it's a client socket, read data
           handleClientRequest(_pollFDs[i].fd);
         }
       }
-      if (_pollFDs[i].revents & POLLOUT) {
+      if (_pollFDs[i].revents & POLLOUT)
+      {
         int clientFD = _pollFDs[i].fd;
         // Check if we have a response to this client to send
-        if (_clientResponses.find(clientFD) != _clientResponses.end()) {
+        if (_clientResponses.find(clientFD) != _clientResponses.end())
+        {
           std::string &response = _clientResponses[clientFD];
           size_t responseBufferSize = WriteChunkSize;
           // Logger::log(INFO, "[ServerManager] Sending response to client FD "
@@ -194,12 +258,17 @@ void ServerManager::runPoll() {
           ssize_t sBytes =
               send(clientFD, response.c_str(),
                    std::min(responseBufferSize, response.size()), 0);
-          if (sBytes > 0) {
+          if (sBytes > 0)
+          {
             response.erase(0, sBytes);
-          } else if (response.empty()) {
+          }
+          else if (response.empty())
+          {
             disablePollout(clientFD);
             _clientResponses.erase(clientFD);
-          } else {
+          }
+          else
+          {
             Logger::log(ERROR,
                         "[ServerManager] Failed to send response to client");
             _clientResponses.erase(clientFD);
@@ -207,13 +276,13 @@ void ServerManager::runPoll() {
           }
         }
       }
-      if (_pollFDs[i].revents & POLLHUP && !(_pollFDs[i].revents & POLLIN)) {
+      if (_pollFDs[i].revents & POLLHUP && !(_pollFDs[i].revents & POLLIN))
+      {
         // Client hung up (closed connection). Clean it up.
         Logger::log(INFO, "[ServerManager] Detected POLLHUP on FD " +
                               std::to_string(_pollFDs[i].fd));
         removeClient(_pollFDs[i].fd);
       }
-
     }
   }
 }
@@ -224,11 +293,13 @@ void ServerManager::runPoll() {
  *
  * @param serverFD The file descriptor of the incoming server connection.
  */
-void ServerManager::acceptNewClient(int serverFD) {
+void ServerManager::acceptNewClient(int serverFD)
+{
   struct sockaddr_in address;
   socklen_t addrlen = sizeof(address);
   int newClientFD = accept(serverFD, (struct sockaddr *)&address, &addrlen);
-  if (newClientFD < 0) {
+  if (newClientFD < 0)
+  {
     Logger::log(ERROR,
                 "[ServerManager] Failed to accept new client(connection)");
     throw std::runtime_error("Failed to accept new client(connection)");
@@ -236,7 +307,8 @@ void ServerManager::acceptNewClient(int serverFD) {
   Logger::log(INFO, "[ServerManager] New client connected on FD " +
                         std::to_string(newClientFD));
 
-  if (Server::setNonBlocking(newClientFD) == -1) {
+  if (Server::setNonBlocking(newClientFD) == -1)
+  {
     Logger::log(ERROR,
                 "[ServerManager] Failed to set client socket to non-blocking");
     close(newClientFD);
@@ -253,7 +325,6 @@ void ServerManager::acceptNewClient(int serverFD) {
   _clientActivity[newClientFD] = time(NULL); // save client activity time
 }
 
-
 /**
  * @brief Handle incoming client requests.
  * This function reads the request from the client, parses it, and sends a
@@ -261,15 +332,19 @@ void ServerManager::acceptNewClient(int serverFD) {
  * not valid, it sends an error response.
  * @param clientFD The file descriptor of the client socket.
  */
-void ServerManager::handleClientRequest(int clientFD) {
+void ServerManager::handleClientRequest(int clientFD)
+{
   char buffer[ReadChunkSize];
   int rBytes = read(clientFD, buffer, sizeof(buffer) - 1);
 
-  if (rBytes < 0) {
+  if (rBytes < 0)
+  {
     Logger::log(ERROR, "[ServerManager] Failed to read from client");
     removeClient(clientFD);
     return;
-  } else if (rBytes == 0) {
+  }
+  else if (rBytes == 0)
+  {
     removeClient(clientFD);
     return;
   }
@@ -281,23 +356,32 @@ void ServerManager::handleClientRequest(int clientFD) {
   memset(buffer, 0, sizeof(buffer));
 
   // Check if the request is complete
-  if (isRequestComplete(_clientBuffers[clientFD])) {
+  if (isRequestComplete(_clientBuffers[clientFD]))
+  {
     Logger::log(INFO, "[ServerManager] Request complete for client FD " +
                           std::to_string(clientFD));
     std::vector<Token> tokens;
-    try {
+    try
+    {
       tokens = HttpParser::parseRequest(_clientBuffers[clientFD]);
-    } catch (const char *exception) {
+    }
+    catch (const char *exception)
+    {
       std::cerr << "Error: " << exception << std::endl;
-    } catch (...) {
+    }
+    catch (...)
+    {
       std::cerr << "Unknown error" << std::endl;
     }
 
     _clientBuffers[clientFD].clear();
     Request request = Request(tokens);
-    try {
+    try
+    {
       int serverFD = _clientToServer[clientFD]->getSocketFD();
-      Response response(request, *getServerByFileDescriptor(serverFD));
+      const Server* selectedServer = getVirtualHost(request.getHost(), serverFD);
+      Response response(request, *selectedServer);
+
       response.handleRequest();
 
       // store the response in the map
@@ -307,28 +391,38 @@ void ServerManager::handleClientRequest(int clientFD) {
 
       // Set the events to POLLOUT for sending response
       enablePollout(clientFD);
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e)
+    {
       std::cerr << e.what() << '\n';
     }
-  } else {
+  }
+  else
+  {
     Logger::log(INFO, "[ServerManager] Request not complete for client FD " +
                           std::to_string(clientFD));
     return;
   }
 }
 
-void ServerManager::enablePollout(int clientFD) {
-  for (auto &pfd : _pollFDs) {
-    if (pfd.fd == clientFD) {
+void ServerManager::enablePollout(int clientFD)
+{
+  for (auto &pfd : _pollFDs)
+  {
+    if (pfd.fd == clientFD)
+    {
       pfd.events |= POLLOUT;
       return;
     }
   }
 }
 
-void ServerManager::disablePollout(int clientFD) {
-  for (auto &pfd : _pollFDs) {
-    if (pfd.fd == clientFD) {
+void ServerManager::disablePollout(int clientFD)
+{
+  for (auto &pfd : _pollFDs)
+  {
+    if (pfd.fd == clientFD)
+    {
       pfd.events &= ~POLLOUT;
       Logger::log(INFO, "[ServerManager] Disabled POLLOUT for client FD " +
                             std::to_string(clientFD));
@@ -337,10 +431,13 @@ void ServerManager::disablePollout(int clientFD) {
   }
 }
 
-void ServerManager::removeClient(int clientFD) {
+void ServerManager::removeClient(int clientFD)
+{
   close(clientFD);
-  for (auto it = _pollFDs.begin(); it != _pollFDs.end(); ++it) {
-    if (it->fd == clientFD) {
+  for (auto it = _pollFDs.begin(); it != _pollFDs.end(); ++it)
+  {
+    if (it->fd == clientFD)
+    {
       _pollFDs.erase(it);
       break;
     }
@@ -352,12 +449,15 @@ void ServerManager::removeClient(int clientFD) {
 }
 
 // Check for inactive clients and remove them from the poll list
-void ServerManager::checkTimeouts() {
+void ServerManager::checkTimeouts()
+{
   time_t now = time(NULL);
-  for (size_t i = 0; i < _pollFDs.size(); i++) {
+  for (size_t i = 0; i < _pollFDs.size(); i++)
+  {
     int clientFD = _pollFDs[i].fd;
     if (_clientActivity.find(clientFD) != _clientActivity.end() &&
-        now - _clientActivity[clientFD] > CLIENT_TIMEOUT) {
+        now - _clientActivity[clientFD] > CLIENT_TIMEOUT)
+    {
       Logger::log(INFO, "[ServerManager] Client FD " +
                             std::to_string(clientFD) + " timed out.");
       removeClient(clientFD);
@@ -373,51 +473,62 @@ void ServerManager::checkTimeouts() {
  * complete
  */
 
-bool ServerManager::isRequestComplete(const std::string &buffer) {
+bool ServerManager::isRequestComplete(const std::string &buffer)
+{
 
   size_t headerEnd = buffer.find("\r\n\r\n");
-  if (headerEnd == std::string::npos) {
+  if (headerEnd == std::string::npos)
+  {
     return false;
   }
   if (buffer.find("GET") == 0 || buffer.find("HEAD") == 0 ||
-      buffer.find("DELETE") == 0) {
+      buffer.find("DELETE") == 0)
+  {
     return true;
   }
 
   size_t pos = buffer.find("Content-Length:");
   size_t start = buffer.find(":", pos) + 1;
   size_t end = buffer.find("\r\n", start);
-  if (end == std::string::npos) {
+  if (end == std::string::npos)
+  {
     return false;
   }
 
   std::string valueStr = buffer.substr(start, end - start);
   int contentLength = 0;
 
-  try {
+  try
+  {
     contentLength = std::stoi(valueStr);
-  } catch (const std::exception &e) {
+  }
+  catch (const std::exception &e)
+  {
     Logger::log(ERROR,
                 "[ServerManager] Error parsing Content-Length: " + valueStr);
   }
 
   size_t totalSize = headerEnd + 4 + contentLength;
-  if (buffer.size() >= totalSize) {
+  if (buffer.size() >= totalSize)
+  {
     return true;
   }
   return false;
 }
 
-void ServerManager::handleSigint(int sig) {
+void ServerManager::handleSigint(int sig)
+{
   g_terminate = sig;
   std::cout << "\nBye!" << std::endl;
 }
 
-void ServerManager::closeFDs() {
+void ServerManager::closeFDs()
+{
   Logger::log(INFO, "[ServerManager] Caught SIGINT. Cleaning up...");
 
   for (std::map<int, Server *>::iterator it = _clientToServer.begin();
-       it != _clientToServer.end(); ++it) {
+       it != _clientToServer.end(); ++it)
+  {
     int clientFD = it->first;
     close(clientFD);
     Logger::log(INFO,
@@ -425,7 +536,8 @@ void ServerManager::closeFDs() {
   }
 
   for (std::vector<std::unique_ptr<Server>>::iterator it = _servers.begin();
-       it != _servers.end(); ++it) {
+       it != _servers.end(); ++it)
+  {
     int serverFD = (*it)->getSocketFD();
     close(serverFD);
     Logger::log(INFO,
@@ -437,11 +549,11 @@ void ServerManager::closeFDs() {
 
 void ServerManager::availableServers()
 {
-	std::cout << "Available servers:" << std::endl;
-	for (size_t i = 0; i < _servers.size(); i++)
-	{
-		std::cout << "Server #" << i + 1 <<  std::endl;
-		std::cout << "http://" << _servers[i]->getHost() << ":" << _servers[i]->getPort() << std::endl;
-		std::cout << "===========================================" << std::endl;
-	}
+  std::cout << "Available servers:" << std::endl;
+  for (size_t i = 0; i < _servers.size(); i++)
+  {
+    std::cout << "Server #" << i + 1 << std::endl;
+    std::cout << "http://" << _servers[i]->getHost() << ":" << _servers[i]->getPort() << std::endl;
+    std::cout << "===========================================" << std::endl;
+  }
 }

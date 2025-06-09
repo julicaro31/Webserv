@@ -18,6 +18,7 @@
 #include "Location.hpp"
 #include <arpa/inet.h>
 #include <netdb.h>
+#include "ServerConfig.hpp"
 
 
 
@@ -50,6 +51,8 @@ public:
 	bool setupSocket();
 
 	// Setters
+
+	void setConfiguration(const ServerConfig &config);
 	void setHost(const std::string &host);
 	void setPort(int port);
 	void setAutoIndex(bool autoindex);
@@ -61,6 +64,7 @@ public:
 	void setErrorPages(const std::map<int, std::string> &errorPages);
 	void setIndex(const std::vector<std::string> &index);
 	void setLocations(std::vector<Location> locations);
+	void setSocketFD(int fd);
 
 	// Getters
 	int getPort() const;
