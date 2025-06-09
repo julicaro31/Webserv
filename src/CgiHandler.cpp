@@ -25,7 +25,7 @@ std::string CgiHandler::execute()
 }
 
 CgiHandler::CgiHandler(std::string &scriptPath, const Request &req, std::string &method)
-    : _method(method), _body(req.getBody()), _headers(req.getHeaders()), path(scriptPath)
+    :  _method(method), _body(req.getBody()), _queryString(req.getQueryString()), _headers(req.getHeaders()), path(scriptPath)
 {
     pid = 0;
     memset(&pipefdIn, 0, sizeof(pipefdIn));
@@ -134,6 +134,7 @@ void CgiHandler::runChild()
         std::string request_method = "REQUEST_METHOD=" + _method;
         std::string content_length = "CONTENT_LENGTH=" + contentLength;
         std::string content_type = "CONTENT_TYPE=" + contentType;
+        std::string query_string = "QUERY_STRING=" + _queryString;
 
         char *envp[] = {
             (char *)"GATEWAY_INTERFACE=CGI/1.1",
@@ -141,6 +142,7 @@ void CgiHandler::runChild()
             (char *)request_method.c_str(),
             (char *)content_length.c_str(),
             (char *)content_type.c_str(),
+            (char *)query_string.c_str(),
             NULL};
         char *argv[] = {(char *)path.c_str(), NULL};
 

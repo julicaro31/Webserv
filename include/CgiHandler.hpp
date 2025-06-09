@@ -38,6 +38,7 @@ private:
     std::string _path;
     std::string _method;
     std::string _body;
+    std::string _queryString;
     std::unordered_map<std::string, std::string> _headers;
 
     void cleanup();
