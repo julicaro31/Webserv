@@ -4,3 +4,6 @@ cmake/*
 obj
 *.log
 test_stress
+/.cache/
+nvim.bash
+compile_commands.json
