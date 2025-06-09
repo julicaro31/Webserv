@@ -214,10 +214,6 @@ void ServerManager::runPoll() {
         removeClient(_pollFDs[i].fd);
       }
 
-      else if (_pollFDs[i].revents & POLLOUT) {
-        // Socket is ready to write. Send data if needed.
-        // For now, we just ignore it until response is implemented.
-      }
     }
   }
 }
