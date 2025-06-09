@@ -17,6 +17,11 @@ std::string Request::getUri() const
 	return (uri);
 }
 
+std::string Request::getQueryString() const
+{
+	return (queryString);
+}
+
 std::unordered_map<std::string, std::string>  Request::getHeaders() const
 {
 	return (headers);
@@ -44,6 +49,7 @@ std::ostream& operator<<(std::ostream& out, const Request& request)
 	out << "Request.method: " << ParsingHelper::methodToStr(request.getMethod()) << std::endl;
 	out << "Request.version: " << std::to_string(request.getVersion()) << std::endl; 
 	out	<< "Request.uri: " << request.getUri() << std::endl;
+	out	<< "Request.queryString: " << request.getQueryString() << std::endl;
 	out	<< "Request.headers \n" << Request::headersToString(request.getHeaders()) << std::endl;
 	out	<< "Request.body: " << request.getBody() << std::endl;
 	out << "---------------" << std::endl;
@@ -56,10 +62,21 @@ std::string Request::requestToString(const Request& request)
 	ret.append("Request.method: " + ParsingHelper::methodToStr(request.getMethod()) + "\n" );
 	ret.append("Request.version: " + std::to_string(request.getVersion()) + "\n" );
 	ret.append("Request.uri: " + request.getUri() + "\n" );
+	ret.append("Request.queryString: " + request.getQueryString() + "\n" );
 	ret.append("Request.headers \n" + headersToString(request.getHeaders()) + "\n" );
 	ret.append("Request.body: " + request.getBody() + "\n" );
 	ret.append("---------------\n" );
 	return (ret);
+}
+
+std::string parseQueryString(const std::string& uri)
+{
+    std::size_t found;
+
+    found = uri.find("?");
+    if (found != std::string::npos)
+        return (uri.substr(found));
+    return (std::string());
 }
 
 Request::Request(std::vector<Token> tokens)
@@ -86,6 +103,7 @@ Request::Request(std::vector<Token> tokens)
 				break;
 			case Token::URI:
 				uri = it.getLiteral();
+                queryString = parseQueryString(uri);
 				break;
 			case Token::HEADER:
 				{
@@ -111,6 +129,7 @@ Request::Request(const Request & request)
 	, uri {request.uri}
 	, headers {request.headers}
 	, body {request.body}
+	, queryString {request.queryString}
 {
 }
 

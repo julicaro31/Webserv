@@ -12,6 +12,7 @@ public:
 	Method getMethod() const;
 	float getVersion() const;
 	std::string getUri() const;
+	std::string getQueryString() const;
 	std::unordered_map<std::string, std::string> getHeaders() const;
 	std::string getBody() const;
 	static std::string headersToString(std::unordered_map<std::string, std::string>);
@@ -25,6 +26,7 @@ private:
 	std::string uri;
 	std::unordered_map<std::string, std::string> headers;
 	std::string body;
+	std::string queryString;
 };
 
 std::ostream& operator<<(std::ostream& out, const Request& request);
