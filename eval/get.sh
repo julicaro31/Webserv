@@ -1,3 +1,5 @@
 #!/bin/bash
 
-curl http://localhost:8080/
+(cd ../ && gnome-terminal -- bash -c "./webserv ; bash")
+sleep 1
+curl -i http://localhost:8080/
