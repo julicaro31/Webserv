@@ -75,8 +75,18 @@ std::string parseQueryString(const std::string& uri)
 
     found = uri.find("?");
     if (found != std::string::npos)
-        return (uri.substr(found));
+        return (uri.substr(++found));
     return (std::string());
+}
+
+std::string parseUri(const std::string& uri)
+{
+    std::size_t found;
+
+    found = uri.find("?");
+    if (found != std::string::npos)
+        return (uri.substr(0, found));
+    return (std::string(uri));
 }
 
 Request::Request(std::vector<Token> tokens)
@@ -102,8 +112,8 @@ Request::Request(std::vector<Token> tokens)
 				version = std::stof(it.getLiteral());
 				break;
 			case Token::URI:
-				uri = it.getLiteral();
-                queryString = parseQueryString(uri);
+				uri = parseUri(it.getLiteral());
+                queryString = parseQueryString(it.getLiteral());
 				break;
 			case Token::HEADER:
 				{
