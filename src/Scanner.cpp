@@ -278,7 +278,9 @@ void Scanner::identifier()
 	std::string text = source.substr(start, current - start);
 	auto it = keywords.find(text);
 	Token::TokenType type;
-	if (it == keywords.end())
+    if (line == 1 && mappedTokens[line].empty())
+        type = Token::TokenType::METHOD;
+    else if (it == keywords.end())
 		type = Token::IDENTIFIER;
 	else
 		type = it->second;
