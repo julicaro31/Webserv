@@ -123,6 +123,12 @@ Request::Request(std::vector<Token> tokens)
 			std::size_t delimiter = header.find(':');
 			std::string header_name = header.substr(0, delimiter);
 			std::string header_value = header.substr(delimiter + 2, header.size() - 1);
+            if (header_name == "Host")
+            {
+                delimiter = header_value.find(':');
+                if (delimiter != std::string::npos)
+                    header_value = header_value.substr(0, delimiter);
+            }
 			headers.insert({header_name, header_value});
 		}
 		break;
@@ -144,7 +150,7 @@ Request::~Request(void)
 {
 }
 
-const std::string &Request::getHost()
+std::string &Request::getHost() const
 {
 	std::unordered_map<std::string, std::string> headers = getHeaders();
 	std::unordered_map<std::string, std::string>::iterator it = headers.find("Host");
