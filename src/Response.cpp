@@ -37,6 +37,7 @@ Response::Response(const Request &request, const Server &server) : _request(requ
 		_index = server.getIndex();
 		_cgiPass = "";
 		_limitExcepts = {};
+		_location = "/";
 	}
 	else
 	{
@@ -49,6 +50,7 @@ Response::Response(const Request &request, const Server &server) : _request(requ
 		_index = bestMatch->index;
 		_cgiPass = bestMatch->cgiPass;
 		_limitExcepts = bestMatch->limitExcepts;
+		_location = bestMatch->uri;
 	}
 }
 
@@ -300,7 +302,7 @@ void Response::handleGetRequest()
 		{
 			if (isFile(*index))
 			{
-				return handleFileServing(_root + "/" + *index);
+				return handleFileServing(_root + _location + *index);
 			}
 		}
 		if (_autoIndex)
@@ -477,7 +479,7 @@ void Response::handleCgiRequest()
 	std::string scriptPath = getFullPath(_root + _request.getUri());
 	Logger::log(INFO, "executing CGI script at " + scriptPath);
 	CgiHandler cgi(scriptPath, _request, method);
-	
+
 	try
 	{
 		cgi_content = cgi.execute();
