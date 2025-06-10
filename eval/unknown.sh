@@ -2,4 +2,4 @@
 
 (cd ../ && gnome-terminal -- bash -c "./webserv ; bash")
 sleep 1
-curl -i -X UNKNOWN --data "but wait?" http://localhost:8080/test_unknown
+curl -v -i -X UNKNOWN --data "but wait?" http://localhost:8080/test_unknown
