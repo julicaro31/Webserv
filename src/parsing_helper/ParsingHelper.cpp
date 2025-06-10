@@ -456,7 +456,7 @@ template <typename T>
 void ParsingHelper::setDefaultValues(T &config)
 {
 	config.autoIndex = false;
-	config.index = {"index.html"};
+	config.index = {};
 	config.maxBodySize = 1000000;
 	config.redirection = {0, ""};
 	config.errorPages = {{404, "/404.html"}, {403, "/403.html"}, {500, "/50x.html"}, {502, "/50x.html"}, {503, "/50x.html"}, {504, "/50x.html"}};
@@ -486,27 +486,27 @@ bool ParsingHelper::parseAutoIndex(std::string &value)
 /// @throw std::invalid_argument if the string is not a positive number.
 size_t ParsingHelper::parseMaxBodySize(std::string &value)
 {
-    long long int maxBodySize;
+	long long int maxBodySize;
 	try
 	{
-        if (value.size() > 10)
-        {
-            Logger::log(ERROR, "client_max_body_size: size too big");
-            throw std::invalid_argument("Error: client_max_body_size size too big");
-        }
+		if (value.size() > 10)
+		{
+			Logger::log(ERROR, "client_max_body_size: size too big");
+			throw std::invalid_argument("Error: client_max_body_size size too big");
+		}
 		maxBodySize = std::stoi(value);
 		if (maxBodySize <= 0)
 		{
-            Logger::log(ERROR, "client_max_body_size should be a positive integer.");
-            throw std::invalid_argument("Error: client_max_body_size should be a positive integer.");
+			Logger::log(ERROR, "client_max_body_size should be a positive integer.");
+			throw std::invalid_argument("Error: client_max_body_size should be a positive integer.");
 		}
 	}
 	catch (const std::exception &e)
 	{
 		Logger::log(ERROR, std::string("client_max_body_size: ") + e.what());
-        throw ;
+		throw;
 	}
-    return maxBodySize;
+	return maxBodySize;
 }
 
 /// @brief Parses the information realated to the directive 'listen'.
