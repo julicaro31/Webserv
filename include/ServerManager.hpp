@@ -12,12 +12,13 @@
 #include <unistd.h>
 #include <vector>
 
-#define CLIENT_TIMEOUT                                                         \
+#define CLIENT_TIMEOUT \
   15 // disconnect clients that have been inactive, in seconds
 #define ReadChunkSize 80000
 #define WriteChunkSize 16777216
 
-class ServerManager {
+class ServerManager
+{
 private:
   std::vector<std::unique_ptr<Server>> _servers;
   std::vector<pollfd> _pollFDs;
@@ -25,6 +26,9 @@ private:
   std::map<int, time_t> _clientActivity;
   std::map<int, std::string> _clientResponses;
   std::map<int, std::string> _clientBuffers;
+
+  std::map<std::pair<std::string, int>, int> _hostPortToFD;
+  std::map<int, std::vector<Server *>> _fdToVirtualHosts;
 
   static void handleSigint(int sig);
 
@@ -36,12 +40,10 @@ public:
   ServerManager(const ServerManager &) = delete;
   ServerManager &operator=(const ServerManager &other) = delete;
 
-  void start();
-  void stop();
   const std::vector<std::unique_ptr<Server>> &getServers() const;
 
   Server *getServerByFileDescriptor(int fd) const;
-  std::vector<pollfd> &getPollFDs();
+  Server *getVirtualHost(const std::string &hostHeader, int serverFD) const;
 
   void printServers() const;
   void printLocations(std::vector<Location> locations) const;
