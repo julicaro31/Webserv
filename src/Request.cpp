@@ -32,6 +32,11 @@ std::string Request::getBody() const
 	return (body);
 }
 
+std::string Request::getHost() const
+{
+	return (host);
+}
+
 std::string Request::headersToString(std::unordered_map<std::string, std::string> map)
 {
 	std::string ret("***************\n");
@@ -128,6 +133,7 @@ Request::Request(std::vector<Token> tokens)
                 delimiter = header_value.find(':');
                 if (delimiter != std::string::npos)
                     header_value = header_value.substr(0, delimiter);
+                host = header_value;
             }
 			headers.insert({header_name, header_value});
 		}
@@ -142,7 +148,7 @@ Request::Request(std::vector<Token> tokens)
 }
 
 Request::Request(const Request &request)
-	: method{request.method}, version{request.version}, uri{request.uri}, headers{request.headers}, body{request.body}, queryString{request.queryString}
+	: method{request.method}, version{request.version}, uri{request.uri}, headers{request.headers}, body{request.body}, queryString{request.queryString}, host{request.host}
 {
 }
 
@@ -150,14 +156,3 @@ Request::~Request(void)
 {
 }
 
-std::string &Request::getHost() const
-{
-	std::unordered_map<std::string, std::string> headers = getHeaders();
-	std::unordered_map<std::string, std::string>::iterator it = headers.find("Host");
-
-	if (it == getHeaders().end())
-	{
-		throw std::runtime_error("Missing Host");
-	}
-	return it->second;
-}

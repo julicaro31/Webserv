@@ -15,9 +15,9 @@ public:
 	std::string getQueryString() const;
 	std::unordered_map<std::string, std::string> getHeaders() const;
 	std::string getBody() const;
+	std::string getHost() const;
 	static std::string headersToString(std::unordered_map<std::string, std::string>);
 	static std::string requestToString(const Request& request);
-	std::string& getHost() const;
 	Request(std::vector<Token>);
 	Request(const Request &);
 	~Request(void);
@@ -28,6 +28,7 @@ private:
 	std::unordered_map<std::string, std::string> headers;
 	std::string body;
 	std::string queryString;
+	std::string host;
 };
 
 std::ostream& operator<<(std::ostream& out, const Request& request);
