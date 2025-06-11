@@ -57,8 +57,8 @@ private:
 	void handleDeleteRequest();
 	void handleDeletion(const std::string &path);
 
-    // Cgi Request
-    void handleCgiRequest();
+	// Cgi Request
+	void handleCgiRequest();
 
 	bool _autoIndex;
 	size_t _maxBodySize;
@@ -68,6 +68,7 @@ private:
 	std::vector<std::string> _index;
 	std::string _cgiPass;
 	std::vector<LimitExceptDirective> _limitExcepts;
+	std::string _location;
 
 	const std::unordered_map<int, std::string> defaultErrorMsgs =
 		{
@@ -75,7 +76,7 @@ private:
 			{403, "Forbidden"},
 			{404, "File Not Found"},
 			{405, "Method Not Allowed"},
-            {406, "Not Acceptable"},
+			{406, "Not Acceptable"},
 			{408, "Request Timeout"},
 			{413, "Content Too Large"},
 			{415, "Unsupported Media Type"},
