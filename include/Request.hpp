@@ -17,7 +17,7 @@ public:
 	std::string getBody() const;
 	static std::string headersToString(std::unordered_map<std::string, std::string>);
 	static std::string requestToString(const Request& request);
-	const std::string& getHost();
+	std::string& getHost() const;
 	Request(std::vector<Token>);
 	Request(const Request &);
 	~Request(void);
