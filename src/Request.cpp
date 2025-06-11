@@ -150,7 +150,7 @@ Request::~Request(void)
 {
 }
 
-std::string &Request::getHost() const
+std::string Request::getHost() const
 {
 	std::unordered_map<std::string, std::string> headers = getHeaders();
 	std::unordered_map<std::string, std::string>::iterator it = headers.find("Host");
