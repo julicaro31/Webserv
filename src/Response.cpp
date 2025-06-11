@@ -478,10 +478,10 @@ void Response::handleCgiRequest()
 	std::string cgi_content;
 	std::string scriptPath = getFullPath(_root + _request.getUri());
 	Logger::log(INFO, "executing CGI script at " + scriptPath);
-	CgiHandler cgi(scriptPath, _request, method);
 
 	try
 	{
+        CgiHandler cgi(scriptPath, _request, method);
 		cgi_content = cgi.execute();
 	}
 	catch (timeout_exception &e)
